@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json.okio)
 
     ksp(libs.hilt.compiler)
+    implementation(libs.coil.compose)
 }
 
 protobuf {
