@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.kotlinx.serialization.json.okio)
+    implementation(libs.androidx.navigation.compose)
 
     ksp(libs.hilt.compiler)
     implementation(libs.coil.compose)
