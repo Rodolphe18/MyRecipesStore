@@ -1,7 +1,8 @@
-package com.francotte.myrecipesstore.ui.compose
+package com.francotte.myrecipesstore.ui.compose.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,30 +27,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
-import com.francotte.myrecipesstore.model.AbstractMeal
+import com.francotte.myrecipesstore.model.AbstractRecipe
 
 @Composable
-fun MealItem(
-    meal: AbstractMeal,
-    onFavoriteClick: (AbstractMeal) -> Unit
+fun RecipeItem(
+    recipe: AbstractRecipe,
+    onToggleFavorite: (AbstractRecipe) -> Unit,
+    onOpenRecipe: (AbstractRecipe) -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .aspectRatio(1f) // carré
+                .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { onOpenRecipe(recipe) }
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = meal.strMealThumb),
-                contentDescription = meal.strMeal,
+                painter = rememberAsyncImagePainter(model = recipe.strMealThumb),
+                contentDescription = recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
             )
 
             IconButton(
-                onClick = { onFavoriteClick(meal) },
+                onClick = { onToggleFavorite(recipe) },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(6.dp)
@@ -69,7 +72,7 @@ fun MealItem(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = meal.strMeal,
+            text = recipe.strMeal,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,

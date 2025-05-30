@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.ui.compose
+package com.francotte.myrecipesstore.ui.compose.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,12 +10,13 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.francotte.myrecipesstore.model.AbstractMeal
+import com.francotte.myrecipesstore.model.AbstractRecipe
 
 @Composable
-fun MealGrid(
-    meals: List<AbstractMeal>,
-    onFavoriteClick: (AbstractMeal) -> Unit,
+fun RecipesGrid(
+    meals: List<AbstractRecipe>,
+    onFavoriteClick: (AbstractRecipe) -> Unit,
+    onRecipeClick: (AbstractRecipe) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -28,7 +29,7 @@ fun MealGrid(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(meals) { meal ->
-            MealItem(meal = meal, onFavoriteClick = onFavoriteClick)
+            RecipeItem(recipe = meal, onOpenRecipe= onRecipeClick, onToggleFavorite = onFavoriteClick)
         }
     }
 }
