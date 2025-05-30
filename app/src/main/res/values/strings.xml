@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">MyRecipesStore</string>
+    <string name="home">Home</string>
+    <string name="categories">Categories</string>
+    <string name="favorites">Favorites</string>
+    <string name="error_title">Une erreur est survenue lors du chargement</string>
+    <string name="error_subtitle">Veuillez réssayer en cliquant sur le lien ci-dessous.</string>
+    <string name="error_button_text">Réessayer</string>
+    <string name="latest_recipes">Dernières recettes</string>
+    <string name="top_recipes">Top recettes</string>
 </resources>
