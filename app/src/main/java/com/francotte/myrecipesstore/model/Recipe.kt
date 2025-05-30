@@ -7,33 +7,33 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
 
-object RecipePolymorphicSerializer : JsonContentPolymorphicSerializer<AbstractMeal>(AbstractMeal::class) {
+object RecipePolymorphicSerializer : JsonContentPolymorphicSerializer<AbstractRecipe>(AbstractRecipe::class) {
 
     private val fullRecipeFields = setOf("strCategory", "strInstructions")
 
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out AbstractMeal> {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out AbstractRecipe> {
         val keys = element.jsonObject.keys
         return if (fullRecipeFields.any { it in keys }) {
-            Meal.serializer()
+            Recipe.serializer()
         } else {
-            LightMeal.serializer()
+            LightRecipe.serializer()
         }
     }
 }
 
 @Serializable(with = RecipePolymorphicSerializer::class)
-sealed class AbstractMeal {
+sealed class AbstractRecipe {
    abstract val strMeal: String
    abstract val strMealThumb: String
    abstract val idMeal: String
 }
 
 @Serializable
-data class LightMeal(override val strMeal: String, override val strMealThumb: String, override val idMeal: String):
-    AbstractMeal()
+data class LightRecipe(override val strMeal: String, override val strMealThumb: String, override val idMeal: String):
+    AbstractRecipe()
 
 @Serializable
-data class Meal(
+data class Recipe(
     override val idMeal: String,
     override val strMeal: String,
     val strMealAlternate: String?,
@@ -87,5 +87,5 @@ data class Meal(
     val strImageSource: String?,
     val strCreativeCommonsConfirmed: String?,
     val dateModified: String?,
-): AbstractMeal()
+): AbstractRecipe()
 

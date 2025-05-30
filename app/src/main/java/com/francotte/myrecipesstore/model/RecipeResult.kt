@@ -15,16 +15,16 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = MealResultSerializer::class)
-sealed class MealResult {
-    data class Single(val meal: AbstractMeal) : MealResult()
-    data class Multiple(val meals: List<AbstractMeal>) : MealResult()
-    data object Empty : MealResult()
+sealed class RecipeResult {
+    data class Single(val meal: AbstractRecipe) : RecipeResult()
+    data class Multiple(val meals: List<AbstractRecipe>) : RecipeResult()
+    data object Empty : RecipeResult()
 }
 
-object MealResultSerializer : KSerializer<MealResult> {
+object MealResultSerializer : KSerializer<RecipeResult> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MealResult")
 
-    override fun deserialize(decoder: Decoder): MealResult {
+    override fun deserialize(decoder: Decoder): RecipeResult {
         val input = decoder as? JsonDecoder
             ?: throw SerializationException("Expected JsonDecoder")
         val jsonElement = input.decodeJsonElement()
@@ -33,18 +33,18 @@ object MealResultSerializer : KSerializer<MealResult> {
         val mealsElement = jsonObject["meals"]
 
         return when (mealsElement) {
-            null -> MealResult.Empty
+            null -> RecipeResult.Empty
             is JsonArray -> when (mealsElement.size) {
-                0 -> MealResult.Empty
+                0 -> RecipeResult.Empty
                 1 -> {
-                    val meal = Json.decodeFromJsonElement(AbstractMeal.serializer(), mealsElement[0])
-                    MealResult.Single(meal)
+                    val meal = Json.decodeFromJsonElement(AbstractRecipe.serializer(), mealsElement[0])
+                    RecipeResult.Single(meal)
                 }
                 else -> {
                     val meals = mealsElement.map {
-                        Json.decodeFromJsonElement(AbstractMeal.serializer(), it)
+                        Json.decodeFromJsonElement(AbstractRecipe.serializer(), it)
                     }
-                    MealResult.Multiple(meals)
+                    RecipeResult.Multiple(meals)
                 }
             }
 
@@ -52,14 +52,14 @@ object MealResultSerializer : KSerializer<MealResult> {
         }
     }
 
-    override fun serialize(encoder: Encoder, value: MealResult) {
+    override fun serialize(encoder: Encoder, value: RecipeResult) {
         val output = encoder as? JsonEncoder
             ?: throw SerializationException("Expected JsonEncoder")
 
         val mealsJson = when (value) {
-            is MealResult.Single -> JsonArray(listOf(Json.encodeToJsonElement(AbstractMeal.serializer(), value.meal)))
-            is MealResult.Multiple -> JsonArray(value.meals.map { Json.encodeToJsonElement(AbstractMeal.serializer(), it) })
-            is MealResult.Empty -> JsonArray(emptyList())
+            is RecipeResult.Single -> JsonArray(listOf(Json.encodeToJsonElement(AbstractRecipe.serializer(), value.meal)))
+            is RecipeResult.Multiple -> JsonArray(value.meals.map { Json.encodeToJsonElement(AbstractRecipe.serializer(), it) })
+            is RecipeResult.Empty -> JsonArray(emptyList())
         }
 
         val obj = buildJsonObject {
@@ -70,8 +70,8 @@ object MealResultSerializer : KSerializer<MealResult> {
     }
 }
 
-fun MealResult.toMealList(): List<AbstractMeal> = when (this) {
-    is MealResult.Single -> listOf(meal)
-    is MealResult.Multiple -> meals
-    is MealResult.Empty -> emptyList()
+fun RecipeResult.toMealList(): List<AbstractRecipe> = when (this) {
+    is RecipeResult.Single -> listOf(meal)
+    is RecipeResult.Multiple -> meals
+    is RecipeResult.Empty -> emptyList()
 }
