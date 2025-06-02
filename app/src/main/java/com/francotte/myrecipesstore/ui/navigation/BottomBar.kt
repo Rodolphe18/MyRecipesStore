@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.francotte.myrecipesstore.R
+import com.francotte.myrecipesstore.ui.compose.categories.CategoriesNavigationRoute
+import com.francotte.myrecipesstore.ui.compose.favorites.FavoritesNavigationRoute
 import com.francotte.myrecipesstore.ui.compose.home.HomeNavigationRoute
 import kotlin.reflect.KClass
 
@@ -111,13 +113,13 @@ enum class TopLevelDestination(
         selectedIcon = Icons.Filled.ShoppingCart,
         unselectedIcon = Icons.Outlined.ShoppingCart,
         titleTextId = R.string.categories,
-        route = HomeNavigationRoute::class
+        route = CategoriesNavigationRoute::class
     ),
     FAVORITES(
         selectedIcon = Icons.Filled.Favorite,
         unselectedIcon = Icons.Outlined.Favorite,
         titleTextId = R.string.favorites,
-        route = HomeNavigationRoute::class
+        route = FavoritesNavigationRoute::class
     )
 }
 
