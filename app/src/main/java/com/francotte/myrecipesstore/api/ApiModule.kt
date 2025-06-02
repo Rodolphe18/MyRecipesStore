@@ -1,6 +1,5 @@
 package com.francotte.myrecipesstore.api
 
-import com.francotte.authmanagerforandroid.api.HttpLoggingInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +20,10 @@ object ApiModule {
             .baseUrl("https://www.themealdb.com/api/json/v2/${API_KEY}/")
             .client(
                 OkHttpClient.Builder()
-                    .addInterceptor(HttpLoggingInterceptor())
+                    .addInterceptor(
+                        HttpLoggingInterceptor()
+                            .setLevel(HttpLoggingInterceptor.Level.BODY)
+                    )
                     .build()
             )
             .addConverterFactory(jsonConverterFactory)
