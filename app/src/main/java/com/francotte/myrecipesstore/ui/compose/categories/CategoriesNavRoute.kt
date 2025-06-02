@@ -23,8 +23,8 @@ fun NavGraphBuilder.categoriesScreen(onOpenCategory: (String) -> Unit, categoryD
         CategoriesRoute {
             onOpenCategory(it.strCategory)
         }
-        categoryDestination()
     }
+    categoryDestination()
 }
 
 @Composable

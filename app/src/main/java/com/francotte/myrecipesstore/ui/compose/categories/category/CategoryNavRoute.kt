@@ -30,7 +30,8 @@ fun NavGraphBuilder.categoryScreen(onOpenRecipe: (String) -> Unit, onToggleFavor
 @Composable
 fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (AbstractRecipe) -> Unit, onToggleFavorite:(AbstractRecipe)->Unit) {
     val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
+    val title = viewModel.category
 
-    CategoryScreen(categoryUiState = uiState, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite)
+    CategoryScreen(categoryUiState = uiState, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite)
 
 }

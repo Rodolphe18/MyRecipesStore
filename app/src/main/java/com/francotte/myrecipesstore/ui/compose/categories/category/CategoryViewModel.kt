@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.francotte.myrecipesstore.model.RecipeResult
 import com.francotte.myrecipesstore.repository.RecipesRepository
+import com.francotte.myrecipesstore.ui.compose.categories.CategoriesUiState
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
@@ -18,14 +19,19 @@ import javax.inject.Inject
 @HiltViewModel
 class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, repository: RecipesRepository): ViewModel() {
 
-    private val category = savedStateHandle.toRoute<CategoryNavigationRoute>().category
+    val category = savedStateHandle.toRoute<CategoryNavigationRoute>().category
 
     val categoryUiState = repository
         .getRecipesListByCategory(category)
-        .catch { CategoryUiState.Error }
-        .filterNotNull()
-        .map { CategoryUiState.Success(it) }
+        .map { result ->
+            if (result.isSuccess) {
+                CategoryUiState.Success(result.getOrDefault(RecipeResult.Empty))
+            } else {
+                CategoryUiState.Error
+            }
+        }
         .stateIn(viewModelScope, restartableWhileSubscribed, CategoryUiState.Loading)
+
 
     fun reload() {
         viewModelScope.launch {
@@ -35,7 +41,7 @@ class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
 }
 
 sealed interface CategoryUiState {
-    data class Success(val recipes: RecipeResult) : CategoryUiState
-    data object Error : CategoryUiState
     data object Loading : CategoryUiState
+    data object Error : CategoryUiState
+    data class Success(val recipes: RecipeResult) : CategoryUiState
 }
