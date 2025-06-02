@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
 @Serializable
-data class Categories(val data:List<AbstractCategory>)
+data class Categories(val categories:List<AbstractCategory>)
 
 class PolymorphicCategorySerializer: JsonContentPolymorphicSerializer<AbstractCategory>(AbstractCategory::class) {
 
