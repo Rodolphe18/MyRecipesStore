@@ -33,7 +33,6 @@ object MealResultSerializer : KSerializer<RecipeResult> {
         val mealsElement = jsonObject["meals"]
 
         return when (mealsElement) {
-            null -> RecipeResult.Empty
             is JsonArray -> when (mealsElement.size) {
                 0 -> RecipeResult.Empty
                 1 -> {
@@ -59,7 +58,7 @@ object MealResultSerializer : KSerializer<RecipeResult> {
         val mealsJson = when (value) {
             is RecipeResult.Single -> JsonArray(listOf(Json.encodeToJsonElement(AbstractRecipe.serializer(), value.meal)))
             is RecipeResult.Multiple -> JsonArray(value.meals.map { Json.encodeToJsonElement(AbstractRecipe.serializer(), it) })
-            is RecipeResult.Empty -> JsonArray(emptyList())
+            else -> JsonArray(emptyList())
         }
 
         val obj = buildJsonObject {
@@ -73,5 +72,5 @@ object MealResultSerializer : KSerializer<RecipeResult> {
 fun RecipeResult.toMealList(): List<AbstractRecipe> = when (this) {
     is RecipeResult.Single -> listOf(meal)
     is RecipeResult.Multiple -> meals
-    is RecipeResult.Empty -> emptyList()
+    else -> emptyList()
 }

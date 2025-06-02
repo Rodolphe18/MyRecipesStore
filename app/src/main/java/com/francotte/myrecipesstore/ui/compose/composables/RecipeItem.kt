@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,10 +36,10 @@ fun RecipeItem(
     onToggleFavorite: (AbstractRecipe) -> Unit,
     onOpenRecipe: (AbstractRecipe) -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.width(240.dp)) {
         Box(
             modifier = Modifier
-                .aspectRatio(1f)
+                .aspectRatio(5/3f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { onOpenRecipe(recipe) }
@@ -76,6 +77,7 @@ fun RecipeItem(
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
+            maxLines = 2,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
     }

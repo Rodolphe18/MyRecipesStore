@@ -8,6 +8,7 @@ import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,19 +16,21 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(repository: RecipesRepository): ViewModel() {
 
-    private val latestMeals = repository.getLatestMeals().stateIn(viewModelScope, restartableWhileSubscribed, null)
-    private val randomMeals = repository.getLatestMeals().stateIn(viewModelScope, restartableWhileSubscribed, null)
-
     val homeUiState: StateFlow<HomeUiState> = combine(
-        latestMeals,
-        randomMeals
-    ) { latestMeals, randomMeals ->
-        when {
-            latestMeals == null && randomMeals == null -> HomeUiState.Error
-            else -> HomeUiState.Success(latestMeals, randomMeals)
+        repository.getLatestMeals(),
+        repository.getRandomMealsSelection()
+    ) { latestResult, randomResult ->
+        if (latestResult.isFailure || randomResult.isFailure) {
+            HomeUiState.Error
+        } else {
+            HomeUiState.Success(
+                latestResult.getOrDefault(RecipeResult.Empty),
+                randomResult.getOrDefault(RecipeResult.Empty)
+            )
         }
-    }.stateIn(viewModelScope, restartableWhileSubscribed, HomeUiState.Loading)
-
+    }
+        .onStart { emit(HomeUiState.Loading) }
+        .stateIn(viewModelScope, restartableWhileSubscribed, HomeUiState.Loading)
     fun reload() {
         viewModelScope.launch {
             restartableWhileSubscribed.restart()

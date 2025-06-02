@@ -15,7 +15,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -23,22 +22,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.model.Recipe
 import com.francotte.myrecipesstore.model.RecipeResult
 
 
-
 @Composable
-fun DetailRecipeScreen(meal: RecipeResult?) {
-    when (meal) {
+fun DetailRecipeScreen(recipeResult: RecipeResult?) {
+    when (recipeResult) {
         is RecipeResult.Single -> {
-            (meal.meal as? Recipe)?.let { recipe ->
+            (recipeResult.meal as? Recipe)?.let { recipe ->
                 val ingredients = (1..20).mapNotNull { i ->
-                    val ingredient = meal.javaClass.getDeclaredField("strIngredient$i").apply { isAccessible = true }.get(meal) as? String
-                    val measure = meal.javaClass.getDeclaredField("strMeasure$i").apply { isAccessible = true }.get(meal) as? String
+                    val ingredient = recipe.javaClass.getDeclaredField("strIngredient$i").apply { isAccessible = true }.get(recipe) as? String
+                    val measure = recipe.javaClass.getDeclaredField("strMeasure$i").apply { isAccessible = true }.get(recipe) as? String
                     if (!ingredient.isNullOrBlank()) {
                         ingredient to (measure ?: "")
                     } else null

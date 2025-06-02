@@ -25,6 +25,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.model.AbstractRecipe
 import com.francotte.myrecipesstore.model.toMealList
+import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
@@ -38,22 +39,13 @@ fun SectionScreen(sectionUiState: SectionUiState, @StringRes titleRes: Int, onRe
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                titleRes, Icons.Filled.Search, ""
+               titleRes= titleRes, actionIcon = Icons.Filled.Search, scrollBehavior = topAppBarScrollBehavior, navigationIconEnabled = true
             )
         }
-    ) { _ ->
+    ) { padding ->
         when (sectionUiState) {
-            SectionUiState.Loading -> Box(contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-
-            SectionUiState.Error -> Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                ErrorScreen { onReload() }
-            }
-
+            SectionUiState.Loading -> CustomCircularProgressIndicator()
+            SectionUiState.Error -> ErrorScreen { onReload() }
             is SectionUiState.Success -> {
                 LazyVerticalGrid(
                     state = rememberLazyGridState(),
@@ -62,7 +54,11 @@ fun SectionScreen(sectionUiState: SectionUiState, @StringRes titleRes: Int, onRe
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     flingBehavior = ScrollableDefaults.flingBehavior(),
-                    contentPadding = PaddingValues(16.dp)
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding(),
+                        bottom = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp)
                 ) {
                     items(
                         items = sectionUiState.recipes.toMealList(),

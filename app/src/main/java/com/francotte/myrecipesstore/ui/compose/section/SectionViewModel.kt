@@ -30,15 +30,14 @@ class SectionViewModel @Inject constructor(
     val sectionUiState = when (sectionType) {
         SectionType.LATEST_RECIPES -> repository
             .getLatestMeals()
+            .map { SectionUiState.Success(it.getOrDefault(RecipeResult.Empty)) }
             .catch { SectionUiState.Error }
-            .filterNotNull()
-            .map { SectionUiState.Success(it) }
             .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
+
         SectionType.TOP_RECIPES -> repository
             .getRandomMealsSelection()
+            .map { SectionUiState.Success(it.getOrDefault(RecipeResult.Empty)) }
             .catch { SectionUiState.Error }
-            .filterNotNull()
-            .map { SectionUiState.Success(it) }
             .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
     }
 

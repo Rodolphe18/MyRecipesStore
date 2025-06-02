@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.francotte.authmanagerforandroid.api
+package com.francotte.myrecipesstore.api
 
 import android.util.Log
 import okhttp3.Headers
