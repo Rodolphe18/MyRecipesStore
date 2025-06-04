@@ -19,44 +19,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
+import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.settings.SettingsDialog
 import com.francotte.myrecipesstore.ui.navigation.AppState
 import com.francotte.myrecipesstore.ui.navigation.BottomBar
 import com.francotte.myrecipesstore.ui.navigation.NavHost
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
-import com.francotte.myrecipesstore.ui.navigation.rememberAppState
+
 
 @OptIn(
     ExperimentalMaterial3Api::class
 )
 @Composable
 fun FoodApp(
-    onTopAppBarActionClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onToggleFavorite:(AbstractRecipe)->Unit,
     onSettingsDismissed: () -> Unit,
     showSettingsDialog: Boolean,
-    appState: AppState = rememberAppState()
+    appState: AppState
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
-//
-//    if (showSettingsDialog) {
-//        SettingsDialog(
-//            onDismiss = { onSettingsDismissed() },
-//        )
-//    }
+
+    if (showSettingsDialog) {
+        SettingsDialog(
+            onDismiss = { onSettingsDismissed() },
+        )
+    }
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            // Show the top app bar on top level destinations.
-            val destination = appState.currentTopLevelDestination
 
+            val destination = appState.currentTopLevelDestination
             if (destination != null) {
                 TopAppBar(
                     modifier = Modifier.zIndex(-1F),
                     titleRes = destination.titleTextId,
                     actionIcon = Icons.Filled.Settings,
                     actionIconContentDescription = "settings",
-                    onActionClick = onTopAppBarActionClick,
+                    onActionClick = onSettingsClick,
                 )
             }
         },
@@ -79,6 +81,7 @@ fun FoodApp(
         ) {
 
             NavHost(
+                onToggleFavorite = onToggleFavorite,
                 navController = appState.navController,
                 modifier = Modifier
                     .padding(padding)

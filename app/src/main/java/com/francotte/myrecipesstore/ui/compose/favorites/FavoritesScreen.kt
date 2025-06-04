@@ -39,8 +39,8 @@ fun FavoritesScreen(favoritesUiState: CategoryUiState, onReload:() -> Unit, onOp
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-               titleRes =  R.string.favorites, actionIcon = Icons.Filled.Search
+            TopAppBar(titleRes =
+                R.string.favorites, actionIcon = Icons.Filled.Search, scrollBehavior = topAppBarScrollBehavior
             )
         }
     ) { _ ->

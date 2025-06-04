@@ -26,6 +26,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="1210330677148706" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="6532d330d63d15c5c97407ef7b06a79d" />
     </application>
 
 </manifest>

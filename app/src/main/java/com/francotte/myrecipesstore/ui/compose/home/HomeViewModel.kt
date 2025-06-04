@@ -31,6 +31,7 @@ class HomeViewModel @Inject constructor(repository: RecipesRepository): ViewMode
     }
         .onStart { emit(HomeUiState.Loading) }
         .stateIn(viewModelScope, restartableWhileSubscribed, HomeUiState.Loading)
+
     fun reload() {
         viewModelScope.launch {
             restartableWhileSubscribed.restart()

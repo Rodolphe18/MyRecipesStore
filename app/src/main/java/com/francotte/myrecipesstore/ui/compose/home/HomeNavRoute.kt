@@ -20,14 +20,13 @@ object HomeNavigationRoute
 @Serializable
 object BaseRoute
 
-
 fun NavController.navigateToHomeScreen(navOptions: NavOptions? = null) {
     this.navigate(HomeNavigationRoute, navOptions)
 }
 
 fun NavGraphBuilder.homeScreen(onRecipeClick: (String) -> Unit, onToggleFavorite:(AbstractRecipe)->Unit, onOpenSection: (SectionType) -> Unit, sectionDestination: NavGraphBuilder.() -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     navigation<BaseRoute>(startDestination = HomeNavigationRoute) {
-        composable<HomeNavigationRoute>() {
+        composable<HomeNavigationRoute> {
             HomeRoute(onRecipeClick = { onRecipeClick(it.idMeal) },onToggleFavorite= onToggleFavorite, onOpenSection = { onOpenSection(it) })
         }
         sectionDestination()

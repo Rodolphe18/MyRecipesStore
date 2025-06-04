@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.protobuf)
     alias(libs.plugins.kotlin.serialization)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -93,8 +94,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.json.okio)
     implementation(libs.androidx.navigation.compose)
 
-    ksp(libs.hilt.compiler)
     implementation(libs.coil.compose)
+
+    implementation(libs.play.services.auth)
+    implementation(libs.facebook.android.sdk)
 }
 
 protobuf {
