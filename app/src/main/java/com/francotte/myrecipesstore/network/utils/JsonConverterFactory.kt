@@ -1,9 +1,5 @@
-package com.francotte.myrecipesstore.api
+package com.francotte.myrecipesstore.network.utils
 
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy

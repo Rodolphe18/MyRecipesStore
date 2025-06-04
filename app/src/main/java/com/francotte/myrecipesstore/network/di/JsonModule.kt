@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.api
+package com.francotte.myrecipesstore.network.di
 
 import com.francotte.myrecipesstore.model.AbstractCategory
 import com.francotte.myrecipesstore.model.AbstractRecipe
