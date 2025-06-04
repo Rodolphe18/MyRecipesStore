@@ -1,6 +1,6 @@
 package com.francotte.myrecipesstore.repository
 
-import com.francotte.myrecipesstore.api.RecipeApi
+import com.francotte.myrecipesstore.network.api.RecipeApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

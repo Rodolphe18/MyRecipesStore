@@ -1,8 +1,7 @@
 package com.francotte.myrecipesstore.repository
 
-import com.francotte.myrecipesstore.api.RecipeApi
+import com.francotte.myrecipesstore.network.api.RecipeApi
 import com.francotte.myrecipesstore.model.Categories
-import com.francotte.myrecipesstore.model.RecipeResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
