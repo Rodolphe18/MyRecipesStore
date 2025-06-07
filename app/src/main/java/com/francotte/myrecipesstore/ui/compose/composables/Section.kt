@@ -12,30 +12,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 
 @Composable
 fun HorizontalRecipesList(
     title: String,
-    recipes: List<AbstractRecipe>?,
+    recipes: List<LikeableRecipe>,
     onOpenRecipe: (AbstractRecipe) -> Unit,
     onOpenSection: (String) -> Unit,
-    onToggleFavorite: (AbstractRecipe) -> Unit
+    onToggleFavorite: (LikeableRecipe,Boolean) -> Unit
 ) {
     val listState = rememberLazyListState()
     Column(modifier = Modifier.padding(top = 10.dp)) {
-        if (recipes?.size != 0) {
-            SectionTitle(title, recipes?.size, onOpenSection)
+        if (recipes.isNotEmpty()) {
+            SectionTitle(title, recipes.size, onOpenSection)
             LazyRow(
                 state = listState,
-                contentPadding = PaddingValues(horizontal = 20.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(
-                    items = requireNotNull(recipes?.take(10)),
-                    key = { it.idMeal }) { recipe ->
+                    items = recipes,
+                    key = { it.recipe.idMeal + it.recipe.strMeal }) { recipe ->
                     RecipeItem(
-                        recipe = recipe,
+                        likeableRecipe = recipe,
                         onOpenRecipe = onOpenRecipe,
                         onToggleFavorite = onToggleFavorite,
                     )

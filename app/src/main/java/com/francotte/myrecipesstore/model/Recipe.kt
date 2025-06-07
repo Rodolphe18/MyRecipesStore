@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.model
 
+import com.francotte.myrecipesstore.user.UserData
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -7,7 +8,8 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
 
-object RecipePolymorphicSerializer : JsonContentPolymorphicSerializer<AbstractRecipe>(AbstractRecipe::class) {
+object RecipePolymorphicSerializer :
+    JsonContentPolymorphicSerializer<AbstractRecipe>(AbstractRecipe::class) {
 
     private val fullRecipeFields = setOf("strCategory", "strInstructions")
 
@@ -23,13 +25,17 @@ object RecipePolymorphicSerializer : JsonContentPolymorphicSerializer<AbstractRe
 
 @Serializable(with = RecipePolymorphicSerializer::class)
 sealed class AbstractRecipe {
-   abstract val strMeal: String
-   abstract val strMealThumb: String
-   abstract val idMeal: String
+    abstract val strMeal: String
+    abstract val strMealThumb: String
+    abstract val idMeal: String
 }
 
 @Serializable
-data class LightRecipe(override val strMeal: String, override val strMealThumb: String, override val idMeal: String):
+data class LightRecipe(
+    override val strMeal: String,
+    override val strMealThumb: String,
+    override val idMeal: String,
+) :
     AbstractRecipe()
 
 @Serializable
@@ -87,5 +93,25 @@ data class Recipe(
     val strImageSource: String?,
     val strCreativeCommonsConfirmed: String?,
     val dateModified: String?,
-): AbstractRecipe()
+) : AbstractRecipe()
 
+@Serializable
+data class RecipeResult(val meals: List<AbstractRecipe>)
+
+data class LikeableRecipe(
+    val recipe: AbstractRecipe,
+    val isFavorite: Boolean
+) {
+    constructor(recipe: AbstractRecipe, userData: UserData) : this(
+        recipe = recipe,
+        isFavorite = recipe.idMeal in userData.favoriteRecipesIds
+    )
+}
+
+fun List<AbstractRecipe>.mapToLikeableRecipes(userData: UserData): List<LikeableRecipe> =
+    mapNotNull {
+        when (it) {
+            is Recipe -> LikeableRecipe(it, userData)
+            is LightRecipe -> LikeableRecipe(it, userData)
+        }
+    }

@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navigation
 import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.section.SectionType
 import kotlinx.serialization.Serializable
 
@@ -24,10 +25,10 @@ fun NavController.navigateToHomeScreen(navOptions: NavOptions? = null) {
     this.navigate(HomeNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.homeScreen(onRecipeClick: (String) -> Unit, onToggleFavorite:(AbstractRecipe)->Unit, onOpenSection: (SectionType) -> Unit, sectionDestination: NavGraphBuilder.() -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.homeScreen(onRecipeClick: (String) -> Unit, onToggleFavorite: (LikeableRecipe,Boolean) -> Unit, onOpenSection: (SectionType) -> Unit, sectionDestination: NavGraphBuilder.() -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     navigation<BaseRoute>(startDestination = HomeNavigationRoute) {
         composable<HomeNavigationRoute> {
-            HomeRoute(onRecipeClick = { onRecipeClick(it.idMeal) },onToggleFavorite= onToggleFavorite, onOpenSection = { onOpenSection(it) })
+            HomeRoute(onRecipeClick = { onRecipeClick(it.idMeal) }, onToggleFavorite= onToggleFavorite, onOpenSection = { onOpenSection(it) })
         }
         sectionDestination()
         recipeDetailDestination()
@@ -35,7 +36,7 @@ fun NavGraphBuilder.homeScreen(onRecipeClick: (String) -> Unit, onToggleFavorite
 }
 
 @Composable
-fun HomeRoute(viewModel: HomeViewModel= hiltViewModel(), onRecipeClick: (AbstractRecipe) -> Unit,onToggleFavorite:(AbstractRecipe)->Unit, onOpenSection: (SectionType) -> Unit) {
+fun HomeRoute(viewModel: HomeViewModel= hiltViewModel(), onRecipeClick: (AbstractRecipe) -> Unit,onToggleFavorite:(LikeableRecipe,Boolean)->Unit, onOpenSection: (SectionType) -> Unit) {
     val homeUiState by viewModel.homeUiState.collectAsStateWithLifecycle()
     HomeScreen(homeUiState = homeUiState, onOpenRecipe = onRecipeClick, onOpenSection = onOpenSection, onReload =  { viewModel.reload() }, onToggleFavorite = onToggleFavorite)
 }

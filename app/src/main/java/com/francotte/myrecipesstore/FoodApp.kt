@@ -19,9 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
-import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 import com.francotte.myrecipesstore.settings.SettingsDialog
-import com.francotte.myrecipesstore.ui.navigation.AppState
 import com.francotte.myrecipesstore.ui.navigation.BottomBar
 import com.francotte.myrecipesstore.ui.navigation.NavHost
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
@@ -33,7 +32,7 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 @Composable
 fun FoodApp(
     onSettingsClick: () -> Unit,
-    onToggleFavorite:(AbstractRecipe)->Unit,
+    onToggleFavorite:(LikeableRecipe,Boolean)->Unit,
     onSettingsDismissed: () -> Unit,
     showSettingsDialog: Boolean,
     appState: AppState
@@ -79,7 +78,6 @@ fun FoodApp(
                     )
                 )
         ) {
-
             NavHost(
                 onToggleFavorite = onToggleFavorite,
                 navController = appState.navController,

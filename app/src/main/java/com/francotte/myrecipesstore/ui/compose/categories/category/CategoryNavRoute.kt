@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,7 +21,7 @@ fun NavController.navigateToCategoryScreen(category: String, navOptions: NavOpti
     }
 }
 
-fun NavGraphBuilder.categoryScreen(onOpenRecipe: (String) -> Unit, onToggleFavorite:(AbstractRecipe) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoryScreen(onOpenRecipe: (String) -> Unit, onToggleFavorite:(LikeableRecipe,Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     composable<CategoryNavigationRoute> {
         CategoryRoute(onOpenRecipe =  { onOpenRecipe(it.idMeal) }, onToggleFavorite = onToggleFavorite)
     }
@@ -28,7 +29,7 @@ fun NavGraphBuilder.categoryScreen(onOpenRecipe: (String) -> Unit, onToggleFavor
 }
 
 @Composable
-fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (AbstractRecipe) -> Unit, onToggleFavorite:(AbstractRecipe)->Unit) {
+fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (AbstractRecipe) -> Unit, onToggleFavorite:(LikeableRecipe,Boolean)->Unit) {
     val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
     val title = viewModel.category
 

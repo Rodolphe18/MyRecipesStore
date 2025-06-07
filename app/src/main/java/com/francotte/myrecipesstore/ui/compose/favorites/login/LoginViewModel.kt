@@ -1,7 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.favorites.login
 
 import android.util.Log
-import android.util.Patterns
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,7 +19,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -129,14 +127,18 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager, h
     }
 
     fun loginWithMailAndPassword(email: String?, password: String?) {
+        Log.d("debug_login0", "0")
         if (!loading.value) {
           val mail = email?.takeUnless(CharSequence::isBlank) ?: return
            val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
             viewModelScope.launch {
                 loading.value = true
                 try {
+                    Log.d("debug_login1", "1")
                     authManager.loginByEmailPassword(mail, pwd)
+                    Log.d("debug_login2", "2")
                     onSuccess(Provider.EMAIL)
+                    Log.d("debug_login3", "3")
                 } catch (e: Exception) {
                     Log.d("debug_email", "error")
                 }

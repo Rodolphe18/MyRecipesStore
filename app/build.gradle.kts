@@ -68,17 +68,11 @@ dependencies {
     implementation (libs.androidx.activity.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
-    implementation(libs.hilt.plugin)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.play.services.auth)
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.core)
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.core)
-    implementation(libs.hilt.plugin)
     implementation(libs.androidx.dataStore)
     implementation(libs.protobuf.kotlin.lite)
 

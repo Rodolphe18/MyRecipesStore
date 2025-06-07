@@ -1,5 +1,7 @@
 package com.francotte.myrecipesstore.model
 
+import kotlinx.serialization.Serializable
 
-//@Serializable
+
+@Serializable
 data class AuthRequest(val username:String, val password:String)

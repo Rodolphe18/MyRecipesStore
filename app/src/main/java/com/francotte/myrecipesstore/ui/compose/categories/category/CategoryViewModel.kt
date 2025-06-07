@@ -4,13 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.francotte.myrecipesstore.model.RecipeResult
+import com.francotte.myrecipesstore.model.LikeableRecipe
 import com.francotte.myrecipesstore.repository.RecipesRepository
-import com.francotte.myrecipesstore.ui.compose.categories.CategoriesUiState
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -25,7 +22,7 @@ class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
         .getRecipesListByCategory(category)
         .map { result ->
             if (result.isSuccess) {
-                CategoryUiState.Success(result.getOrDefault(RecipeResult.Empty))
+                CategoryUiState.Success(result.getOrDefault(emptyList()))
             } else {
                 CategoryUiState.Error
             }
@@ -43,5 +40,5 @@ class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
 sealed interface CategoryUiState {
     data object Loading : CategoryUiState
     data object Error : CategoryUiState
-    data class Success(val recipes: RecipeResult) : CategoryUiState
+    data class Success(val recipes: List<LikeableRecipe>) : CategoryUiState
 }

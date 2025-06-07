@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.categories.categoriesScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.categoryScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.navigateToCategoryScreen
@@ -23,7 +23,7 @@ fun NavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     startDestination: Any = BaseRoute,
-    onToggleFavorite:(AbstractRecipe) ->Unit
+    onToggleFavorite:(LikeableRecipe,Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,

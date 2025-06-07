@@ -21,9 +21,6 @@ interface RecipeApi {
     @GET("search.php")
     suspend fun getMealByName(@Query("s") name: String): RecipeResult
 
-    // List all meals by first letter
-    @GET("search.php")
-    suspend fun getMealByFirstLetter(@Query("f") firstLetter: String): RecipeResult
 
     // Lookup full meal details by id
     @GET("lookup.php")
@@ -37,17 +34,9 @@ interface RecipeApi {
     @GET("categories.php")
     suspend fun getAllMealCategories(): Categories
 
-    // List all Categories
-    @GET("list.php")
-    suspend fun getAllCategories(@Query("c") list: String = "list"): Categories
-
     // List all Area
     @GET("list.php")
     suspend fun getAllAreas(@Query("a") list: String = "list"): RecipeResult
-
-    // List all Ingredients
-    @GET("list.php")
-    suspend fun getAllIngredients(@Query("i") list: String = "list"): RecipeResult
 
     // Filter by multi-ingredient
     @GET("filter.php")

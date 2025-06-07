@@ -13,8 +13,7 @@ import com.francotte.myrecipesstore.model.CurrentUser
 import com.francotte.myrecipesstore.model.Provider
 import com.francotte.myrecipesstore.network.api.AuthApi
 import com.francotte.myrecipesstore.protobuf.User
-import com.francotte.myrecipesstore.protobuf.user
-import com.francotte.myrecipesstore.protobuf.userInfo
+import com.francotte.myrecipesstore.user.UserDataSource
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -51,10 +50,8 @@ import kotlin.coroutines.suspendCoroutine
 object AuthModule {
     @Singleton
     @Provides
-    fun provideAuthManager(@ApplicationContext context: Context,
-                           authStorage: AuthStorage,
-                           api: AuthApi): AuthManager =
-        AuthManagerImpl(context, authStorage, api)
+    fun provideAuthManager(@ApplicationContext context: Context, api: AuthApi,preferences: UserDataSource): AuthManager =
+        AuthManagerImpl(context, api,preferences)
 }
 
 interface AuthManager {
@@ -75,8 +72,8 @@ interface AuthManager {
 @Suppress("TooManyFunctions")
 class AuthManagerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val authStorage: AuthStorage,
     private val api: AuthApi,
+    private val preferences: UserDataSource
 ) :AuthManager {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -94,27 +91,28 @@ class AuthManagerImpl @Inject constructor(
     override val googleSignInIntent: Intent
         get() = googleSignInClient.signInIntent
 
-    private val userInfo = authStorage.userInfo
+    private val userDataFlow = preferences.userData
 
 
-    val userCredentials = userInfo
-        .map { info ->
+    val userCredentials = userDataFlow
+        .map { userData ->
             UserCredentials(
-                info.user?.id ?: return@map null,
-                info.token.takeUnless(CharSequence::isBlank) ?: return@map null
+                userData.userInfo.user.id ?: return@map null,
+                userData.userInfo.token.takeUnless(CharSequence::isBlank) ?: return@map null
             )
         }
 
-   override val credentials = userCredentials.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+    override val credentials = userCredentials.stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    private val authenticatedFlow = userInfo
-        .map { info -> info.connected && info.token.isNotBlank() }
+    private val authenticatedFlow = userDataFlow
+        .map { userData -> userData.userInfo.connected && userData.userInfo.token.isNotBlank() }
 
-   override val isAuthenticated = authenticatedFlow.stateIn(coroutineScope, SharingStarted.Eagerly, false)
+    override val isAuthenticated =
+        authenticatedFlow.stateIn(coroutineScope, SharingStarted.Eagerly, false)
 
-    val user = userInfo
-        .map { info ->
-            info.user?.let { user ->
+    val user = userDataFlow
+        .map { userData ->
+            userData.userInfo.user?.let { user ->
                 CurrentUser(user)
             }
         }
@@ -125,15 +123,20 @@ class AuthManagerImpl @Inject constructor(
         return authenticatedFlow.firstOrNull() == true
     }
 
-   override suspend fun loginByEmailPassword(email: String, password: String) {
+    override suspend fun loginByEmailPassword(email: String, password: String) {
         try {
-            //  onAuthResponse(Provider.EMAIL, api.authenticate(email.toRequestBody(), password.toRequestBody()))
+            Log.d("debug_login5", "5")
+            onAuthResponse(
+                Provider.EMAIL,
+                api.authenticate(AuthRequest(username = email, password = password))
+            )
+            Log.d("debug_login6", "6")
         } catch (e: Exception) {
             Log.d("debug_on_auth_response", "on_auth_response")
         }
     }
 
-   override suspend fun recoverFacebookToken(): AccessToken? {
+    override suspend fun recoverFacebookToken(): AccessToken? {
         // Check if user is still logged-in
         val recoveredAccessToken =
             AccessToken.getCurrentAccessToken()?.takeUnless(AccessToken::isExpired) ?: try {
@@ -158,34 +161,41 @@ class AuthManagerImpl @Inject constructor(
                 null
             }
         // Only use token if it has the correct permissions
-        return recoveredAccessToken?.takeIf { it.permissions.containsAll(listOf("public_profile", "email")) }
+        return recoveredAccessToken?.takeIf {
+            it.permissions.containsAll(
+                listOf(
+                    "public_profile",
+                    "email"
+                )
+            )
+        }
     }
 
-   override suspend fun loginByFacebook(token: AccessToken) {
+    override suspend fun loginByFacebook(token: AccessToken) {
         //   onAuthResponse(Provider.FACEBOOK, api.authenticateWithFacebook(token.token.toRequestBody()))
     }
 
-   override suspend fun loginByGoogle(account: GoogleSignInAccount) {
+    override suspend fun loginByGoogle(account: GoogleSignInAccount) {
         //   onAuthResponse(Provider.GOOGLE, api.authenticateWithGoogle(requireNotNull(account.serverAuthCode).toRequestBody()))
     }
 
     suspend fun trySilentReconnect(): Boolean {
         // Find user connection method
-        val method = userInfo.firstOrNull()?.user?.method
+        val method = userDataFlow.firstOrNull()?.userInfo?.user?.method
         // We only can try for FB connect
         if (method != User.ConnectionMethod.FACEBOOK) return false
         val fbToken = recoverFacebookToken() ?: return false
         return runCatching { loginByFacebook(fbToken) }.isSuccess
     }
 
-   override suspend fun createFacebook(token: String) {
+    override suspend fun createFacebook(token: String) {
 //        onAuthResponse(
 //            Provider.FACEBOOK,
 //             api.createFacebook(token.toRequestBody())
 //        )
     }
 
-   override suspend fun createGoogle(account: GoogleSignInAccount) {
+    override suspend fun createGoogle(account: GoogleSignInAccount) {
         createGoogle(requireNotNull(account.serverAuthCode))
     }
 
@@ -196,19 +206,14 @@ class AuthManagerImpl @Inject constructor(
 //        )
     }
 
-   override suspend fun createUser(authRequest: AuthRequest) {
+    override suspend fun createUser(authRequest: AuthRequest) {
         val response = api.createUser(authRequest)
-        Log.d("debug_token", api.createUser(authRequest).user.username!!)
         if (response.user.username != null) {
-            authStorage.updateUserInfo(
-                userInfo {
-                    connected = true
-                    user = user {
-                        userName = response.user.username
-                        id = response.user.userId
-                    }
-                    token = response.token
-                }
+            preferences.updateUserInfo(
+                isConnected = true,
+                name = response.user.username,
+                userId = response.user.userId,
+                userToken = response.token
             )
         }
     }
@@ -218,36 +223,29 @@ class AuthManagerImpl @Inject constructor(
         provider: Provider,
         apiResponse: Response<AuthResponse>
     ) {
-        if (apiResponse.isSuccessful) {
-            Log.d("debug_api_response", apiResponse.body().toString())
-//            when (val response = apiResponse.body()) {
-//                is AuthResponse.Success -> authStorage.updateUserInfo(
-//                    userInfo {
-//                        connected = true
-//                        user = response
-//                            .user
-//                            .copy(provider = provider)
-//                            .toProto()
-//                        token = response.token
-//                    }
-//                )
-//
-//                is AuthResponse.Error -> throw AuthException(response.error)
-//                else -> throw AuthException()
-            //  }
+        if (apiResponse.isSuccessful && apiResponse.code() == 202) {
+
+            apiResponse.body()?.let { response ->
+                preferences.updateUserInfo(
+                    isConnected = true,
+                    name = response.user.username!!,
+                    userId = response.user.userId,
+                    userToken = response.token
+                )
+            }
         }
     }
 
     suspend fun resetPassword(email: String) {
         try {
-           // api.resetPassword(email.toRequestBody())
+            // api.resetPassword(email.toRequestBody())
         } catch (e: Exception) {
             Log.d("Unable to reset password", "Unable to reset password")
         }
     }
 
 
-   override suspend fun deleteUser() {
+    override suspend fun deleteUser() {
         val credentials = credentials.value ?: return
         api.deleteUser(credentials.id)
         logout()
@@ -261,7 +259,7 @@ class AuthManagerImpl @Inject constructor(
     suspend fun logout() {
         try {
             withContext(NonCancellable) {
-                authStorage.updateUserInfo(userInfo { connected = false })
+                preferences.updateUserInfo(false)
                 LoginManager.getInstance().logOut()
                 signOutGoogleUser()
 
@@ -270,34 +268,7 @@ class AuthManagerImpl @Inject constructor(
             Log.d("debug_error_while_signing_out", "Error while signing out")
         }
     }
-
-//    suspend inline fun <R> tryAuthenticatedAction(
-//        canReconnect: Boolean = true,
-//        action: (credentials: UserCredentials) -> Result<R>
-//    ): Result<R> {
-//        return if (checkAuthenticated()) {
-//            action(
-//                userCredentials.firstOrNull() ?: return Result.needsLogin(false)
-//            ).recoverCatching { e ->
-//                if (canReconnect && e.isInvalidAuthException) {
-//                    if (trySilentReconnect()) {
-//                        action(
-//                            userCredentials.firstOrNull() ?: throw NeedsLoginException(true)
-//                        ).getOrThrow()
-//                    } else {
-//                        throw NeedsLoginException(true)
-//                    }
-//                } else {
-//                    throw e
-//                }
-//            }
-//        } else {
-//            Result.needsLogin(false)
-//        }
-//    }
-
 }
-
 
 @Parcelize
 data class UserCredentials(val id: Long, val token: String) : Parcelable

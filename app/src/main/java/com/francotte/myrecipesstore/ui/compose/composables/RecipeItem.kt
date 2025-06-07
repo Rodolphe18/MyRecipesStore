@@ -1,8 +1,11 @@
 package com.francotte.myrecipesstore.ui.compose.composables
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,75 +13,105 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.ui.theme.FoodColors
 
 @Composable
 fun RecipeItem(
-    recipe: AbstractRecipe,
-    onToggleFavorite: (AbstractRecipe) -> Unit,
+    likeableRecipe: LikeableRecipe,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenRecipe: (AbstractRecipe) -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.width(240.dp)) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .aspectRatio(5/3f)
+                .height(180.dp)
+                .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onOpenRecipe(recipe) }
+                .clickable { onOpenRecipe(likeableRecipe.recipe) }
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = recipe.strMealThumb),
-                contentDescription = recipe.strMeal,
+                painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
+                contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
             )
-
-            IconButton(
-                onClick = { onToggleFavorite(recipe) },
+            FavButton(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(6.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-                        shape = CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = "Ajouter aux favoris",
-                    tint = MaterialTheme.colorScheme.surface
-                )
-            }
+                    .padding(8.dp)
+                    .align(Alignment.BottomEnd),
+                onToggleFavorite = { checked -> onToggleFavorite(likeableRecipe, checked) },
+                isFavorite = likeableRecipe.isFavorite
+            )
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = recipe.strMeal,
+            text = likeableRecipe.recipe.strMeal,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             maxLines = 2,
-            modifier = Modifier.padding(horizontal = 4.dp)
+            modifier = Modifier.width(180.dp)
+        )
+    }
+}
+
+
+@Composable
+fun FavButton(
+    modifier: Modifier = Modifier,
+    isFavorite: Boolean,
+    onToggleFavorite: (Boolean) -> Unit
+) {
+    val transition = updateTransition(label = "favorite", targetState = isFavorite)
+    val backgroundColor by transition.animateColor(label = "backgroundColor") { isFav -> if (isFav) FoodColors.Orange else FoodColors.NeutralWhite }
+    val iconColor by transition.animateColor(label = "iconColor") { isFav -> if (isFav) FoodColors.NeutralWhite else FoodColors.NeutralSoftGrey }
+    Box(
+        modifier = modifier
+            .size(45.dp)
+            .background(backgroundColor, CircleShape)
+            .clip(CircleShape)
+            .toggleable(
+                value = isFavorite,
+                onValueChange = { onToggleFavorite(it) },
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Default.Favorite,
+            contentDescription = null,
+            modifier = Modifier.align(Alignment.Center),
+            tint = iconColor
         )
     }
 }

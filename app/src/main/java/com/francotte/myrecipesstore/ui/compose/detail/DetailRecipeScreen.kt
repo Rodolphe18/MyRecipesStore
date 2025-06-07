@@ -24,17 +24,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.model.Recipe
-import com.francotte.myrecipesstore.model.RecipeResult
+import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
+import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 
 
 @Composable
-fun DetailRecipeScreen(recipeResult: RecipeResult?) {
-    when (recipeResult) {
-        is RecipeResult.Single -> {
-            (recipeResult.meal as? Recipe)?.let { recipe ->
+fun DetailRecipeScreen(uiState: DetailRecipeUiState) {
+    when (uiState) {
+        DetailRecipeUiState.Loading -> CustomCircularProgressIndicator()
+        DetailRecipeUiState.Error -> ErrorScreen {  }
+        is DetailRecipeUiState.Success -> {
+            uiState.likeableRecipe?.recipe?.let { recipe ->
                 val ingredients = (1..20).mapNotNull { i ->
-                    val ingredient = recipe.javaClass.getDeclaredField("strIngredient$i").apply { isAccessible = true }.get(recipe) as? String
-                    val measure = recipe.javaClass.getDeclaredField("strMeasure$i").apply { isAccessible = true }.get(recipe) as? String
+                    val ingredient = (recipe as? Recipe)?.javaClass?.getDeclaredField("strIngredient$i")
+                        ?.apply { isAccessible = true }
+                        ?.get(recipe) as? String
+                    val measure = (recipe as Recipe).javaClass.getDeclaredField("strMeasure$i").apply { isAccessible = true }.get(recipe) as? String
                     if (!ingredient.isNullOrBlank()) {
                         ingredient to (measure ?: "")
                     } else null
@@ -95,7 +100,7 @@ fun DetailRecipeScreen(recipeResult: RecipeResult?) {
                     )
 
                     Text(
-                        text = recipe.strInstructions.orEmpty(),
+                        text = (recipe as Recipe).strInstructions.orEmpty(),
                         style = MaterialTheme.typography.bodyLarge,
                         lineHeight = 22.sp
                     )
@@ -103,7 +108,6 @@ fun DetailRecipeScreen(recipeResult: RecipeResult?) {
             }
 
         }
-        else -> {}
     }
 
 

@@ -11,11 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 
 @Composable
 fun RecipesGrid(
-    meals: List<AbstractRecipe>,
-    onFavoriteClick: (AbstractRecipe) -> Unit,
+    meals: List<LikeableRecipe>,
+    onFavoriteClick: (LikeableRecipe, Boolean) -> Unit,
     onRecipeClick: (AbstractRecipe) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -29,7 +30,7 @@ fun RecipesGrid(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(meals) { meal ->
-            RecipeItem(recipe = meal, onOpenRecipe= onRecipeClick, onToggleFavorite = onFavoriteClick)
+            RecipeItem(likeableRecipe = meal, onOpenRecipe= onRecipeClick, onToggleFavorite = onFavoriteClick)
         }
     }
 }

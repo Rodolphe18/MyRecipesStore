@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.model
 
 import androidx.compose.runtime.Immutable
 import com.francotte.myrecipesstore.protobuf.User
+import com.francotte.myrecipesstore.protobuf.user
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -19,5 +20,11 @@ data class CurrentUser(
         username = user.userName,
         provider = user.method.toProvider()
     )
+    fun toProto() = user {
+        id = userId;
+        userName = username!!;
+        method = provider.toConnectionMethod()
+    }
+
 
 }

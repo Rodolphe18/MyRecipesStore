@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,8 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.francotte.myrecipesstore.auth.AuthManager
 import com.francotte.myrecipesstore.favorites.FavoriteManager
-import com.francotte.myrecipesstore.ui.navigation.rememberAppState
-import com.francotte.myrecipesstore.ui.theme.MyRecipesStoreTheme
+import com.francotte.myrecipesstore.ui.theme.FoodTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,12 +32,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val isAuthenticated by authManager.isAuthenticated.collectAsStateWithLifecycle()
+            Log.d("debug_connected", isAuthenticated.toString())
             val state = rememberAppState(favoriteManager = favoriteManager, isAuthenticated = isAuthenticated)
             val scope = rememberCoroutineScope()
             var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
-
-            MyRecipesStoreTheme {
-                FoodApp(showSettingsDialog = showSettingsDialog, onSettingsClick = { showSettingsDialog = true }, onSettingsDismissed = { showSettingsDialog =false },  onToggleFavorite = { scope.launch { favoriteManager.toggleRecipeFavorite(it) }  },  appState = state)
+             FoodTheme {
+                FoodApp(showSettingsDialog = showSettingsDialog, onSettingsClick = { showSettingsDialog = true }, onSettingsDismissed = { showSettingsDialog =false },  onToggleFavorite = { recipe, isChecked -> scope.launch {  favoriteManager.toggleRecipeFavorite(recipe) }  }, appState = state)
             }
         }
     }

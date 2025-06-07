@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.model.AbstractRecipe
+import com.francotte.myrecipesstore.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,7 +27,7 @@ fun NavController.navigateToSection(
 fun NavGraphBuilder.sectionScreen(
     onBackClick: () -> Unit,
     onRecipeClick: (String) -> Unit,
-    onToggleFavorite: (AbstractRecipe) -> Unit,
+    onToggleFavorite: (LikeableRecipe,Boolean) -> Unit,
     recipeDetailDestination: NavGraphBuilder.() -> Unit
 ) {
     composable<SectionRoute> {
@@ -40,11 +41,11 @@ fun NavGraphBuilder.sectionScreen(
 }
 
 @Composable
-fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(AbstractRecipe)-> Unit, onOpenRecipe: (AbstractRecipe)->Unit, onBackClick:()->Unit) {
+fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(LikeableRecipe,Boolean)-> Unit, onOpenRecipe: (AbstractRecipe)->Unit, onBackClick:()->Unit) {
 
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
     val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()
-    SectionScreen(uiState, sectionTitle.titleRes, {}, {})
+    SectionScreen(uiState, sectionTitle.titleRes,{}, onToggleFavorite, onOpenRecipe, onBackClick)
 
 }
 

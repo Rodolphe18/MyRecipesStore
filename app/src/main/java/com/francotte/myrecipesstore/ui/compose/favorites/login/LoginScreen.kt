@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -38,12 +39,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.myrecipesstore.R
+import com.francotte.myrecipesstore.model.AuthRequest
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var canConnect by remember { mutableStateOf(false) }
+    var loginEmail by remember { mutableStateOf("") }
+    var loginPassword by remember { mutableStateOf("") }
+
+    var registerEmail by remember { mutableStateOf("") }
+    var registerPassword by remember { mutableStateOf("") }
+
+    var canConnect by remember { mutableStateOf(true) }
     Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -51,7 +57,6 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -
                 .padding(top = 10.dp, bottom = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = stringResource(id = R.string.club_login_page_join_description),
                 textAlign = TextAlign.Center,
@@ -86,19 +91,19 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                Divider(modifier = Modifier.weight(1f))
+                HorizontalDivider(modifier = Modifier.weight(1f))
                 Text(
                     text = "ou",
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-                Divider(modifier = Modifier.weight(1f))
+                HorizontalDivider(modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = loginEmail,
+                onValueChange = { loginEmail = it },
                 label = { Text(stringResource(id = R.string.sign_up_email)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,8 +113,8 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = loginPassword,
+                onValueChange = { loginPassword = it },
                 label = { Text(text = stringResource(id = R.string.sign_up_login)) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -128,7 +133,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { viewModel.loginWithMailAndPassword(email, password) },
+                onClick = { viewModel.loginWithMailAndPassword(loginEmail, loginPassword) },
                 enabled = canConnect,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -147,6 +152,50 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -
                     .fillMaxWidth()
                     .wrapContentWidth(Alignment.CenterHorizontally)
             )
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            HorizontalDivider(modifier = Modifier.fillMaxWidth())
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = registerEmail,
+            onValueChange = { registerEmail = it },
+            label = { Text(stringResource(id = R.string.sign_up_email)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = registerPassword,
+            onValueChange = { registerPassword = it },
+            label = { Text(text = stringResource(id = R.string.sign_up_login)) },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { viewModel.createUser(AuthRequest(username = registerEmail, password = registerPassword)) },
+            enabled = canConnect,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(46.dp)
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(text = "Je crée un compte")
+        }
+
         }
 }
 

@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.ui.navigation
+package com.francotte.myrecipesstore
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -12,7 +12,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.francotte.myrecipesstore.favorites.FavoriteManager
@@ -20,6 +19,7 @@ import com.francotte.myrecipesstore.ui.compose.categories.navigateToCategoriesSc
 import com.francotte.myrecipesstore.ui.compose.favorites.login.navigateToLoginScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.navigateToFavoriteScreen
 import com.francotte.myrecipesstore.ui.compose.home.navigateToHomeScreen
+import com.francotte.myrecipesstore.ui.navigation.TopLevelDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -45,6 +45,7 @@ class AppState(
 ) {
 
     private val previousDestination = mutableStateOf<NavDestination?>(null)
+
     val currentDestination: NavDestination?
         @Composable get() {
             val currentEntry = navController.currentBackStackEntryFlow.collectAsState(initial = null)
@@ -54,9 +55,6 @@ class AppState(
                 }
             } ?: previousDestination.value
         }
-
-
-    var shouldShowSettingsDialog by mutableStateOf(false)
 
     val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.entries
 
@@ -91,15 +89,11 @@ class AppState(
             TopLevelDestination.HOME -> navController.navigateToHomeScreen(topLevelNavOptions)
             TopLevelDestination.CATEGORIES -> navController.navigateToCategoriesScreen(topLevelNavOptions)
             TopLevelDestination.FAVORITES -> {
-                if (isAuthenticated) navController.navigateToFavoriteScreen()
-                else navController.navigateToLoginScreen(topLevelNavOptions)
+               if (isAuthenticated) navController.navigateToFavoriteScreen(topLevelNavOptions) else
+                    navController.navigateToLoginScreen(topLevelNavOptions)
             }
         }
     }
 
-
-    fun setShowSettingsDialog(shouldShow: Boolean) {
-        shouldShowSettingsDialog = shouldShow
-    }
 
 }
