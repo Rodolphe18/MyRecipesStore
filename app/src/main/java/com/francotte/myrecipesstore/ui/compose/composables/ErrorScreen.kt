@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.R
 
+
 @Composable
 fun ErrorScreen(modifier: Modifier = Modifier, onButtonClick: (() -> Unit)) {
     Column(modifier = modifier.fillMaxSize().padding(20.dp).offset(y=20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
