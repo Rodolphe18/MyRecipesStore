@@ -4,14 +4,17 @@ import com.francotte.myrecipesstore.API_KEY
 import com.francotte.myrecipesstore.network.api.AuthApi
 import com.francotte.myrecipesstore.network.api.FavoriteApi
 import com.francotte.myrecipesstore.network.utils.HttpLoggingInterceptor
-import com.francotte.myrecipesstore.network.utils.JsonConverterFactory
 import com.francotte.myrecipesstore.network.api.RecipeApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.create
 import javax.inject.Singleton
 
@@ -19,7 +22,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
 
-    private inline fun <reified A> providesApi(jsonConverterFactory: JsonConverterFactory): A {
+    private inline fun <reified A> providesFoodApi(okhttpCallFactory: dagger.Lazy<Call.Factory>, json: Json): A {
         return Retrofit.Builder()
             .baseUrl("https://www.themealdb.com/api/json/v2/$API_KEY/")
             .client(
@@ -30,22 +33,51 @@ object ApiModule {
                     )
                     .build()
             )
-            .addConverterFactory(jsonConverterFactory)
+            .callFactory { okhttpCallFactory.get().newCall(it) }
+            .addConverterFactory(
+                json.asConverterFactory("application/json".toMediaType()),
+            )
             .build()
             .create()
     }
 
-    @Singleton
+    private inline fun <reified A> providesUserApi(okhttpCallFactory: dagger.Lazy<Call.Factory>, json: Json): A {
+        return Retrofit.Builder()
+            .baseUrl("http://46.202.170.205:8080")
+            .callFactory { okhttpCallFactory.get().newCall(it) }
+            .addConverterFactory(
+                json.asConverterFactory("application/json".toMediaType()),
+            )
+            .build()
+            .create()
+    }
+
     @Provides
-    fun provideRecipeApi(jsonConverterFactory: JsonConverterFactory): RecipeApi = providesApi(jsonConverterFactory = jsonConverterFactory)
+    @Singleton
+    fun okHttpCallFactory(): Call.Factory =
+        OkHttpClient.Builder()
+            .addInterceptor(
+                okhttp3.logging.HttpLoggingInterceptor()
+                    .apply {
+                            setLevel(okhttp3.logging.HttpLoggingInterceptor.Level.BODY)
+                    },
+            )
+            .build()
 
     @Singleton
     @Provides
-    fun provideAuthApi(jsonConverterFactory: JsonConverterFactory): AuthApi = providesApi(jsonConverterFactory = jsonConverterFactory)
+    fun provideRecipeApi(okhttpCallFactory: dagger.Lazy<Call.Factory>,json: Json): RecipeApi =
+        providesFoodApi(okhttpCallFactory = okhttpCallFactory, json = json)
 
     @Singleton
     @Provides
-    fun provideFavoriteApi(jsonConverterFactory: JsonConverterFactory): FavoriteApi = providesApi(jsonConverterFactory = jsonConverterFactory)
+    fun provideAuthApi(okhttpCallFactory: dagger.Lazy<Call.Factory>,json: Json): AuthApi =
+        providesUserApi(okhttpCallFactory = okhttpCallFactory, json = json)
+
+    @Singleton
+    @Provides
+    fun provideFavoriteApi(okhttpCallFactory: dagger.Lazy<Call.Factory>,json: Json): FavoriteApi =
+        providesUserApi(okhttpCallFactory = okhttpCallFactory,json = json)
 
 
 }
