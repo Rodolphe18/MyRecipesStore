@@ -10,9 +10,9 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
-import com.francotte.myrecipesstore.auth.AuthManager
-import com.francotte.myrecipesstore.model.AuthRequest
-import com.francotte.myrecipesstore.model.Provider
+import com.francotte.myrecipesstore.manager.AuthManager
+import com.francotte.myrecipesstore.network.model.AuthRequest
+import com.francotte.myrecipesstore.network.model.Provider
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.lifecycle.HiltViewModel

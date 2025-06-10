@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.user
+package com.francotte.myrecipesstore.datastore
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer

@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.user
+package com.francotte.myrecipesstore.datastore
 
 import android.content.Context
 import android.util.Log
@@ -43,7 +43,7 @@ interface UserDataModule {
 
 class FoodPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>,
-):UserDataSource {
+): UserDataSource {
    override val userData = userPreferences.data
         .map {
             UserData(

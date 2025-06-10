@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.model
+package com.francotte.myrecipesstore.network.model
 
 import androidx.compose.runtime.Immutable
 import com.francotte.myrecipesstore.protobuf.User

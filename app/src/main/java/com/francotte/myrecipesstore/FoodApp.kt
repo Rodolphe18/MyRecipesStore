@@ -19,7 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.settings.SettingsDialog
 import com.francotte.myrecipesstore.ui.navigation.BottomBar
 import com.francotte.myrecipesstore.ui.navigation.NavHost
@@ -32,7 +32,7 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 @Composable
 fun FoodApp(
     onSettingsClick: () -> Unit,
-    onToggleFavorite:(LikeableRecipe,Boolean)->Unit,
+    onToggleFavorite:(LikeableRecipe, Boolean)->Unit,
     onSettingsDismissed: () -> Unit,
     showSettingsDialog: Boolean,
     appState: AppState

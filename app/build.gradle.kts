@@ -1,5 +1,6 @@
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,6 +12,11 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     id("kotlin-parcelize")
 }
+
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
+}
+
 
 android {
     namespace = "com.francotte.myrecipesstore"
@@ -24,6 +30,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -49,6 +56,7 @@ android {
 
 dependencies {
 
+    implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -92,6 +100,20 @@ dependencies {
 
     implementation(libs.play.services.auth)
     implementation(libs.facebook.android.sdk)
+
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains" && requested.name == "annotations") {
+                useVersion("23.0.0")
+                because("Avoid conflict with com.intellij:annotations:12.0")
+            }
+        }
+    }
+
 }
 
 protobuf {
@@ -122,3 +144,8 @@ androidComponents {
         }
     }
 }
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas/")
+}
+

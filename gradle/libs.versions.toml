@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.2"
+annotationsJava5Version = "15.0"
 coilCompose = "2.5.0"
 kotlin = "2.0.20"
 coreKtx = "1.16.0"
@@ -11,7 +12,7 @@ androidxLifecycle = "2.8.6"
 androidxNavigation = "2.8.4"
 activityCompose = "1.10.1"
 composeBom = "2025.05.01"
-hilt = "2.51"
+hilt = "2.52"
 ksp = "2.0.20-1.0.25"
 androidxHiltNavigationCompose = "1.2.0"
 protobufPlugin = "0.9.4"
@@ -23,8 +24,12 @@ kotlinxSerializationJson = "1.6.3"
 playServicesAuth = "20.4.0"
 coroutinesVersion = "1.6.4"
 facebookAndroidSdk = "15.2.0"
+room = "2.7.1"
 
 [libraries]
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

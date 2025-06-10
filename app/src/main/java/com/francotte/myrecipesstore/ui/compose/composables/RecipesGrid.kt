@@ -10,14 +10,13 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 
 @Composable
 fun RecipesGrid(
     meals: List<LikeableRecipe>,
     onFavoriteClick: (LikeableRecipe, Boolean) -> Unit,
-    onRecipeClick: (AbstractRecipe) -> Unit,
+    onRecipeClick: (LikeableRecipe) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(

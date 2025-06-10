@@ -1,11 +1,11 @@
 package com.francotte.myrecipesstore.network.di
 
-import com.francotte.myrecipesstore.model.AbstractCategory
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.Category
-import com.francotte.myrecipesstore.model.LightCategory
-import com.francotte.myrecipesstore.model.LightRecipe
-import com.francotte.myrecipesstore.model.Recipe
+import com.francotte.myrecipesstore.network.model.NetworkAbstractCategory
+import com.francotte.myrecipesstore.network.model.NetworkAbstractRecipe
+import com.francotte.myrecipesstore.network.model.NetworkCategory
+import com.francotte.myrecipesstore.network.model.NetworkLightCategory
+import com.francotte.myrecipesstore.network.model.NetworkLightRecipe
+import com.francotte.myrecipesstore.network.model.NetworkRecipe
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,13 +23,13 @@ object JsonModule {
     @Provides
     fun providesJson(): Json = Json {
         serializersModule = SerializersModule {
-            polymorphic(AbstractRecipe::class) {
-                subclass(Recipe::class, Recipe.serializer())
-                subclass(LightRecipe::class, LightRecipe.serializer())
+            polymorphic(NetworkAbstractRecipe::class) {
+                subclass(NetworkRecipe::class, NetworkRecipe.serializer())
+                subclass(NetworkLightRecipe::class, NetworkLightRecipe.serializer())
             }
-            polymorphic(AbstractCategory::class) {
-                subclass(Category::class, Category.serializer())
-                subclass(LightCategory::class, LightCategory.serializer())
+            polymorphic(NetworkAbstractCategory::class) {
+                subclass(NetworkCategory::class, NetworkCategory.serializer())
+                subclass(NetworkLightCategory::class, NetworkLightCategory.serializer())
             }
         }
         ignoreUnknownKeys = true

@@ -8,7 +8,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.francotte.myrecipesstore.model.Category
+import com.francotte.myrecipesstore.domain.model.AbstractCategory
+import com.francotte.myrecipesstore.network.model.NetworkCategory
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -28,7 +29,7 @@ fun NavGraphBuilder.categoriesScreen(onOpenCategory: (String) -> Unit, categoryD
 }
 
 @Composable
-fun CategoriesRoute(viewModel: CategoriesViewModel = hiltViewModel(), onOpenCategory: (Category) -> Unit) {
+fun CategoriesRoute(viewModel: CategoriesViewModel = hiltViewModel(), onOpenCategory: (AbstractCategory) -> Unit) {
     val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
     CategoriesScreen(categoryUiState = homeUiState, onOpenCategory = onOpenCategory, onReload =  { viewModel.reload() })
 }

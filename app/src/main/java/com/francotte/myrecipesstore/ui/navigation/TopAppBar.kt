@@ -25,7 +25,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TopAppBar(
     modifier: Modifier = Modifier,
-    @StringRes titleRes: Int,
+    @StringRes titleRes: Int?=null,
+    title:String? =null,
     actionIcon: ImageVector?=null,
     actionIconContentDescription: String?="",
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
@@ -36,7 +37,7 @@ fun TopAppBar(
 ) {
     CenterAlignedTopAppBar(
         scrollBehavior = scrollBehavior,
-        title = { Text(text = stringResource(id = titleRes), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) },
+        title = { if(title !=null) Text(text = title) else Text(text = stringResource(id = titleRes ?: 0), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) },
         actions = {
             if (actionIcon != null) {
             IconButton(onClick = onActionClick) {

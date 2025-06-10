@@ -4,29 +4,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.HorizontalRecipesList
-import com.francotte.myrecipesstore.ui.compose.section.SectionType
-import com.francotte.myrecipesstore.ui.compose.section.SectionUiState
-import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
 fun HomeScreen(
     homeUiState: HomeUiState,
     onReload: () -> Unit,
-    onOpenRecipe: (AbstractRecipe) -> Unit,
+    onOpenRecipe: (LikeableRecipe) -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
-    onOpenSection: (SectionType) -> Unit
+    onOpenSection: (String) -> Unit
 ) {
 
     when (homeUiState) {
@@ -38,16 +29,19 @@ fun HomeScreen(
                     "Dernières recettes",
                     homeUiState.latestRecipes,
                     onOpenRecipe = onOpenRecipe,
-                    onOpenSection = { onOpenSection(SectionType.LATEST_RECIPES) },
+                    onOpenSection = { onOpenSection("latest_recipes") },
                     onToggleFavorite = onToggleFavorite
                 )
-                HorizontalRecipesList(
-                    "Top recettes",
-                    homeUiState.topRecipes,
-                    onOpenRecipe = onOpenRecipe,
-                    onOpenSection = { onOpenSection(SectionType.TOP_RECIPES) },
-                    onToggleFavorite = onToggleFavorite
-                )
+                homeUiState.areaSections.forEach { map ->
+                    HorizontalRecipesList(
+                        map.key,
+                        homeUiState.areaSections[map.key]!!,
+                        onOpenRecipe = onOpenRecipe,
+                        onOpenSection = { onOpenSection(map.key) },
+                        onToggleFavorite = onToggleFavorite
+                    )
+                }
+
             }
         }
 

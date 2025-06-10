@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.categories.categoriesScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.categoryScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.navigateToCategoryScreen
@@ -23,7 +23,7 @@ fun NavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     startDestination: Any = BaseRoute,
-    onToggleFavorite:(LikeableRecipe,Boolean) -> Unit
+    onToggleFavorite:(LikeableRecipe, Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -39,20 +39,21 @@ fun NavHost(
                     onBackClick = navController::popBackStack,
                     onRecipeClick = navController::navigateToDetailRecipeScreen,
                     onToggleFavorite = onToggleFavorite) {
-                    detailRecipeScreen(onBackClick = navController::popBackStack)
+                    detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite)
                 }
             },
             recipeDetailDestination = {
-                detailRecipeScreen(onBackClick = navController::popBackStack)
+                detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite)
             }
         )
         categoriesScreen(
             onOpenCategory = navController::navigateToCategoryScreen,
             categoryDestination = {
                 categoryScreen(
+                    onBackClick = navController::popBackStack,
                     onOpenRecipe = navController::navigateToDetailRecipeScreen,
                     onToggleFavorite = onToggleFavorite,
-                    recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack) })
+                    recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite) })
             }
         )
         loginScreen(
@@ -62,12 +63,12 @@ fun NavHost(
                 favoritesScreen(
                     onToggleFavorite = onToggleFavorite,
                     onOpenRecipe = navController::navigateToDetailRecipeScreen,
-                    recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack) })
+                    recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite) })
             })
         favoritesScreen(
             onToggleFavorite = onToggleFavorite,
             onOpenRecipe = navController::navigateToDetailRecipeScreen,
-            recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack) })
+            recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite) })
     }
 }
 

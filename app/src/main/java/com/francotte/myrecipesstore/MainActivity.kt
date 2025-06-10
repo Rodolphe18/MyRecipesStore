@@ -11,8 +11,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.francotte.myrecipesstore.auth.AuthManager
-import com.francotte.myrecipesstore.favorites.FavoriteManager
+import com.francotte.myrecipesstore.manager.AuthManager
+import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.ui.theme.FoodTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

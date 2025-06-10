@@ -1,18 +1,13 @@
-package com.francotte.myrecipesstore.favorites
+package com.francotte.myrecipesstore.manager
 
-import android.util.Log
-import com.francotte.myrecipesstore.auth.AuthManager
-import com.francotte.myrecipesstore.auth.UserCredentials
-import com.francotte.myrecipesstore.model.LikeableRecipe
 import com.francotte.myrecipesstore.network.api.FavoriteApi
-import com.francotte.myrecipesstore.user.FoodPreferencesDataSource
-import com.francotte.myrecipesstore.user.UserDataSource
+import com.francotte.myrecipesstore.datastore.UserDataSource
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

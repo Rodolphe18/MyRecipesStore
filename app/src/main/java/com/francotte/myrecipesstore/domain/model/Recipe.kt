@@ -1,44 +1,17 @@
-package com.francotte.myrecipesstore.model
+package com.francotte.myrecipesstore.domain.model
 
-import com.francotte.myrecipesstore.user.UserData
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
+import com.francotte.myrecipesstore.datastore.UserData
+import com.francotte.myrecipesstore.network.model.NetworkAbstractRecipe
+import com.francotte.myrecipesstore.network.model.NetworkLightRecipe
+import com.francotte.myrecipesstore.network.model.NetworkRecipe
 
 
-object RecipePolymorphicSerializer :
-    JsonContentPolymorphicSerializer<AbstractRecipe>(AbstractRecipe::class) {
-
-    private val fullRecipeFields = setOf("strCategory", "strInstructions")
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out AbstractRecipe> {
-        val keys = element.jsonObject.keys
-        return if (fullRecipeFields.any { it in keys }) {
-            Recipe.serializer()
-        } else {
-            LightRecipe.serializer()
-        }
-    }
-}
-
-@Serializable(with = RecipePolymorphicSerializer::class)
-sealed class AbstractRecipe {
-    abstract val strMeal: String
-    abstract val strMealThumb: String
-    abstract val idMeal: String
-}
-
-@Serializable
 data class LightRecipe(
     override val strMeal: String,
     override val strMealThumb: String,
     override val idMeal: String,
-) :
-    AbstractRecipe()
+) : AbstractRecipe()
 
-@Serializable
 data class Recipe(
     override val idMeal: String,
     override val strMeal: String,
@@ -95,8 +68,12 @@ data class Recipe(
     val dateModified: String?,
 ) : AbstractRecipe()
 
-@Serializable
-data class RecipeResult(val meals: List<AbstractRecipe>)
+
+sealed class AbstractRecipe {
+    abstract val strMeal: String
+    abstract val strMealThumb: String
+    abstract val idMeal: String
+}
 
 data class LikeableRecipe(
     val recipe: AbstractRecipe,
@@ -108,10 +85,11 @@ data class LikeableRecipe(
     )
 }
 
-fun List<AbstractRecipe>.mapToLikeableRecipes(userData: UserData): List<LikeableRecipe> =
-    mapNotNull {
-        when (it) {
-            is Recipe -> LikeableRecipe(it, userData)
-            is LightRecipe -> LikeableRecipe(it, userData)
-        }
-    }
+fun List<LightRecipe>.mapToLikeableLightRecipes(userData: UserData): List<LikeableRecipe> =
+    mapNotNull { LikeableRecipe(it, userData) }
+
+fun List<Recipe>.mapToLikeableFullRecipes(userData: UserData): List<LikeableRecipe> =
+    mapNotNull { LikeableRecipe(it, userData) }
+
+
+fun Recipe.mapToLikeableFullRecipe(userData: UserData): LikeableRecipe = LikeableRecipe(recipe = this, userData = userData)

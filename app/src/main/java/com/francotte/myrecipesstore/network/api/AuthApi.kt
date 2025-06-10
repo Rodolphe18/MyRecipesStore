@@ -1,7 +1,7 @@
 package com.francotte.myrecipesstore.network.api
 
-import com.francotte.myrecipesstore.model.AuthRequest
-import com.francotte.myrecipesstore.model.AuthResponse
+import com.francotte.myrecipesstore.network.model.AuthRequest
+import com.francotte.myrecipesstore.network.model.AuthResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE

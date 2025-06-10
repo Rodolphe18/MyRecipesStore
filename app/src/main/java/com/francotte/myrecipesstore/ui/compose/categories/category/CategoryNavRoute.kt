@@ -8,8 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -21,18 +20,18 @@ fun NavController.navigateToCategoryScreen(category: String, navOptions: NavOpti
     }
 }
 
-fun NavGraphBuilder.categoryScreen(onOpenRecipe: (String) -> Unit, onToggleFavorite:(LikeableRecipe,Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoryScreen(onBackClick: () -> Unit, onOpenRecipe: (String,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     composable<CategoryNavigationRoute> {
-        CategoryRoute(onOpenRecipe =  { onOpenRecipe(it.idMeal) }, onToggleFavorite = onToggleFavorite)
+        CategoryRoute(onOpenRecipe =  { onOpenRecipe(it.recipe.idMeal,it.recipe.strMeal) }, onToggleFavorite = onToggleFavorite, onBack= onBackClick)
     }
     recipeDetailDestination()
 }
 
 @Composable
-fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (AbstractRecipe) -> Unit, onToggleFavorite:(LikeableRecipe,Boolean)->Unit) {
+fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (LikeableRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onBack:()->Unit) {
     val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
     val title = viewModel.category
 
-    CategoryScreen(categoryUiState = uiState, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite)
+    CategoryScreen(categoryUiState = uiState, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack)
 
 }

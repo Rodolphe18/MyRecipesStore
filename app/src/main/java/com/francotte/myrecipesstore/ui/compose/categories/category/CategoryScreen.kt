@@ -20,22 +20,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
+import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryScreen(categoryUiState: CategoryUiState, title:String, onReload:() -> Unit, onOpenRecipe:(AbstractRecipe) -> Unit, onToggleFavorite:(LikeableRecipe,Boolean) -> Unit) {
+fun CategoryScreen(categoryUiState: CategoryUiState, title:String, onReload:() -> Unit, onOpenRecipe:(LikeableRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(title = { Text(title) }, navigationIcon = {Icons.Filled.ArrowBack}, scrollBehavior = topAppBarScrollBehavior )
+            TopAppBar(title = title, navigationIconEnabled = true, onNavigationClick = onBack, scrollBehavior = topAppBarScrollBehavior )
         }
     ) { padding ->
         when (categoryUiState) {

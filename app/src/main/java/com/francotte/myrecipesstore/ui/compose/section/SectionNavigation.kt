@@ -8,15 +8,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SectionRoute(val sectionType: SectionType)
+data class SectionRoute(val sectionName: String)
 
 fun NavController.navigateToSection(
-    sectionType: SectionType,
+    sectionType: String,
     navOptions: NavOptionsBuilder.() -> Unit = {}
 ) {
     navigate(route = SectionRoute(sectionType)) {
@@ -26,14 +25,14 @@ fun NavController.navigateToSection(
 
 fun NavGraphBuilder.sectionScreen(
     onBackClick: () -> Unit,
-    onRecipeClick: (String) -> Unit,
-    onToggleFavorite: (LikeableRecipe,Boolean) -> Unit,
+    onRecipeClick: (String,String) -> Unit,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     recipeDetailDestination: NavGraphBuilder.() -> Unit
 ) {
     composable<SectionRoute> {
         SectionRoute(
             onToggleFavorite = onToggleFavorite,
-            onOpenRecipe ={ onRecipeClick(it.idMeal) },
+            onOpenRecipe = { onRecipeClick(it.recipe.idMeal, it.recipe.strMeal) },
             onBackClick = onBackClick
         )
     }
@@ -41,11 +40,11 @@ fun NavGraphBuilder.sectionScreen(
 }
 
 @Composable
-fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(LikeableRecipe,Boolean)-> Unit, onOpenRecipe: (AbstractRecipe)->Unit, onBackClick:()->Unit) {
+fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(LikeableRecipe, Boolean)-> Unit, onOpenRecipe: (LikeableRecipe)->Unit, onBackClick:()->Unit) {
 
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
     val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()
-    SectionScreen(uiState, sectionTitle.titleRes,{}, onToggleFavorite, onOpenRecipe, onBackClick)
+    SectionScreen(uiState, sectionTitle,{}, onToggleFavorite, onOpenRecipe, onBackClick)
 
 }
 

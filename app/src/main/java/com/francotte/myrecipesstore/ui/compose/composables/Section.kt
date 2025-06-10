@@ -11,16 +11,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 
 @Composable
 fun HorizontalRecipesList(
     title: String,
     recipes: List<LikeableRecipe>,
-    onOpenRecipe: (AbstractRecipe) -> Unit,
+    onOpenRecipe: (LikeableRecipe) -> Unit,
     onOpenSection: (String) -> Unit,
-    onToggleFavorite: (LikeableRecipe,Boolean) -> Unit
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
 ) {
     val listState = rememberLazyListState()
     Column(modifier = Modifier.padding(top = 10.dp)) {

@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.francotte.myrecipesstore.model.LikeableRecipe
-import com.francotte.myrecipesstore.repository.DetailRecipeRepository
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.repository.FullRecipeRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -13,15 +13,17 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class DetailRecipeViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val detailRecipeRepository: DetailRecipeRepository):ViewModel() {
+class DetailRecipeViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val detailRecipeRepository: FullRecipeRepositoryImpl):ViewModel() {
 
-    private val idMeal = savedStateHandle.toRoute<DetailRecipeRoute>().idMeal.toLong()
+    private val recipeId = savedStateHandle.toRoute<DetailRecipeRoute>().recipeId.toLong()
+
+    val recipeName = savedStateHandle.toRoute<DetailRecipeRoute>().recipeTitle
 
     val recipe = detailRecipeRepository
-        .getMealDetail(idMeal)
+        .observeFullRecipe(recipeId)
         .map { result ->
             if (result.isSuccess) {
-                DetailRecipeUiState.Success(result.getOrDefault(emptyList()).firstOrNull())
+                DetailRecipeUiState.Success(result.getOrDefault(null))
             } else {
                 DetailRecipeUiState.Error
             }
@@ -33,5 +35,5 @@ class DetailRecipeViewModel @Inject constructor(savedStateHandle: SavedStateHand
 sealed interface DetailRecipeUiState {
     data object Loading : DetailRecipeUiState
     data object Error : DetailRecipeUiState
-    data class Success(val likeableRecipe: LikeableRecipe?) :DetailRecipeUiState
+    data class Success(val recipe: LikeableRecipe?) :DetailRecipeUiState
 }

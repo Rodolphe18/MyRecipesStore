@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.francotte.myrecipesstore.model.LikeableRecipe
-import com.francotte.myrecipesstore.repository.RecipesRepository
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.repository.HomeRepository
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
@@ -14,12 +14,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, repository: RecipesRepository): ViewModel() {
+class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, repository: HomeRepository): ViewModel() {
 
     val category = savedStateHandle.toRoute<CategoryNavigationRoute>().category
 
     val categoryUiState = repository
-        .getRecipesListByCategory(category)
+        .observeRecipesByCategory(category)
         .map { result ->
             if (result.isSuccess) {
                 CategoryUiState.Success(result.getOrDefault(emptyList()))

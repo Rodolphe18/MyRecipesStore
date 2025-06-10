@@ -9,8 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,15 +19,15 @@ fun NavController.navigateToFavoriteScreen(navOptions: NavOptions? = null) {
     this.navigate(FavoritesNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.favoritesScreen(onToggleFavorite:(LikeableRecipe,Boolean)->Unit,onOpenRecipe: (String) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.favoritesScreen(onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenRecipe: (String,String) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     composable<FavoritesNavigationRoute> {
-        FavoriteRoute(onRecipeClick = { onOpenRecipe(it.idMeal) }, onToggleFavorite = onToggleFavorite)
+        FavoriteRoute(onRecipeClick = { onOpenRecipe(it.recipe.idMeal,it.recipe.strMeal) }, onToggleFavorite = onToggleFavorite)
     recipeDetailDestination()
 }
 }
 
 @Composable
-fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), onRecipeClick: (AbstractRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit) {
+fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), onRecipeClick: (LikeableRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit) {
     val favoriteUiState by viewModel.favoritesRecipesState.collectAsStateWithLifecycle()
     FavoritesScreen(
         favoriteUiState = favoriteUiState,

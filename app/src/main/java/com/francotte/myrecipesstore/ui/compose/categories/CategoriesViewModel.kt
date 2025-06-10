@@ -2,8 +2,10 @@ package com.francotte.myrecipesstore.ui.compose.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.myrecipesstore.model.Categories
-import com.francotte.myrecipesstore.repository.CategoriesRepository
+import com.francotte.myrecipesstore.network.model.NetworkCategories
+import com.francotte.myrecipesstore.database.repository.CategoriesRepository
+import com.francotte.myrecipesstore.domain.model.AbstractCategory
+import com.francotte.myrecipesstore.domain.model.Categories
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
@@ -15,10 +17,10 @@ import javax.inject.Inject
 class CategoriesViewModel @Inject constructor(repository: CategoriesRepository) : ViewModel() {
 
     val categories = repository
-        .getAllMealCategories()
+        .observeAllMealCategories()
         .map { result ->
             if (result.isSuccess) {
-                CategoriesUiState.Success(result.getOrDefault(Categories(emptyList())))
+                CategoriesUiState.Success(result.getOrDefault(emptyList()))
             } else {
                 CategoriesUiState.Error
             }
@@ -36,5 +38,5 @@ class CategoriesViewModel @Inject constructor(repository: CategoriesRepository) 
 sealed interface CategoriesUiState {
     data object Loading : CategoriesUiState
     data object Error : CategoriesUiState
-    data class Success(val categories: Categories) : CategoriesUiState
+    data class Success(val categories: List<AbstractCategory>) : CategoriesUiState
 }

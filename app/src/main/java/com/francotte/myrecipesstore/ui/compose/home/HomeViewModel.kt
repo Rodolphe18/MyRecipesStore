@@ -2,8 +2,8 @@ package com.francotte.myrecipesstore.ui.compose.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.myrecipesstore.model.LikeableRecipe
-import com.francotte.myrecipesstore.repository.RecipesRepository
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.repository.LikeableLightRecipesRepository
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
@@ -14,18 +14,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    repository: RecipesRepository
+    repository: LikeableLightRecipesRepository
 ) : ViewModel() {
 
 
     val homeUiState: StateFlow<HomeUiState> = combine(
         repository.observeLatestRecipes(),
-        repository.getRecipesListByArea("French")
-    ) { latestResult, topResult ->
-        if (latestResult.isSuccess || topResult.isSuccess) {
+        repository.observeFoodAreaSections()
+    ) { latestResult, areaSections ->
+        if (latestResult.isSuccess || areaSections.isSuccess) {
             HomeUiState.Success(
                 latestRecipes = latestResult.getOrDefault(emptyList()),
-                topRecipes = topResult.getOrDefault(emptyList())
+                areaSections = areaSections.getOrDefault(mapOf())
             )
         } else {
             HomeUiState.Error
@@ -44,7 +44,7 @@ class HomeViewModel @Inject constructor(
 sealed interface HomeUiState {
     data class Success(
         val latestRecipes: List<LikeableRecipe>,
-        val topRecipes: List<LikeableRecipe>
+        val areaSections: Map<String, List<LikeableRecipe>>
     ) : HomeUiState
 
     data object Error : HomeUiState

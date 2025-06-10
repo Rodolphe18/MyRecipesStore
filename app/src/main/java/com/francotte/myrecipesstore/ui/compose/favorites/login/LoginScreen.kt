@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.myrecipesstore.R
-import com.francotte.myrecipesstore.model.AuthRequest
+import com.francotte.myrecipesstore.network.model.AuthRequest
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), onBackPressed: () -> Unit) {

@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.auth
+package com.francotte.myrecipesstore.manager
 
 import android.content.Context
 import android.content.Intent
@@ -7,13 +7,13 @@ import android.util.Log
 import com.facebook.AccessToken
 import com.facebook.LoginStatusCallback
 import com.facebook.login.LoginManager
-import com.francotte.myrecipesstore.model.AuthRequest
-import com.francotte.myrecipesstore.model.AuthResponse
-import com.francotte.myrecipesstore.model.CurrentUser
-import com.francotte.myrecipesstore.model.Provider
+import com.francotte.myrecipesstore.network.model.AuthRequest
+import com.francotte.myrecipesstore.network.model.AuthResponse
+import com.francotte.myrecipesstore.network.model.CurrentUser
+import com.francotte.myrecipesstore.network.model.Provider
 import com.francotte.myrecipesstore.network.api.AuthApi
 import com.francotte.myrecipesstore.protobuf.User
-import com.francotte.myrecipesstore.user.UserDataSource
+import com.francotte.myrecipesstore.datastore.UserDataSource
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -74,7 +74,7 @@ class AuthManagerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: AuthApi,
     private val preferences: UserDataSource
-) :AuthManager {
+) : AuthManager {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 

@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.user
+package com.francotte.myrecipesstore.datastore
 
 import com.francotte.myrecipesstore.protobuf.UserInfo
 

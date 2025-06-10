@@ -1,12 +1,10 @@
 package com.francotte.myrecipesstore.ui.compose.favorites
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.myrecipesstore.favorites.FavoriteManager
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.repository.FavoritesRepository
-import com.francotte.myrecipesstore.ui.compose.section.SectionUiState
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
@@ -20,7 +18,7 @@ class FavViewModel @Inject constructor(favoriteManager: FavoriteManager, favorit
     ViewModel() {
 
     val favoritesRecipesState = favoritesRepository
-        .getFavoritesRecipes()
+        .observeFavoritesRecipes()
         .map<Result<List<LikeableRecipe>>,FavoriteUiState> { FavoriteUiState.Success(it.getOrDefault(emptyList())) }
         .catch { emit(FavoriteUiState.Error) }
         .stateIn(viewModelScope, restartableWhileSubscribed, FavoriteUiState.Loading)

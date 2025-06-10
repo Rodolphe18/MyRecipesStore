@@ -19,8 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.R
-import com.francotte.myrecipesstore.model.AbstractRecipe
-import com.francotte.myrecipesstore.model.LikeableRecipe
+import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
@@ -32,7 +31,7 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 fun FavoritesScreen(
     favoriteUiState: FavoriteUiState,
     onReload: () -> Unit,
-    onOpenRecipe: (AbstractRecipe) -> Unit,
+    onOpenRecipe: (LikeableRecipe) -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
 ) {
     val topAppBarScrollBehavior =
