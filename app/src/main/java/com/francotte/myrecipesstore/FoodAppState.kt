@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
@@ -16,12 +17,14 @@ import androidx.navigation.navOptions
 import com.francotte.myrecipesstore.manager.AuthManager
 import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.ui.compose.categories.navigateToCategoriesScreen
+import com.francotte.myrecipesstore.ui.compose.favorites.login.LOGIN_ROUTE
 import com.francotte.myrecipesstore.ui.compose.favorites.login.navigateToLoginScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.navigateToFavoriteScreen
 import com.francotte.myrecipesstore.ui.compose.home.navigateToHomeScreen
 import com.francotte.myrecipesstore.ui.navigation.TopLevelDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
@@ -58,12 +61,26 @@ class AppState(
             } ?: previousDestination.value
         }
 
-    val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.entries
+    val topLevelDestinations: List<TopLevelDestination>
+        @Composable get() {
+          //  val isAuthenticated = authManager.isAuthenticated.first()
+                return listOf(
+                    TopLevelDestination.HOME,
+                    TopLevelDestination.CATEGORIES,
+                    TopLevelDestination.FAVORITES(isAuthenticated)
+                )
+        }
+
 
     val currentTopLevelDestination: TopLevelDestination?
         @Composable get() {
             val destination = currentDestination
-            return TopLevelDestination.entries.firstOrNull { topLevelDestination ->
+            val destinations = listOf(
+                TopLevelDestination.HOME,
+                TopLevelDestination.CATEGORIES,
+                TopLevelDestination.FAVORITES(isAuthenticated)
+            )
+            return destinations.firstOrNull { topLevelDestination ->
                 destination?.hierarchy?.any { navDestination ->
                     navDestination.route == topLevelDestination.route
                 } == true
@@ -80,9 +97,7 @@ class AppState(
         }
     }
 
-    fun navigateToTopLevelDestination(
-        topLevelDestination: TopLevelDestination
-    ) {
+    fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
         val topLevelNavOptions = navOptions {
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
@@ -90,14 +105,8 @@ class AppState(
             launchSingleTop = true
             restoreState = true
         }
-        when (topLevelDestination) {
-            TopLevelDestination.HOME -> navController.navigateToHomeScreen(topLevelNavOptions)
-            TopLevelDestination.CATEGORIES -> navController.navigateToCategoriesScreen(topLevelNavOptions)
-            TopLevelDestination.FAVORITES -> {
-               if (isAuthenticated) navController.navigateToFavoriteScreen(topLevelNavOptions) else
-                    navController.navigateToLoginScreen(topLevelNavOptions)
-            }
-        }
+
+        navController.navigate(topLevelDestination.route, topLevelNavOptions)
     }
 
 
