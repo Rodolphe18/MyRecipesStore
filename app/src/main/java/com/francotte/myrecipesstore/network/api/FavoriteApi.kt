@@ -1,9 +1,14 @@
 package com.francotte.myrecipesstore.network.api
 
+import com.francotte.myrecipesstore.network.model.CustomRecipe
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface FavoriteApi {
@@ -12,6 +17,12 @@ interface FavoriteApi {
     suspend fun getFavoriteRecipeIds(
         @Header("Authorization") token: String
     ): List<String>
+
+
+    @GET("users/recipes")
+    suspend fun getUserRecipes(
+        @Header("Authorization") token: String
+    ): List<CustomRecipe>
 
     @GET("users/favorites/{recipeId}/status")
     suspend fun getRecipeFavoriteStatus(
@@ -31,4 +42,16 @@ interface FavoriteApi {
         @Path("recipeId") recipeId: String,
         @Header("Authorization") token: String
     )
+
+    @Multipart
+    @POST("users/recipes")
+    suspend fun addRecipe(
+        @Header("Authorization") token: String,
+        @Part images: List<MultipartBody.Part>,
+        @Part("title") title: RequestBody,
+        @Part("instructions") instructions: RequestBody,
+        @Part("ingredients") ingredients: RequestBody
+    )
+
+
 }

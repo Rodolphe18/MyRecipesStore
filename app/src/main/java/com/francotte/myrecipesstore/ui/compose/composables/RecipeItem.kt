@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,19 +30,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
-import com.francotte.myrecipesstore.ui.theme.FoodColors
+import com.francotte.myrecipesstore.ui.theme.Orange
 
 @Composable
 fun RecipeItem(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
-    onOpenRecipe: (LikeableRecipe) -> Unit,
+    onOpenRecipe: () -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
@@ -50,7 +54,7 @@ fun RecipeItem(
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onOpenRecipe(likeableRecipe) }
+                .clickable { onOpenRecipe() }
         ) {
             Image(
                 painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
@@ -72,6 +76,7 @@ fun RecipeItem(
             text = likeableRecipe.recipe.strMeal,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center,
             maxLines = 2,
             modifier = Modifier.width(180.dp)
@@ -80,18 +85,64 @@ fun RecipeItem(
 }
 
 
+
+@Composable
+fun BigRecipeItem(
+    likeableRecipe: LikeableRecipe,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onOpenRecipe: () -> Unit,
+) {
+    Column(Modifier.padding(vertical = 12.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16/9f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { onOpenRecipe() }
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
+                contentDescription = likeableRecipe.recipe.strMeal,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+            FavButton(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.BottomEnd),
+                onToggleFavorite = { checked -> onToggleFavorite(likeableRecipe, checked) },
+                isFavorite = likeableRecipe.isFavorite
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = likeableRecipe.recipe.strMeal,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Left,
+            maxLines = 2
+        )
+    }
+}
+
 @Composable
 fun FavButton(
     modifier: Modifier = Modifier,
     isFavorite: Boolean,
+    buttonSize: Dp =45.dp,
+    iconSize:Dp= 25.dp,
     onToggleFavorite: (Boolean) -> Unit
 ) {
     val transition = updateTransition(label = "favorite", targetState = isFavorite)
-    val backgroundColor by transition.animateColor(label = "backgroundColor") { isFav -> if (isFav) FoodColors.Orange else FoodColors.NeutralWhite }
-    val iconColor by transition.animateColor(label = "iconColor") { isFav -> if (isFav) FoodColors.NeutralWhite else FoodColors.NeutralSoftGrey }
+    val backgroundColor by transition.animateColor(label = "backgroundColor") { isFav -> if (isFav) Orange else MaterialTheme.colorScheme.tertiary }
+    val iconColor by transition.animateColor(label = "iconColor") { isFav -> if (isFav) Color.White else MaterialTheme.colorScheme.onTertiary }
     Box(
         modifier = modifier
-            .size(45.dp)
+            .size(buttonSize)
             .background(backgroundColor, CircleShape)
             .clip(CircleShape)
             .toggleable(
@@ -104,7 +155,7 @@ fun FavButton(
         Icon(
             imageVector = Icons.Default.Favorite,
             contentDescription = null,
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier.align(Alignment.Center).size(iconSize),
             tint = iconColor
         )
     }

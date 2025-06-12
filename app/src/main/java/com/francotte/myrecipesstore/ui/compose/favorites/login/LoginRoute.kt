@@ -10,16 +10,15 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
-@Serializable
-object LoginNavigationRoute
+const val LOGIN_ROUTE = "login_route"
 
 fun NavController.navigateToLoginScreen(navOptions: NavOptions? = null) {
-    this.navigate(LoginNavigationRoute, navOptions)
+    this.navigate(LOGIN_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.loginScreen(onBackPressed:() -> Unit, navigateToFavoriteScreen: () ->Unit,favoriteScreenDestination: NavGraphBuilder.() -> Unit) {
 
-    composable<LoginNavigationRoute> {
+    composable(route = LOGIN_ROUTE) {
         LoginRoute(onBackPressed = onBackPressed, { navigateToFavoriteScreen() })
     }
     favoriteScreenDestination()

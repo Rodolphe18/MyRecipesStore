@@ -1,5 +1,9 @@
 package com.francotte.myrecipesstore.ui.compose.detail
 
+import android.content.Intent
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,137 +13,431 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.domain.model.Recipe
-import com.francotte.myrecipesstore.network.model.NetworkRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
-import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.FavButton
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailRecipeScreen(uiState: DetailRecipeUiState, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, recipeName:String, onBackCLick:()->Unit) {
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-    Scaffold(
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = recipeName, scrollBehavior = topAppBarScrollBehavior, navigationIconEnabled = true, onNavigationClick = onBackCLick
-            )
-        }
-    ) { padding ->
-    when (uiState) {
-        DetailRecipeUiState.Loading -> CustomCircularProgressIndicator()
-        DetailRecipeUiState.Error -> ErrorScreen {  }
-        is DetailRecipeUiState.Success -> {
-            uiState.recipe?.let { likeableRecipe ->
-                val ingredients = (1..20).mapNotNull { i ->
-                    val ingredient =
-                        (likeableRecipe.recipe as? Recipe)?.javaClass?.getDeclaredField("strIngredient$i")
-                            ?.apply { isAccessible = true }
-                            ?.get(likeableRecipe.recipe) as? String
-                    val measure = (likeableRecipe.recipe as Recipe).javaClass.getDeclaredField("strMeasure$i")
-                        .apply { isAccessible = true }.get(likeableRecipe.recipe) as? String
-                    if (!ingredient.isNullOrBlank()) {
-                        ingredient to (measure ?: "")
-                    } else null
-                }
+fun DetailRecipeScreen(
+    viewModel: DetailRecipeViewModel,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onBackCLick: () -> Unit
+) {
+    val topAppBarScrollBehavior =
+        TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val title by viewModel.title.collectAsStateWithLifecycle()
+    val pageCount = viewModel.pageCount
+    val pagerState =
+        rememberPagerState(initialPage = viewModel.index ?: 0, pageCount = { pageCount })
+    val context = LocalContext.current
+    val deepLink by viewModel.deeplinkRecipe.collectAsStateWithLifecycle()
+    val currentPageRecipe = viewModel.recipe[viewModel.currentPage]
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(top = padding.calculateTopPadding(), bottom =12.dp, start = 12.dp, end = 12.dp)
-                ) {
-
-                    Image(
-                        painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
-                        contentDescription = "Image de ${likeableRecipe.recipe.strMeal}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row {
-                        Text(
-                            text = likeableRecipe.recipe.strMeal,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp).weight(1f)
-                        )
-                        FavButton(
-                            modifier = Modifier.padding(8.dp),
-                            onToggleFavorite = { checked -> onToggleFavorite(likeableRecipe, checked) },
-                            isFavorite = likeableRecipe.isFavorite
-                        )
+    if (deepLink == null && currentPageRecipe == null) {
+        CustomCircularProgressIndicator()
+    } else {
+        Scaffold(
+            modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+            topBar = {
+                TopAppBar(
+                    title = title,
+                    scrollBehavior = topAppBarScrollBehavior,
+                    navigationIconEnabled = true,
+                    onNavigationClick = onBackCLick
+                )
+            }
+        ) { padding ->
+            if (deepLink != null) {
+                deepLink?.also { link ->
+                    val ingredients = (1..20).mapNotNull { i ->
+                        val ingredient =
+                            (link.recipe as? Recipe)?.javaClass?.getDeclaredField("strIngredient$i")
+                                ?.apply { isAccessible = true }
+                                ?.get(link.recipe) as? String
+                        val measure =
+                            (link.recipe as Recipe).javaClass.getDeclaredField("strMeasure$i")
+                                .apply { isAccessible = true }
+                                .get(link.recipe) as? String
+                        if (!ingredient.isNullOrBlank()) {
+                            ingredient to (measure ?: "")
+                        } else null
                     }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(
+                                top = padding.calculateTopPadding() + 12.dp,
+                                bottom = 12.dp
+                            )
+                    ) {
+                        val youtubeUrl = (link.recipe as Recipe).strYoutube
+                        val videoId = youtubeUrl.substringAfter("v=").substringBefore("&")
 
-                    Text(
-                        text = "Ingrédients",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                        if (videoId.isNotBlank()) {
+                            val embedUrl =
+                                "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1"
+                            AndroidView(
+                                factory = { context ->
 
-                    ingredients.forEach { (ingredient, measure) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = ingredient, style = MaterialTheme.typography.bodyLarge)
+                                    WebView(context).apply {
+                                        layoutParams = ViewGroup.LayoutParams(
+                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                            220
+                                        )
+                                        webViewClient = WebViewClient()
+                                        settings.javaScriptEnabled = true
+                                        loadUrl(embedUrl)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(220.dp)
+                            )
+                        } else {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = link.recipe.strMealThumb),
+                                contentDescription = "Image de ${link.recipe.strMeal}",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Column(Modifier.padding(horizontal = 12.dp)) {
+                            Row {
+                                Text(
+                                    text = link.recipe.strMeal,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(bottom = 8.dp)
+                                        .weight(1f)
+                                )
+                                FavButton(
+                                    modifier = Modifier.padding(8.dp),
+                                    onToggleFavorite = { checked ->
+                                        onToggleFavorite(
+                                            link,
+                                            checked
+                                        )
+                                    },
+                                    isFavorite = link.isFavorite
+                                )
+                            }
+
                             Text(
-                                text = measure,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
+                                text = "Ingrédients",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+
+                            ingredients.forEach { (ingredient, measure) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = ingredient,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                    )
+                                    Text(
+                                        text = measure,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = {
+                                    val shoppingListText = buildString {
+                                        appendLine("🛒 Liste de courses : ${link.recipe.strMeal}")
+                                        appendLine()
+                                        ingredients.forEach { (ingredient, measure) ->
+                                            appendLine("- $ingredient: $measure")
+                                        }
+                                    }
+
+                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(
+                                            Intent.EXTRA_SUBJECT,
+                                            "Ma liste de courses pour ${link.recipe.strMeal}"
+                                        )
+                                        putExtra(Intent.EXTRA_TEXT, shoppingListText)
+                                    }
+
+                                    context.startActivity(
+                                        Intent.createChooser(
+                                            shareIntent,
+                                            "Partager la liste de courses via"
+                                        )
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Partager",
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                                Text("Partager la liste de courses")
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Text(
+                                text = "Instructions",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+
+                            Text(
+                                text = link.recipe.strInstructions.orEmpty(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                lineHeight = 22.sp,
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                         }
                     }
+                }
+            } else {
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.currentPage }.collect { newPage ->
+                        viewModel.currentPage = newPage
+                        viewModel.getRecipes()
+                    }
+                }
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 2,
+                    modifier = Modifier.fillMaxSize()
+                ) { _ ->
+                    currentPageRecipe?.let { likeableRecipe ->
+                        val ingredients = (1..20).mapNotNull { i ->
+                            val ingredient =
+                                (likeableRecipe.recipe as? Recipe)?.javaClass?.getDeclaredField(
+                                    "strIngredient$i"
+                                )
+                                    ?.apply { isAccessible = true }
+                                    ?.get(likeableRecipe.recipe) as? String
+                            val measure =
+                                (likeableRecipe.recipe as Recipe).javaClass.getDeclaredField("strMeasure$i")
+                                    .apply { isAccessible = true }
+                                    .get(likeableRecipe.recipe) as? String
+                            if (!ingredient.isNullOrBlank()) {
+                                ingredient to (measure ?: "")
+                            } else null
+                        }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(
+                                    top = padding.calculateTopPadding() + 12.dp,
+                                    bottom = 12.dp
+                                )
+                        ) {
+                            val youtubeUrl = (likeableRecipe.recipe as Recipe).strYoutube
+                            val videoId = youtubeUrl.substringAfter("v=").substringBefore("&")
 
-                    Text(
-                        text = "Instructions",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                            if (videoId.isNotBlank()) {
+                                val embedUrl =
+                                    "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1"
+                                AndroidView(
+                                    factory = { context ->
 
-                    Text(
-                        text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
-                        style = MaterialTheme.typography.bodyLarge,
-                        lineHeight = 22.sp
-                    )
+                                        WebView(context).apply {
+                                            layoutParams = ViewGroup.LayoutParams(
+                                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                                220
+                                            )
+                                            webViewClient = WebViewClient()
+                                            settings.javaScriptEnabled = true
+                                            loadUrl(embedUrl)
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(220.dp)
+                                )
+                            } else {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
+                                    contentDescription = "Image de ${likeableRecipe.recipe.strMeal}",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Column(Modifier.padding(horizontal = 12.dp)) {
+                                Row {
+                                    Text(
+                                        text = likeableRecipe.recipe.strMeal,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .padding(bottom = 8.dp)
+                                            .weight(1f)
+                                    )
+                                    FavButton(
+                                        modifier = Modifier.padding(8.dp),
+                                        onToggleFavorite = { checked ->
+                                            onToggleFavorite(
+                                                likeableRecipe,
+                                                checked
+                                            )
+                                        },
+                                        isFavorite = likeableRecipe.isFavorite
+                                    )
+                                }
+
+                                Text(
+                                    text = "Ingrédients",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(bottom = 8.dp),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+
+                                ingredients.forEach { (ingredient, measure) ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = ingredient,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                        )
+                                        Text(
+                                            text = measure,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                        )
+                                    }
+                                }
+                                Button(
+                                    onClick = {
+                                        val shoppingListText = buildString {
+                                            appendLine("🛒 Liste de courses : ${likeableRecipe.recipe.strMeal}")
+                                            appendLine()
+                                            ingredients.forEach { (ingredient, measure) ->
+                                                appendLine("- $ingredient: $measure")
+                                            }
+                                        }
+
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(
+                                                Intent.EXTRA_SUBJECT,
+                                                "Ma liste de courses pour ${likeableRecipe.recipe.strMeal}"
+                                            )
+                                            putExtra(Intent.EXTRA_TEXT, shoppingListText)
+                                        }
+
+                                        context.startActivity(
+                                            Intent.createChooser(
+                                                shareIntent,
+                                                "Partager la liste de courses via"
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Share,
+                                        contentDescription = "Partager",
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
+                                    Text("Partager la liste de courses")
+                                }
+
+                                Spacer(modifier = Modifier.height(24.dp))
+
+                                Text(
+                                    text = "Instructions",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(bottom = 8.dp),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+
+                                Text(
+                                    text = likeableRecipe.recipe.strInstructions.orEmpty(),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    lineHeight = 22.sp,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
-        }
     }
-
-
 }

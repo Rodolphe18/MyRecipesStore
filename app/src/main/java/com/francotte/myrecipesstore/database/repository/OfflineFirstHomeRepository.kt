@@ -54,65 +54,82 @@ class OfflineFirstHomeRepository @Inject constructor(
     }
 
     override fun getLatestRecipes(): Flow<List<Recipe>> = flow {
+        Log.d("debug_offline_debut1", "")
         val lastUpdated = fullRecipeDao.getLastUpdatedForLatest()
+        Log.d("debug_offline_debut1_dao", "")
         val now = System.currentTimeMillis()
         val ttl = 24 * 60 * 60 * 1000 // 24h
         if (lastUpdated == null || now - lastUpdated > ttl) {
-            Log.d("debug_latest", "ddddd")
             val networkData = network.getLatestMeals().meals as List<NetworkRecipe>
+            Log.d("debug_offline_network1", networkData.toString())
             val entities = networkData.map {
                 it.asEntity().apply {
                     this.isLatest = true
                     this.lastUpdated = now
                 }
             }
+            Log.d("debug_offline_entity1", entities.toString())
             fullRecipeDao.deleteOldLatestRecipes()
             fullRecipeDao.upsertAllFullRecipes(entities)
         }
-
+        Log.d("debug_offline_fin1", "")
         emitAll(
             fullRecipeDao.getLatestFullRecipes()
                 .map { list ->
                     list.map { it.asExternalModel() } }
         )
+
     }
 
     override fun getRecipesListByArea(area: String): Flow<List<LightRecipe>> = flow {
+        Log.d("debug_offline_debut2", "")
         val lastUpdated = lightRecipeDao.getLastUpdatedForArea(area)
+        Log.d("debug_offline_debut2_dao", "")
         val now = System.currentTimeMillis()
         val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
         if (lastUpdated == null || now - lastUpdated > ttl) {
+
             val networkData =
                 network.getRecipesListByArea(area).meals.filterIsInstance<NetworkLightRecipe>()
+            Log.d("debug_offline_network2", networkData.toString())
             val entities = networkData.map { it.asEntity().apply {
                 this.area = area
                 this.lastUpdated = now
             } }
+            Log.d("debug_offline_entity2", entities.toString())
             lightRecipeDao.upsertAllLightRecipes(entities)
         }
+        Log.d("debug_offline_fin2", "")
         emitAll(
             lightRecipeDao.getLightRecipesByArea(area)
                 .map { list -> list.map { it.asExternalModel() } }
         )
+
     }
 
     override fun getRecipesByCategory(category: String): Flow<List<LightRecipe>> = flow {
+        Log.d("debug_offline_debut3", "")
         val lastUpdated = lightRecipeDao.getLastUpdatedForCategory(category)
+        Log.d("debug_offline_debut3_dao", "")
         val now = System.currentTimeMillis()
         val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
         if (lastUpdated == null || now - lastUpdated > ttl) {
             val networkData =
                 network.getRecipesListByCategory(category).meals.filterIsInstance<NetworkLightRecipe>()
+            Log.d("debug_offline_entity3", networkData.toString())
             val entities = networkData.map { it.asEntity().apply {
                 this.category = category
                 this.lastUpdated = now
             } }
+            Log.d("debug_offline_entity3", entities.toString())
             lightRecipeDao.upsertAllLightRecipes(entities)
         }
+        Log.d("debug_offline_fin3", "")
         emitAll(
             lightRecipeDao.getLightRecipesByCategory(category)
                 .map { list -> list.map { it.asExternalModel() } }
         )
+
     }
 
 

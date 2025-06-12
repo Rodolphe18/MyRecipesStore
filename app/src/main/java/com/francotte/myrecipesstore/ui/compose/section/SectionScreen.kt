@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -25,13 +26,24 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SectionScreen(sectionUiState: SectionUiState, titleRes: String, onReload:() -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenRecipe:(LikeableRecipe) -> Unit, onBack:()->Unit) {
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+fun SectionScreen(
+    sectionUiState: SectionUiState,
+    titleRes: String,
+    onReload: () -> Unit,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onOpenRecipe: (List<String>, Int,String) -> Unit,
+    onBack: () -> Unit
+) {
+    val topAppBarScrollBehavior =
+        TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-               title= titleRes, scrollBehavior = topAppBarScrollBehavior, navigationIconEnabled = true, onNavigationClick = onBack
+                title = titleRes,
+                scrollBehavior = topAppBarScrollBehavior,
+                navigationIconEnabled = true,
+                onNavigationClick = onBack
             )
         }
     ) { padding ->
@@ -50,15 +62,20 @@ fun SectionScreen(sectionUiState: SectionUiState, titleRes: String, onReload:() 
                         top = padding.calculateTopPadding(),
                         bottom = 16.dp,
                         start = 16.dp,
-                        end = 16.dp)
+                        end = 16.dp
+                    )
                 ) {
-                    items(
-                        items = sectionUiState.recipes,
-                        key = { it.recipe.idMeal }
-                    ) { recipe ->
-                        RecipeItem(likeableRecipe = recipe, onToggleFavorite, {
-                            onOpenRecipe(it)
-                        })
+                    val likeableRecipes = sectionUiState.recipes
+                    itemsIndexed(
+                        items = likeableRecipes,
+                        key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal + index }
+                    ) { index, likeableRecipe ->
+                        RecipeItem(
+                            likeableRecipe = likeableRecipe,
+                            onToggleFavorite = onToggleFavorite,
+                            onOpenRecipe = {
+                                onOpenRecipe(likeableRecipes.map { it.recipe.strMeal }, index, likeableRecipe.recipe.strMeal)
+                            })
                     }
                 }
             }

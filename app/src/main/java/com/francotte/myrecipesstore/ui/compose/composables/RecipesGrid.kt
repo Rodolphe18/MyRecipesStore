@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -16,7 +17,7 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 fun RecipesGrid(
     meals: List<LikeableRecipe>,
     onFavoriteClick: (LikeableRecipe, Boolean) -> Unit,
-    onRecipeClick: (LikeableRecipe) -> Unit,
+    onRecipeClick: (List<String>,Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -28,8 +29,8 @@ fun RecipesGrid(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(meals) { meal ->
-            RecipeItem(likeableRecipe = meal, onOpenRecipe= onRecipeClick, onToggleFavorite = onFavoriteClick)
+        itemsIndexed(meals) { index, meal ->
+            RecipeItem(likeableRecipe = meal, onOpenRecipe= { onRecipeClick(meals.map { it.recipe.idMeal }, index) }, onToggleFavorite = onFavoriteClick)
         }
     }
 }

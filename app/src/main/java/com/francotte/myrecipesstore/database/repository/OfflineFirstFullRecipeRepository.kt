@@ -41,12 +41,12 @@ class OfflineFirstFullRecipeRepositoryImpl @Inject constructor(
                 // Facultatif : log ou gérer les erreurs réseau
             }
         }
-
         val finalRecipe = dao.getFullRecipeById(id.toString()).first()
         if (finalRecipe != null) {
             emit(finalRecipe.asExternalModel())
         }
     }
+
 }
 
 

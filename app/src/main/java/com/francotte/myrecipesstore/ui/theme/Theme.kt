@@ -1,13 +1,61 @@
 package com.francotte.myrecipesstore.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.common.util.VisibleForTesting
+
+
+@VisibleForTesting
+val LightColorScheme = lightColorScheme(
+    primary = Orange,
+    onPrimary = NeutralWhite,
+    surface = NeutralWhite,
+    surfaceVariant = NeutralWhite,
+    onSurface = NeutralBlack,
+    onSurfaceVariant = NeutralBlack,
+    inverseSurface = NeutralBlack,
+    inverseOnSurface = NeutralWhite,
+    background = NeutralWhite,
+    tertiary = NeutralWhite,
+    onTertiary = NeutralSoftGrey,
+    secondary = NeutralBlack,
+    onSecondary = NeutralMediumGrey,
+)
+
+
+@VisibleForTesting
+val DarkColorScheme = darkColorScheme(
+    primary = Orange,
+    onPrimary = NeutralWhite,
+    surface = NeutralBlack,
+    surfaceVariant = NeutralBlack,
+    onSurface = NeutralLightGrey,
+    onSurfaceVariant = NeutralWhite,
+    inverseSurface = NeutralWhite,
+    inverseOnSurface = NeutralBlack,
+    background = NeutralBlack,
+    tertiary = NeutralDarkGrey,
+    onTertiary = NeutralMediumGrey,
+    secondary = NeutralLightGrey,
+    onSecondary = NeutralSoftGrey,
+)
 
 
 @Composable
-fun FoodTheme(content: @Composable () -> Unit) {
-    val foodColors = if (isSystemInDarkTheme()) darkFoodColors() else lightFoodColors()
-    MaterialTheme(colorScheme = foodColors.colorScheme) { content() }
+fun FoodTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    MaterialTheme(
+        colorScheme = colorScheme,
+        content = content
+    )
 }
 

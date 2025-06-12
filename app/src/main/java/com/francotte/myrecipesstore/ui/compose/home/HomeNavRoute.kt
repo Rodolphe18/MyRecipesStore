@@ -12,28 +12,26 @@ import androidx.navigation.navigation
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 
-@Serializable
-object HomeNavigationRoute
-
-@Serializable
-object BaseRoute
+const val HOME_ROUTE = "home"
+const val BASE_ROUTE = "base"
 
 fun NavController.navigateToHomeScreen(navOptions: NavOptions? = null) {
-    this.navigate(HomeNavigationRoute, navOptions)
+    this.navigate(HOME_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.homeScreen(onRecipeClick: (String,String) -> Unit, onToggleFavorite: (LikeableRecipe, Boolean) -> Unit, onOpenSection: (String) -> Unit, sectionDestination: NavGraphBuilder.() -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
-    navigation<BaseRoute>(startDestination = HomeNavigationRoute) {
-        composable<HomeNavigationRoute> {
-            HomeRoute(onRecipeClick = { onRecipeClick(it.recipe.idMeal, it.recipe.strMeal) }, onToggleFavorite= onToggleFavorite, onOpenSection = { onOpenSection(it) })
+fun NavGraphBuilder.homeScreen(onRecipeClick: (List<String>,Int, String) -> Unit, onToggleFavorite: (LikeableRecipe, Boolean) -> Unit, onOpenSection: (String) -> Unit, sectionDestination: NavGraphBuilder.() -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit, videoDestination: NavGraphBuilder.() -> Unit,onVideoButtonClick:(String)->Unit) {
+    navigation(startDestination = HOME_ROUTE, route = BASE_ROUTE) {
+        composable(route = HOME_ROUTE) {
+            HomeRoute(onRecipeClick = { ids, index, title -> onRecipeClick(ids,index, title) }, onToggleFavorite= onToggleFavorite, onOpenSection = { onOpenSection(it) }, onVideoButtonClick = onVideoButtonClick)
         }
         sectionDestination()
         recipeDetailDestination()
+        videoDestination()
     }
 }
 
 @Composable
-fun HomeRoute(viewModel: HomeViewModel= hiltViewModel(), onRecipeClick: (LikeableRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenSection: (String) -> Unit) {
+fun HomeRoute(viewModel: HomeViewModel= hiltViewModel(), onRecipeClick: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenSection: (String) -> Unit, onVideoButtonClick:(String)->Unit) {
     val homeUiState by viewModel.homeUiState.collectAsStateWithLifecycle()
-    HomeScreen(homeUiState = homeUiState, onOpenRecipe = onRecipeClick, onOpenSection = onOpenSection, onReload =  { viewModel.reload() }, onToggleFavorite = onToggleFavorite)
+    HomeScreen(homeUiState = homeUiState, onOpenRecipe = onRecipeClick, onOpenSection = onOpenSection, onReload =  { viewModel.reload() }, onToggleFavorite = onToggleFavorite, onVideoButtonClick = onVideoButtonClick)
 }

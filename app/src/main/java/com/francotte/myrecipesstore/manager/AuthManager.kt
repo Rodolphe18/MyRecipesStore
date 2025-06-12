@@ -7,6 +7,7 @@ import android.util.Log
 import com.facebook.AccessToken
 import com.facebook.LoginStatusCallback
 import com.facebook.login.LoginManager
+import com.francotte.myrecipesstore.database.dao.FullRecipeDao
 import com.francotte.myrecipesstore.network.model.AuthRequest
 import com.francotte.myrecipesstore.network.model.AuthResponse
 import com.francotte.myrecipesstore.network.model.CurrentUser
@@ -34,10 +35,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
-import okhttp3.MultipartBody.Part.Companion.createFormData
-import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Response
-import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -50,8 +48,8 @@ import kotlin.coroutines.suspendCoroutine
 object AuthModule {
     @Singleton
     @Provides
-    fun provideAuthManager(@ApplicationContext context: Context, api: AuthApi,preferences: UserDataSource): AuthManager =
-        AuthManagerImpl(context, api,preferences)
+    fun provideAuthManager(@ApplicationContext context: Context, api: AuthApi,preferences: UserDataSource, fullRecipeDao: FullRecipeDao): AuthManager =
+        AuthManagerImpl(context, api,preferences,fullRecipeDao)
 }
 
 interface AuthManager {
@@ -66,6 +64,7 @@ interface AuthManager {
     suspend fun recoverFacebookToken(): AccessToken?
     suspend fun loginByGoogle(account: GoogleSignInAccount)
     suspend fun deleteUser()
+    suspend fun logout()
 }
 
 
@@ -73,7 +72,8 @@ interface AuthManager {
 class AuthManagerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: AuthApi,
-    private val preferences: UserDataSource
+    private val preferences: UserDataSource,
+    private val dao: FullRecipeDao
 ) : AuthManager {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -256,13 +256,15 @@ class AuthManagerImpl @Inject constructor(
         googleSignInClient.signOut().await()
     }
 
-    suspend fun logout() {
+   override suspend fun logout() {
         try {
             withContext(NonCancellable) {
                 preferences.updateUserInfo(false)
+                // facebook
                 LoginManager.getInstance().logOut()
+                // google
                 signOutGoogleUser()
-
+                dao.deleteAllFavoritesRecipes()
             }
         } catch (e: Exception) {
             Log.d("debug_error_while_signing_out", "Error while signing out")
@@ -272,5 +274,3 @@ class AuthManagerImpl @Inject constructor(
 
 @Parcelize
 data class UserCredentials(val id: Long, val token: String) : Parcelable
-
-fun File.toFormDataPart(name: String) = createFormData(name, this.name, asRequestBody())

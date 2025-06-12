@@ -24,6 +24,9 @@ interface FullRecipeDao {
     @Query("SELECT * FROM full_recipe_entity WHERE idMeal = :id")
     fun getFullRecipeById(id: String): Flow<FullRecipeEntity?>
 
+    @Query("SELECT * FROM full_recipe_entity WHERE idMeal IN (:ids)")
+    fun getFullRecipesByIds(ids: List<String>): Flow<List<FullRecipeEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFullRecipe(recipe: FullRecipeEntity)
 
@@ -39,8 +42,11 @@ interface FullRecipeDao {
     @Query("SELECT MAX(lastUpdated) FROM full_recipe_entity WHERE isLatest = 1")
     suspend fun getLastUpdatedForLatest(): Long?
 
-    @Query("DELETE FROM light_recipe_entity WHERE isLatest = 1")
+    @Query("DELETE FROM full_recipe_entity WHERE isLatest = 1")
     suspend fun deleteOldLatestRecipes()
+
+    @Query("DELETE FROM full_recipe_entity WHERE isFavorite = 1")
+    suspend fun deleteAllFavoritesRecipes()
 
     @Query("DELETE FROM full_recipe_entity")
     suspend fun clearAll()

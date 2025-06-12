@@ -8,21 +8,24 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.categories.categoriesScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.categoryScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.navigateToCategoryScreen
+import com.francotte.myrecipesstore.ui.compose.detail.deepLinkRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.detail.detailRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.detail.navigateToDetailRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.favoritesScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.login.loginScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.navigateToFavoriteScreen
-import com.francotte.myrecipesstore.ui.compose.home.BaseRoute
+import com.francotte.myrecipesstore.ui.compose.home.BASE_ROUTE
 import com.francotte.myrecipesstore.ui.compose.home.homeScreen
 import com.francotte.myrecipesstore.ui.compose.section.navigateToSection
 import com.francotte.myrecipesstore.ui.compose.section.sectionScreen
+import com.francotte.myrecipesstore.ui.compose.video.navigateToVideoFullScreen
+import com.francotte.myrecipesstore.ui.compose.video.videoFullScreen
 
 @Composable
 fun NavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    startDestination: Any = BaseRoute,
+    startDestination: String = BASE_ROUTE,
     onToggleFavorite:(LikeableRecipe, Boolean) -> Unit
 ) {
     NavHost(
@@ -44,6 +47,10 @@ fun NavHost(
             },
             recipeDetailDestination = {
                 detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite)
+            },
+            onVideoButtonClick = navController::navigateToVideoFullScreen,
+            videoDestination = {
+                videoFullScreen()
             }
         )
         categoriesScreen(
@@ -69,6 +76,11 @@ fun NavHost(
             onToggleFavorite = onToggleFavorite,
             onOpenRecipe = navController::navigateToDetailRecipeScreen,
             recipeDetailDestination = { detailRecipeScreen(onBackClick = navController::popBackStack,onToggleFavorite) })
+        deepLinkRecipeScreen(
+            onBackClick = navController::popBackStack,
+            onToggleFavorite = onToggleFavorite
+        )
+
     }
 }
 

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -29,7 +30,7 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryScreen(categoryUiState: CategoryUiState, title:String, onReload:() -> Unit, onOpenRecipe:(LikeableRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
+fun CategoryScreen(categoryUiState: CategoryUiState, title:String, onReload:() -> Unit, onOpenRecipe:(List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -55,12 +56,17 @@ fun CategoryScreen(categoryUiState: CategoryUiState, title:String, onReload:() -
                         start = 16.dp,
                         end = 16.dp)
                 ) {
-                    items(
-                        items = categoryUiState.recipes,
-                        key = { it.recipe.idMeal }
-                    ) { recipe ->
-                        RecipeItem(likeableRecipe = recipe, onToggleFavorite = onToggleFavorite, onOpenRecipe= onOpenRecipe
-                        )
+                    val likeableRecipes = categoryUiState.recipes
+                    itemsIndexed(
+                        items = likeableRecipes,
+                        key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal + index }
+                    ) { index, likeableRecipe ->
+                        RecipeItem(
+                            likeableRecipe = likeableRecipe,
+                            onToggleFavorite = onToggleFavorite,
+                            onOpenRecipe = {
+                                onOpenRecipe(likeableRecipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal)
+                            })
                     }
                 }
             }

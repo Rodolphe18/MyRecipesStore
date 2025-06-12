@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -102,7 +103,7 @@ fun CategoryImage(modifier: Modifier = Modifier, imageUrl: String) {
 
 @Composable
 fun CategoryMetaData(modifier: Modifier= Modifier, title: String) {
-    Text(modifier = modifier, text = title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+    Text(modifier = modifier, text = title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 }
 
 @Composable

@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.repository
 
+import android.util.Log
 import com.francotte.myrecipesstore.database.repository.OfflineFirstHomeRepository
 import com.francotte.myrecipesstore.datastore.UserDataSource
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
@@ -39,6 +40,7 @@ class HomeRepository @Inject constructor(
             userDataSource.userData,
             homeRepository.getRecipesListByArea("British")
         ) { userData, latestRecipes ->
+            Log.d("debug1", userData.toString())
             try {
                 val likeable = latestRecipes.mapToLikeableLightRecipes(userData)
                 Result.success(likeable)
@@ -58,6 +60,7 @@ class HomeRepository @Inject constructor(
                 }
             ) { it.toMap() }
         ) { userData, recipesMap ->
+            Log.d("debug1", recipesMap.toString())
             try {
                 val likeableRecipesMap = recipesMap.mapValues { (_, recipes) ->
                     recipes.mapToLikeableLightRecipes(userData)
@@ -92,6 +95,8 @@ class HomeRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+
 }
 
 

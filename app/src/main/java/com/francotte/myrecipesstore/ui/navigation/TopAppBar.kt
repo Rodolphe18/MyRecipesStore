@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 
 
@@ -28,6 +29,7 @@ fun TopAppBar(
     @StringRes titleRes: Int?=null,
     title:String? =null,
     actionIcon: ImageVector?=null,
+    navigationIcon:ImageVector=Icons.Default.ArrowBack,
     actionIconContentDescription: String?="",
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
     onActionClick: () -> Unit = {},
@@ -37,7 +39,7 @@ fun TopAppBar(
 ) {
     CenterAlignedTopAppBar(
         scrollBehavior = scrollBehavior,
-        title = { if(title !=null) Text(text = title) else Text(text = stringResource(id = titleRes ?: 0), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) },
+        title = { if(title !=null) Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, maxLines = 1, overflow = TextOverflow.Ellipsis) else Text(text = stringResource(id = titleRes ?: 0), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) },
         actions = {
             if (actionIcon != null) {
             IconButton(onClick = onActionClick) {
@@ -52,7 +54,7 @@ fun TopAppBar(
             if(navigationIconEnabled) {
                 IconButton(onClick = onNavigationClick) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = navigationIcon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
                     )

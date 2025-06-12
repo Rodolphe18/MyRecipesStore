@@ -20,15 +20,15 @@ fun NavController.navigateToCategoryScreen(category: String, navOptions: NavOpti
     }
 }
 
-fun NavGraphBuilder.categoryScreen(onBackClick: () -> Unit, onOpenRecipe: (String,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoryScreen(onBackClick: () -> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     composable<CategoryNavigationRoute> {
-        CategoryRoute(onOpenRecipe =  { onOpenRecipe(it.recipe.idMeal,it.recipe.strMeal) }, onToggleFavorite = onToggleFavorite, onBack= onBackClick)
+        CategoryRoute(onOpenRecipe =  { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite, onBack= onBackClick)
     }
     recipeDetailDestination()
 }
 
 @Composable
-fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (LikeableRecipe) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onBack:()->Unit) {
+fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (List<String>, Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onBack:()->Unit) {
     val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
     val title = viewModel.category
 

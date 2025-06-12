@@ -21,11 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.francotte.myrecipesstore.R
-import com.francotte.myrecipesstore.ui.compose.categories.CategoriesNavigationRoute
-import com.francotte.myrecipesstore.ui.compose.favorites.FavoritesNavigationRoute
-import com.francotte.myrecipesstore.ui.compose.favorites.login.LoginNavigationRoute
-import com.francotte.myrecipesstore.ui.compose.home.HomeNavigationRoute
-import kotlin.reflect.KClass
+import com.francotte.myrecipesstore.ui.compose.categories.CATEGORIES_ROUTE
+import com.francotte.myrecipesstore.ui.compose.favorites.login.LOGIN_ROUTE
+import com.francotte.myrecipesstore.ui.compose.home.HOME_ROUTE
+
 
 @Composable
 fun RowScope.NavigationBarItem(
@@ -102,25 +101,25 @@ enum class TopLevelDestination(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
     val titleTextId: Int,
-    val route: KClass<*>
+    val route: Any
 ) {
     HOME(
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
         titleTextId = R.string.home,
-        route = HomeNavigationRoute::class
+        route = HOME_ROUTE
     ),
     CATEGORIES(
         selectedIcon = Icons.Filled.ShoppingCart,
         unselectedIcon = Icons.Outlined.ShoppingCart,
         titleTextId = R.string.categories,
-        route = CategoriesNavigationRoute::class
+        route = CATEGORIES_ROUTE
     ),
     FAVORITES(
         selectedIcon = Icons.Filled.Favorite,
         unselectedIcon = Icons.Outlined.Favorite,
         titleTextId = R.string.favorites,
-        route = LoginNavigationRoute::class
+        route = LOGIN_ROUTE
     )
 }
 

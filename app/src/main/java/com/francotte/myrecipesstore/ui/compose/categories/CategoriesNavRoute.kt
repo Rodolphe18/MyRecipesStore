@@ -12,15 +12,14 @@ import com.francotte.myrecipesstore.domain.model.AbstractCategory
 import com.francotte.myrecipesstore.network.model.NetworkCategory
 import kotlinx.serialization.Serializable
 
-@Serializable
-object CategoriesNavigationRoute
+const val CATEGORIES_ROUTE = "categories_route"
 
 fun NavController.navigateToCategoriesScreen(navOptions: NavOptions? = null) {
-    this.navigate(CategoriesNavigationRoute, navOptions)
+    this.navigate(CATEGORIES_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.categoriesScreen(onOpenCategory: (String) -> Unit, categoryDestination: NavGraphBuilder.() -> Unit) {
-    composable<CategoriesNavigationRoute> {
+    composable(route = CATEGORIES_ROUTE) {
         CategoriesRoute {
             onOpenCategory(it.strCategory)
         }

@@ -81,7 +81,7 @@ data class LikeableRecipe(
 ) {
     constructor(recipe: AbstractRecipe, userData: UserData) : this(
         recipe = recipe,
-        isFavorite = recipe.idMeal in userData.favoriteRecipesIds
+        isFavorite = userData.userInfo.connected && recipe.idMeal in userData.favoriteRecipesIds
     )
 }
 

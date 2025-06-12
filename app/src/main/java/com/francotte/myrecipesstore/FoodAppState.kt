@@ -8,10 +8,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.francotte.myrecipesstore.manager.AuthManager
 import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.ui.compose.categories.navigateToCategoriesScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.login.navigateToLoginScreen
@@ -27,10 +29,11 @@ fun rememberAppState(
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController = rememberNavController(),
     favoriteManager: FavoriteManager,
+    authManager: AuthManager,
     isAuthenticated: Boolean
 ): AppState {
     return remember(navController, coroutineScope) {
-        AppState(navController, coroutineScope, favoriteManager, isAuthenticated)
+        AppState(navController, coroutineScope, favoriteManager,authManager, isAuthenticated)
     }
 }
 
@@ -38,7 +41,8 @@ fun rememberAppState(
 class AppState(
     val navController: NavHostController,
     coroutineScope: CoroutineScope,
-    private val favoriteManager: FavoriteManager,
+    val favoriteManager: FavoriteManager,
+    val authManager: AuthManager,
     private val isAuthenticated: Boolean
 ) {
 
@@ -58,8 +62,11 @@ class AppState(
 
     val currentTopLevelDestination: TopLevelDestination?
         @Composable get() {
+            val destination = currentDestination
             return TopLevelDestination.entries.firstOrNull { topLevelDestination ->
-                currentDestination?.hasRoute(route = topLevelDestination.route) == true
+                destination?.hierarchy?.any { navDestination ->
+                    navDestination.route == topLevelDestination.route
+                } == true
             }
         }
 

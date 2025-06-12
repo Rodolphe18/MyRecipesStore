@@ -25,14 +25,14 @@ fun NavController.navigateToSection(
 
 fun NavGraphBuilder.sectionScreen(
     onBackClick: () -> Unit,
-    onRecipeClick: (String,String) -> Unit,
+    onRecipeClick: (List<String>,Int,String) -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     recipeDetailDestination: NavGraphBuilder.() -> Unit
 ) {
     composable<SectionRoute> {
         SectionRoute(
             onToggleFavorite = onToggleFavorite,
-            onOpenRecipe = { onRecipeClick(it.recipe.idMeal, it.recipe.strMeal) },
+            onOpenRecipe = { ids, index, title -> onRecipeClick(ids, index, title) },
             onBackClick = onBackClick
         )
     }
@@ -40,7 +40,7 @@ fun NavGraphBuilder.sectionScreen(
 }
 
 @Composable
-fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(LikeableRecipe, Boolean)-> Unit, onOpenRecipe: (LikeableRecipe)->Unit, onBackClick:()->Unit) {
+fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(LikeableRecipe, Boolean)-> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onBackClick:()->Unit) {
 
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
     val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()

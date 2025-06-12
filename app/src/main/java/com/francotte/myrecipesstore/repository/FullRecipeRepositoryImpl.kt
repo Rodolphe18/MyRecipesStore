@@ -21,12 +21,13 @@ class FullRecipeRepositoryImpl @Inject constructor(
     offlineFullRecipeData.getRecipeDetail(id)
     ) { userData, fullRecipe ->
         try {
-            val likeable = fullRecipe!!.mapToLikeableFullRecipe(userData)
-            Result.success(likeable)
+            val likeableRecipe = fullRecipe.mapToLikeableFullRecipe(userData)
+            Result.success(likeableRecipe)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
 
 }
 

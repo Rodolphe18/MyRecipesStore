@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -104,6 +105,19 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+
+    implementation(libs.androidx.hilt.work)
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    ksp("com.google.dagger:hilt-compiler:2.50")
+
+// Hilt + WorkManager
+    implementation("androidx.hilt:hilt-work:1.1.0")
+    ksp("androidx.hilt:hilt-compiler:1.1.0")
+
+// WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0") // ou dernière version stable
+
 
     configurations.all {
         resolutionStrategy.eachDependency {
@@ -147,5 +161,6 @@ androidComponents {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas/")
+
 }
 
