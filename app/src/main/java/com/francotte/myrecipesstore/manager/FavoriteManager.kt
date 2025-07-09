@@ -2,9 +2,11 @@ package com.francotte.myrecipesstore.manager
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.francotte.myrecipesstore.network.api.FavoriteApi
 import com.francotte.myrecipesstore.datastore.UserDataSource
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.network.model.CustomRecipe
 import com.francotte.myrecipesstore.network.model.Ingredient
 import com.francotte.myrecipesstore.network.model.serializeIngredients
 import com.francotte.myrecipesstore.network.model.toPart
@@ -15,17 +17,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 class FavoriteManager @Inject constructor(
@@ -35,29 +31,26 @@ class FavoriteManager @Inject constructor(
     private val foodPreferencesDataSource: UserDataSource
 ) {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val credentials: StateFlow<UserCredentials?> = authManager.credentials
 
     val goToLoginScreenEvent = MutableSharedFlow<Unit>()
 
-    val snackbarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
-    fun initFavorites() {
-        coroutineScope.launch {
-            try {
-                val result = api.getFavoriteRecipeIds("Bearer ${credentials.value?.token}")
-                foodPreferencesDataSource.setFavoritesIds(result.toSet())
-            } catch (e: Exception) {
-                TODO()
-            }
+    suspend fun initFavorites() {
+        try {
+            val result = api.getFavoriteRecipeIds("Bearer ${credentials.value?.token}")
+            foodPreferencesDataSource.setFavoritesIds(result.toSet())
+        } catch (e: Exception) {
+            Log.d("debug_google_error_fav", e.message.toString())
         }
     }
 
     suspend fun toggleRecipeFavorite(
         likeableRecipe: LikeableRecipe
     ) {
-        credentials.collectLatest { cred ->
+        val cred = credentials.firstOrNull()
             if (cred == null) {
                 goToLoginScreenEvent.emit(Unit)
             } else {
@@ -74,18 +67,17 @@ class FavoriteManager @Inject constructor(
                             "Bearer ${cred.token}"
                         )
                         foodPreferencesDataSource.setFavoriteId(recipeId, true)
-                        snackbarMessage.tryEmit("Recette ajoutée aux favoris")
+                        snackBarMessage.tryEmit("Recipe added to favorites")
                     } else {
                         api.removeFavorite(
                             recipeId,
                             "Bearer ${cred.token}"
                         )
                         foodPreferencesDataSource.setFavoriteId(recipeId, false)
-                        snackbarMessage.tryEmit("Recette retirée des favoris")
+                        snackBarMessage.tryEmit("Recipe deleted from favorites")
                     }
                 }
             }
-        }
     }
 
     suspend fun createRecipe(
@@ -101,16 +93,16 @@ class FavoriteManager @Inject constructor(
             uriToMultipart(uri, context, "images")
         }
 
-      //  api.addRecipe("Bearer ${credentials.value?.token}",imageParts, titlePart, instructionsPart, ingredientsPart)
+        //  api.addRecipe("Bearer ${credentials.value?.token}",imageParts, titlePart, instructionsPart, ingredientsPart)
     }
 
-   fun getUserRecipes() = flow {
-      if (credentials.value?.token != null) {
-          emit(api.getUserRecipes("Bearer ${credentials.value?.token}"))
-      } else {
-          emit(null)
-      }
-   }.stateIn(coroutineScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    suspend fun getUserRecipes(): List<CustomRecipe> {
+        return if (credentials.value?.token != null) {
+            api.getUserRecipes("Bearer ${credentials.value?.token}")
+        } else {
+            emptyList()
+        }
+    }
 
 }
 
