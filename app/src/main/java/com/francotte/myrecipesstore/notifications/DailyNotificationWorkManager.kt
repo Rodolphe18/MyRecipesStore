@@ -22,12 +22,9 @@ class DailyNotificationWorkManager @AssistedInject constructor(
     override suspend fun doWork(): Result {
         try {
             val recipe = api.getRandomMeal()
-            Log.d("debug_notif", recipe.meals.toString())
             notifier.postRecipeNotification((recipe.meals.first() as NetworkRecipe).asExternalModel())
-            Log.d("debug_notif", recipe.meals.toString())
             return Result.success()
         } catch (e: Exception) {
-            Log.d("debug_notif", "error")
             return Result.retry()
         }
     }
