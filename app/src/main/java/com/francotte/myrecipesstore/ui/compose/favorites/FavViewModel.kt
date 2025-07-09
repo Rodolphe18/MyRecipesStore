@@ -1,5 +1,9 @@
 package com.francotte.myrecipesstore.ui.compose.favorites
 
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
@@ -22,32 +26,59 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class FavViewModel @Inject constructor(val favoriteManager: FavoriteManager, favoritesRepository: FavoritesRepository) :
+class FavViewModel @Inject constructor(
+    val favoriteManager: FavoriteManager,
+    private val favoritesRepository: FavoritesRepository
+) :
     ViewModel() {
 
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
 
-    val _favoritesRecipesState:MutableStateFlow<FavoriteUiState> = MutableStateFlow(FavoriteUiState.Loading)
+    val _favoritesRecipesState: MutableStateFlow<FavoriteUiState> =
+        MutableStateFlow(FavoriteUiState.Loading)
     val favoritesRecipesState = _favoritesRecipesState.asStateFlow()
+
+    var isReloading by mutableStateOf(false)
 
     init {
         viewModelScope.launch {
             favoriteManager.initFavorites()
-            combine<Result<List<LikeableRecipe>>, Result<List<CustomRecipe>>, String, FavoriteUiState>(favoritesRepository
-                .observeFavoritesRecipes(), favoritesRepository.observeUserCustomRecipes(),_searchText,) { favorites, customRecipes, searchText ->
+            loadFavoritesData()
+        }
+    }
+
+    fun loadFavoritesData() {
+        viewModelScope.launch {
+            combine<Result<List<LikeableRecipe>>, Result<List<CustomRecipe>>, String, FavoriteUiState>(
+                favoritesRepository
+                    .observeFavoritesRecipes(),
+                favoritesRepository.observeUserCustomRecipes(), _searchText,
+            ) { favorites, customRecipes, searchText ->
                 if (searchText.isBlank()) {
-                    FavoriteUiState.Success(favoritesRecipes = favorites.getOrDefault(emptyList()), customRecipes = customRecipes.getOrDefault(emptyList()))
+                    FavoriteUiState.Success(
+                        favoritesRecipes = favorites.getOrDefault(emptyList()),
+                        customRecipes = customRecipes.getOrDefault(emptyList())
+                    )
                 } else {
                     FavoriteUiState.Success(favorites.getOrDefault(emptyList()).filter {
                         it.recipe.strMeal.lowercase().contains(searchText.lowercase())
-                    },customRecipes = customRecipes.getOrDefault(emptyList()))
+                    }, customRecipes = customRecipes.getOrDefault(emptyList()))
                 }
             }
                 .debounce(500)
                 .collect { _favoritesRecipesState.value = it }
         }
     }
+
+    fun reload() {
+        isReloading = true
+        _favoritesRecipesState.value = FavoriteUiState.Loading
+        _searchText.value = ""
+        loadFavoritesData()
+        isReloading = false
+    }
+
 
     fun onSearchTextChange(text: String) {
         _searchText.value = text
@@ -60,6 +91,7 @@ sealed interface FavoriteUiState {
         val favoritesRecipes: List<LikeableRecipe>,
         val customRecipes: List<CustomRecipe>
     ) : FavoriteUiState
+
     data object Error : FavoriteUiState
     data object Loading : FavoriteUiState
 }

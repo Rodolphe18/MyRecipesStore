@@ -73,7 +73,7 @@ android {
 
 dependencies {
 
-    implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
+    implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

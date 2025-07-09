@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.ui.compose.home
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,44 +26,59 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-   private val repository: LikeableLightRecipesRepository
+    private val repository: LikeableLightRecipesRepository
 ) : ViewModel() {
 
     var currentPage by mutableIntStateOf(0)
 
-    val latestRecipes: StateFlow<LatestRecipes> = repository
-        .observeLatestRecipes()
-        .map { result ->
-            if (result.isSuccess) {
-                LatestRecipes.Success(result.getOrDefault(emptyList()))
-            } else {
-                LatestRecipes.Error
-            }
-        }
-        .catch {
-            emit(LatestRecipes.Error)
-        }
-        .stateIn(viewModelScope, restartableWhileSubscribed, LatestRecipes.Loading)
+    var isReloading by mutableStateOf(false)
 
-    val americanRecipes: StateFlow<AmericanRecipes> = repository
-        .observeAmericanAreaRecipes()
-        .map { result ->
-            if (result.isSuccess) {
-                AmericanRecipes.Success(result.getOrDefault(emptyList()))
-            } else {
-                AmericanRecipes.Error
-            }
-        }
-        .catch {
-            emit(AmericanRecipes.Error)
-        }
-        .stateIn(viewModelScope, restartableWhileSubscribed, AmericanRecipes.Loading)
+    private val _latestRecipes = MutableStateFlow<LatestRecipes>(LatestRecipes.Loading)
+    val latestRecipes: StateFlow<LatestRecipes> = _latestRecipes.asStateFlow()
+
+    private val _americanRecipes = MutableStateFlow<AmericanRecipes>(AmericanRecipes.Loading)
+    val americanRecipes:StateFlow<AmericanRecipes> = _americanRecipes.asStateFlow()
 
     private val _englishRecipes = MutableStateFlow<EnglishRecipes>(EnglishRecipes.Loading)
     val englishRecipes: StateFlow<EnglishRecipes> = _englishRecipes
 
     private val _areasRecipes = MutableStateFlow<AreasRecipes>(AreasRecipes.Loading)
     val areasRecipes: StateFlow<AreasRecipes> = _areasRecipes
+
+    init {
+        loadInitialData()
+    }
+
+   private fun loadInitialData() {
+        viewModelScope.launch {
+            repository
+                .observeAmericanAreaRecipes()
+                .map { result ->
+                    if (result.isSuccess) {
+                        AmericanRecipes.Success(result.getOrDefault(emptyList()))
+                    } else {
+                        AmericanRecipes.Error
+                    }
+                }
+                .collect {
+                    _americanRecipes.value = it
+                }
+        }
+            viewModelScope.launch {
+                repository
+                    .observeLatestRecipes()
+                    .map { result ->
+                        if (result.isSuccess) {
+                            LatestRecipes.Success(result.getOrDefault(emptyList()))
+                        } else {
+                            LatestRecipes.Error
+                        }
+                    }
+                    .collect {
+                        _latestRecipes.value = it
+                    }
+            }
+    }
 
     fun loadMore() {
         viewModelScope.launch {
@@ -93,29 +109,43 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+
+    fun reload() {
+        viewModelScope.launch {
+            isReloading = true
+            _latestRecipes.value = LatestRecipes.Loading
+            _americanRecipes.value = AmericanRecipes.Loading
+            _areasRecipes.value = AreasRecipes.Loading
+            _englishRecipes.value = EnglishRecipes.Loading
+            loadInitialData()
+            isReloading = false
+        }
+    }
+
+
 }
 
 sealed interface LatestRecipes {
     data object Loading : LatestRecipes
     data object Error : LatestRecipes
-    data class Success(val latestRecipes: List<LikeableRecipe>): LatestRecipes
+    data class Success(val latestRecipes: List<LikeableRecipe>) : LatestRecipes
 }
 
 sealed interface AmericanRecipes {
     data object Loading : AmericanRecipes
     data object Error : AmericanRecipes
-    data class Success(val americanRecipes: List<LikeableRecipe>):AmericanRecipes
+    data class Success(val americanRecipes: List<LikeableRecipe>) : AmericanRecipes
 }
 
 sealed interface AreasRecipes {
     data object Loading : AreasRecipes
     data object Error : AreasRecipes
-    data class Success(val areasRecipes: Map<String, List<LikeableRecipe>>):AreasRecipes
+    data class Success(val areasRecipes: Map<String, List<LikeableRecipe>>) : AreasRecipes
 }
 
 sealed interface EnglishRecipes {
     data object Loading : EnglishRecipes
     data object Error : EnglishRecipes
-    data class Success(val englishRecipes: List<LikeableRecipe>):EnglishRecipes
+    data class Success(val englishRecipes: List<LikeableRecipe>) : EnglishRecipes
 }
 

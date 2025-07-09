@@ -26,8 +26,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -36,6 +40,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -63,8 +68,10 @@ import com.francotte.myrecipesstore.ui.compose.composables.VideoRecipeItem
 import com.francotte.myrecipesstore.ui.compose.composables.nbHomeColumns
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
@@ -84,6 +91,9 @@ fun HomeScreen(
             2
         )
     val scrollState = rememberLazyGridState()
+    val pullRefreshState = rememberPullToRefreshState()
+
+   val coroutineScope = rememberCoroutineScope()
     var hasLoadedMore by remember { mutableStateOf(false) }
     LaunchedEffect(scrollState) {
         snapshotFlow { scrollState.firstVisibleItemScrollOffset }
@@ -96,7 +106,7 @@ fun HomeScreen(
     }
     val isDataReady =
         latestRecipes is LatestRecipes.Success && americanRecipes is AmericanRecipes.Success
-    Box(
+    PullToRefreshBox(
         modifier = Modifier
             .fillMaxSize()
             .then(
@@ -104,7 +114,15 @@ fun HomeScreen(
                     Modifier
                         .testTag("homeScreenReady")
                         .semantics { contentDescription = "homeScreenReady" } else Modifier
-            )
+            ),
+        isRefreshing = viewModel.isReloading,
+        onRefresh = {
+            coroutineScope.launch {
+                viewModel.reload()
+                pullRefreshState.animateToHidden()
+            }
+        },
+        state = pullRefreshState
     ) {
         LazyVerticalGrid(
             modifier = Modifier
@@ -247,5 +265,6 @@ fun HomeScreen(
                 }
             }
         }
+
     }
 }
