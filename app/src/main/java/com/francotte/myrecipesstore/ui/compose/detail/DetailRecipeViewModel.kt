@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.detail
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -48,7 +49,7 @@ class DetailRecipeViewModel @Inject constructor(
     private val _recipe = mutableStateMapOf<Int, LikeableRecipe>()
     val recipe: SnapshotStateMap<Int, LikeableRecipe> = _recipe
 
-    private val _deeplinkRecipe:MutableStateFlow<LikeableRecipe?> = MutableStateFlow(null)
+    private val _deeplinkRecipe: MutableStateFlow<LikeableRecipe?> = MutableStateFlow(null)
     val deeplinkRecipe: StateFlow<LikeableRecipe?> = _deeplinkRecipe
 
     private val _title = MutableStateFlow("")
@@ -62,18 +63,11 @@ class DetailRecipeViewModel @Inject constructor(
     }
 
     fun getRecipes() {
-        val pagesToLoad = listOf(currentPage - 1, currentPage, currentPage + 1)
-            .filter { ids.indices.contains(it) }
-
-        pagesToLoad.forEach { pageIndex ->
-            viewModelScope.launch {
-                val result = detailRecipeRepository.observeFullRecipe(ids[pageIndex]).first()
-                if (result.isSuccess) {
-                    _recipe[pageIndex] = result.getOrNull() as LikeableRecipe
-                    if (pageIndex == currentPage) {
-                        _title.value = _recipe[currentPage]?.recipe?.strMeal ?: ""
-                    }
-                }
+        viewModelScope.launch {
+            val result = detailRecipeRepository.observeFullRecipe(ids[currentPage]).first()
+            if (result.isSuccess) {
+                _recipe[currentPage] = result.getOrNull() as LikeableRecipe
+                _title.value = _recipe[currentPage]?.recipe?.strMeal ?: ""
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.detail
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.util.ScreenCounter
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -64,4 +66,7 @@ fun NavGraphBuilder.deepLinkRecipeScreen(onBackClick:() -> Unit,onToggleFavorite
 @Composable
 internal fun DetailRecipeRoute(viewModel: DetailRecipeViewModel= hiltViewModel(), onBackCLick:() -> Unit,onToggleFavorite:(LikeableRecipe, Boolean)->Unit) {
     DetailRecipeScreen(viewModel,onToggleFavorite, onBackCLick)
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 }
