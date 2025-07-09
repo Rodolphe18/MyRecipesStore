@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.ui.navigation
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -39,6 +40,7 @@ import com.francotte.myrecipesstore.util.ScreenCounter
 fun NavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    windowSizeClass: WindowSizeClass,
     startDestination: String = BASE_ROUTE,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onAddRecipe: (title: String, ingredients: List<Ingredient>, instructions: String, images: List<Uri>) -> Unit,
@@ -67,9 +69,11 @@ fun NavHost(
             onVideoButtonClick = navController::navigateToVideoFullScreen,
             videoDestination = {
                 videoFullScreen()
-            }
+            },
+            windowSizeClass = windowSizeClass
         )
         categoriesScreen(
+            windowSizeClass= windowSizeClass,
             onOpenCategory = navController::navigateToCategoryScreen,
             categoryDestination = {
                 categoryScreen(
@@ -82,7 +86,8 @@ fun NavHost(
                         detailRecipeScreen(onBackClick = {
                             navController.popBackStack()
                         }, onToggleFavorite = onToggleFavorite)
-                    })
+                    },
+                    windowSizeClass = windowSizeClass)
             }
         )
         addRecipeScreen(onAddRecipe)
@@ -100,7 +105,8 @@ fun NavHost(
                             onBackClick = navController::popBackStack,
                             onToggleFavorite
                         )
-                    })
+                    },
+                    windowSizeClass = windowSizeClass)
             }
         }
         loginScreen(
@@ -113,6 +119,7 @@ fun NavHost(
                 ) {
                     favoritesScreen(
                         onToggleFavorite = onToggleFavorite,
+                        windowSizeClass = windowSizeClass,
                         onOpenRecipe = navController::navigateToDetailRecipeScreen,
                         recipeDetailDestination = {
                             detailRecipeScreen(
@@ -131,7 +138,7 @@ fun NavHost(
                             onBackClick = navController::popBackStack,
                             onToggleFavorite
                         )
-                    })
+                    }, windowSizeClass = windowSizeClass)
             }
         )
         favoritesScreen(
@@ -142,7 +149,8 @@ fun NavHost(
                     onBackClick = navController::popBackStack,
                     onToggleFavorite
                 )
-            }
+            },
+            windowSizeClass = windowSizeClass
         )
         deepLinkRecipeScreen(
             onBackClick = navController::popBackStack,

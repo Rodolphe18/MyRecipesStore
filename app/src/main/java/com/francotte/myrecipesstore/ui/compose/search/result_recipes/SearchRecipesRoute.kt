@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.search.result_recipes
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,16 +22,16 @@ fun NavController.navigateToSearchRecipesScreen(item:String,mode: SearchMode, na
     }
 }
 
-fun NavGraphBuilder.searchRecipesScreen(onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit, detailRecipeDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.searchRecipesScreen(windowSizeClass: WindowSizeClass,onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit, detailRecipeDestination: NavGraphBuilder.() -> Unit) {
     composable<SearchRecipesNavRoute> {
-        SearchRecipesRoute(onOpenRecipe=onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack = onBack)
+        SearchRecipesRoute(windowSizeClass = windowSizeClass,onOpenRecipe=onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack = onBack)
     }
     detailRecipeDestination()
 }
 
 @Composable
-fun SearchRecipesRoute(viewModel: SearchRecipesViewModel = hiltViewModel(), onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
+fun SearchRecipesRoute(viewModel: SearchRecipesViewModel = hiltViewModel(),windowSizeClass: WindowSizeClass, onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
     val uiState by viewModel.searchRecipesUiState.collectAsStateWithLifecycle()
     val title = viewModel.item
-    SearchRecipesScreen(searchRecipesUiState = uiState, title= title,onReload = {}, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack = onBack)
+    SearchRecipesScreen(searchRecipesUiState = uiState,windowSizeClass = windowSizeClass, title= title,onReload = {}, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack = onBack)
 }

@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.permissions
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,7 +17,7 @@ import com.francotte.myrecipesstore.ui.compose.video.findActivity
 @Composable
 fun NotificationPermissionEffect() {
     if (LocalInspectionMode.current) return
-   // if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
 
     val context = LocalContext.current
     val permissionLauncher = rememberLauncherForActivityResult(

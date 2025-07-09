@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -20,12 +21,13 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
+import com.francotte.myrecipesstore.ui.compose.composables.nbFavoritesColumns
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchRecipesScreen(searchRecipesUiState: SearchRecipesUiState, title:String, onReload:() -> Unit, onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
+fun SearchRecipesScreen(searchRecipesUiState: SearchRecipesUiState, windowSizeClass: WindowSizeClass, title:String, onReload:() -> Unit, onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -40,7 +42,7 @@ fun SearchRecipesScreen(searchRecipesUiState: SearchRecipesUiState, title:String
             is SearchRecipesUiState.Success -> {
                 LazyVerticalGrid(
                     state = rememberLazyGridState(),
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbFavoritesColumns),
                     reverseLayout = false,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),

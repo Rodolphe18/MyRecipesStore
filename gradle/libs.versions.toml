@@ -44,6 +44,7 @@ runner = "1.6.2"
 [libraries]
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }
+androidx-material3-window-size = { module = "androidx.compose.material3:material3-window-size-class" }
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 androidx-profileinstaller-no-op = { module = "androidx.profileinstaller:profileinstaller-no-op", version.ref = "profileinstaller" }
 billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtx" }

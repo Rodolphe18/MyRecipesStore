@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.categories
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,9 +21,9 @@ fun NavController.navigateToCategoriesScreen(navOptions: NavOptions? = null) {
     this.navigate(CATEGORIES_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.categoriesScreen(onOpenCategory: (String) -> Unit, categoryDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoriesScreen(windowSizeClass: WindowSizeClass,onOpenCategory: (String) -> Unit, categoryDestination: NavGraphBuilder.() -> Unit) {
     composable(route = CATEGORIES_ROUTE) {
-        CategoriesRoute {
+        CategoriesRoute(windowSizeClass = windowSizeClass) {
             onOpenCategory(it.strCategory)
         }
     }
@@ -30,9 +31,9 @@ fun NavGraphBuilder.categoriesScreen(onOpenCategory: (String) -> Unit, categoryD
 }
 
 @Composable
-fun CategoriesRoute(viewModel: CategoriesViewModel = hiltViewModel(), onOpenCategory: (AbstractCategory) -> Unit) {
+fun CategoriesRoute(viewModel: CategoriesViewModel = hiltViewModel(), windowSizeClass: WindowSizeClass, onOpenCategory: (AbstractCategory) -> Unit) {
     val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
-    CategoriesScreen(categoryUiState = homeUiState, onOpenCategory = onOpenCategory, onReload =  { viewModel.reload() })
+    CategoriesScreen(categoryUiState = homeUiState, windowSizeClass = windowSizeClass, onOpenCategory = onOpenCategory, onReload =  { viewModel.reload() })
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

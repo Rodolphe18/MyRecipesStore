@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.compose.favorites
 
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,15 +22,15 @@ fun NavController.navigateToFavoriteScreen(navOptions: NavOptions? = null) {
     this.navigate(FAVORITE_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.favoritesScreen(onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.favoritesScreen(windowSizeClass: WindowSizeClass,onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     composable(route = FAVORITE_ROUTE) {
-        FavoriteRoute(onRecipeClick = { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite)
+        FavoriteRoute(windowSizeClass = windowSizeClass, onRecipeClick = { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite)
     recipeDetailDestination()
 }
 }
 
 @Composable
-fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), onRecipeClick: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit) {
+fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), windowSizeClass: WindowSizeClass, onRecipeClick: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit) {
     val favoriteUiState by viewModel.favoritesRecipesState.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
 
@@ -38,6 +39,7 @@ fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), onRecipeClick: (Lis
     }
     FavoritesScreen(
         favoriteUiState = favoriteUiState,
+        windowSizeClass = windowSizeClass,
         searchText = searchText,
         onSearchTextChanged = viewModel::onSearchTextChange,
         onReload = {},

@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,7 +64,7 @@ import kotlinx.coroutines.launch
     ExperimentalMaterial3Api::class
 )
 @Composable
-fun FoodApp(@ApplicationContext context: Context, appState: AppState) {
+fun FoodApp(@ApplicationContext context: Context, appState: AppState, windowSizeClass: WindowSizeClass) {
     val isAuthenticated by appState.authManager.isAuthenticated.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -165,6 +166,7 @@ fun FoodApp(@ApplicationContext context: Context, appState: AppState) {
                 modifier = Modifier
                     .padding(padding)
                     .consumeWindowInsets(padding),
+                windowSizeClass = windowSizeClass
             )
             LaunchedEffect(Unit) {
                 appState.favoriteManager.snackBarMessage.collect { message ->

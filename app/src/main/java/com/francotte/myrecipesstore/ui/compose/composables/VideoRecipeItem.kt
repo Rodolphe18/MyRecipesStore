@@ -39,17 +39,26 @@ fun VideoRecipeItem(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenRecipe: () -> Unit,
-    onVideoButtonClick:()->Unit,
+    onVideoButtonClick: () -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(horizontal = 16.dp).height(360.dp)
-        .aspectRatio(1f)
-        .clip(RoundedCornerShape(16.dp))
-        .background(MaterialTheme.colorScheme.surfaceVariant)
-        .clickable { onOpenRecipe() }) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .height(360.dp)
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable { onOpenRecipe() }) {
         Box {
             Image(
                 painter =
-                    rememberAsyncImagePainter(model = imageRequestBuilder(LocalContext.current, likeableRecipe.recipe.strMealThumb)),
+                    rememberAsyncImagePainter(
+                        model = imageRequestBuilder(
+                            LocalContext.current,
+                            likeableRecipe.recipe.strMealThumb
+                        )
+                    ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

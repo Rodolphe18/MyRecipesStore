@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -33,11 +34,14 @@ import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgres
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
 import com.francotte.myrecipesstore.ui.compose.composables.SectionTitle
+import com.francotte.myrecipesstore.ui.compose.composables.nbCategoriesColumns
+import com.francotte.myrecipesstore.ui.compose.composables.nbFavoritesColumns
 import com.francotte.myrecipesstore.ui.compose.user_recipes.UserRecipesScreen
 
 @Composable
 fun FavoritesScreen(
     viewModel: FavViewModel= hiltViewModel<FavViewModel>(),
+    windowSizeClass: WindowSizeClass,
     favoriteUiState: FavoriteUiState,
     searchText: String,
     onSearchTextChanged: (String) -> Unit,
@@ -80,7 +84,7 @@ fun FavoritesScreen(
                 }
                 LazyVerticalGrid(
                     state = rememberLazyGridState(),
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbFavoritesColumns),
                     reverseLayout = false,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),

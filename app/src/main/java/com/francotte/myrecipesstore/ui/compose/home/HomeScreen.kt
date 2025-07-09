@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -24,6 +28,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -52,12 +58,17 @@ import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.HorizontalRecipesList
 import com.francotte.myrecipesstore.ui.compose.composables.ListWithBanners
 import com.francotte.myrecipesstore.ui.compose.composables.SectionTitle
+import com.francotte.myrecipesstore.ui.compose.composables.SimpleHorizontalRecipesList
 import com.francotte.myrecipesstore.ui.compose.composables.VideoRecipeItem
+import com.francotte.myrecipesstore.ui.compose.composables.nbHomeColumns
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
+    windowSizeClass: WindowSizeClass,
     onReload: () -> Unit,
     latestRecipes: LatestRecipes,
     americanRecipes: AmericanRecipes,
@@ -68,76 +79,103 @@ fun HomeScreen(
     onOpenSection: (String) -> Unit,
     onVideoButtonClick: (String) -> Unit
 ) {
-    val scrollState = rememberLazyListState()
-    val loadMore by remember { derivedStateOf { scrollState.layoutInfo.visibleItemsInfo.size > 1 } }
+    val spanSize =
+        if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) GridItemSpan(1) else GridItemSpan(
+            2
+        )
+    val scrollState = rememberLazyGridState()
     var hasLoadedMore by remember { mutableStateOf(false) }
-    LaunchedEffect(loadMore) {
-        if (loadMore && !hasLoadedMore) {
-            viewModel.loadMore()
-            hasLoadedMore = true
-        }
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.firstVisibleItemScrollOffset }
+            .filter { it > 100 && !hasLoadedMore }
+            .distinctUntilChanged()
+            .collect {
+                viewModel.loadMore()
+                hasLoadedMore = true
+            }
     }
-    val isDataReady = latestRecipes is LatestRecipes.Success && americanRecipes is AmericanRecipes.Success
+    val isDataReady =
+        latestRecipes is LatestRecipes.Success && americanRecipes is AmericanRecipes.Success
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then( if(isDataReady)
-                Modifier.testTag("homeScreenReady").semantics { contentDescription = "homeScreenReady" } else Modifier
+            .then(
+                if (isDataReady)
+                    Modifier
+                        .testTag("homeScreenReady")
+                        .semantics { contentDescription = "homeScreenReady" } else Modifier
             )
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().testTag("feed")
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("feed")
                 .semantics { contentDescription = "feed" },
             state = scrollState,
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 16.dp),
+            columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbHomeColumns)
         ) {
-            item {
+            item(span = { spanSize }) {
                 // Latest Recipes Section
-                SectionTitle(
-                    title = "LatestRecipes",
-                    count = null,
-                    showNavIcon = false
-                )
-                when (latestRecipes) {
-                    LatestRecipes.Error -> ErrorScreen { }
-                    LatestRecipes.Loading -> CustomCircularProgressIndicator()
-                    is LatestRecipes.Success -> {
-                        val pagerState = rememberPagerState(
-                            initialPage = 0,
-                            pageCount = { latestRecipes.latestRecipes.size }
-                        )
-                        LaunchedEffect(pagerState) {
-                            snapshotFlow { pagerState.currentPage }.collect { newPage ->
-                                viewModel.currentPage = newPage
-                            }
-                        }
-                        HorizontalPager(state = pagerState) { index ->
-                            VideoRecipeItem(
-                                modifier = Modifier.testTag("VideoRecipeItem_$index").semantics { contentDescription = "VideoRecipeItem_$index" },
-                                likeableRecipe = latestRecipes.latestRecipes[index],
-                                onOpenRecipe = {
-                                    onOpenRecipe(
-                                        latestRecipes.latestRecipes.map { it.recipe.idMeal },
-                                        index,
-                                        latestRecipes.latestRecipes[index].recipe.strMeal
-                                    )
-                                },
-                                onToggleFavorite = onToggleFavorite,
-                                onVideoButtonClick = {
-                                    onVideoButtonClick((latestRecipes.latestRecipes[index].recipe as Recipe).strYoutube)
+                Column {
+                    SectionTitle(
+                        title = "LatestRecipes",
+                        count = null,
+                        showNavIcon = false
+                    )
+                    when (latestRecipes) {
+                        LatestRecipes.Error -> ErrorScreen { }
+                        LatestRecipes.Loading -> CustomCircularProgressIndicator()
+                        is LatestRecipes.Success -> {
+                            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+                                val pagerState = rememberPagerState(
+                                    initialPage = 0,
+                                    pageCount = { latestRecipes.latestRecipes.size }
+                                )
+                                LaunchedEffect(pagerState) {
+                                    snapshotFlow { pagerState.currentPage }.collect { newPage ->
+                                        viewModel.currentPage = newPage
+                                    }
                                 }
-                            )
+                                HorizontalPager(state = pagerState) { index ->
+                                    VideoRecipeItem(
+                                        modifier = Modifier
+                                            .testTag("VideoRecipeItem_$index")
+                                            .semantics {
+                                                contentDescription = "VideoRecipeItem_$index"
+                                            },
+                                        likeableRecipe = latestRecipes.latestRecipes[index],
+                                        onOpenRecipe = {
+                                            onOpenRecipe(
+                                                latestRecipes.latestRecipes.map { it.recipe.idMeal },
+                                                index,
+                                                latestRecipes.latestRecipes[index].recipe.strMeal
+                                            )
+                                        },
+                                        onToggleFavorite = onToggleFavorite,
+                                        onVideoButtonClick = {
+                                            onVideoButtonClick((latestRecipes.latestRecipes[index].recipe as Recipe).strYoutube)
+                                        }
+                                    )
+                                }
+                            } else {
+                                SimpleHorizontalRecipesList(
+                                    latestRecipes.latestRecipes,
+                                    onOpenRecipe = onOpenRecipe,
+                                    onToggleFavorite = onToggleFavorite
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            item {
+            item(span = { spanSize }) {
                 Spacer(Modifier.height(16.dp))
                 AdMobBanner(height = 50.dp)
             }
 
-            item {
+            item(span = { spanSize }) {
                 when (americanRecipes) {
                     AmericanRecipes.Error -> ErrorScreen { }
                     AmericanRecipes.Loading -> CustomCircularProgressIndicator()
@@ -153,14 +191,15 @@ fun HomeScreen(
                 }
             }
 
+
             // Load more section
-            if (loadMore) {
+            if (hasLoadedMore) {
                 when (areasRecipes) {
                     AreasRecipes.Error -> item { ErrorScreen { } }
-                    AreasRecipes.Loading -> item {  }
+                    AreasRecipes.Loading -> item { }
                     is AreasRecipes.Success -> {
                         areasRecipes.areasRecipes.forEach { (key, list) ->
-                            item {
+                            item(span = { spanSize }) {
                                 HorizontalRecipesList(
                                     key,
                                     list,
@@ -173,7 +212,7 @@ fun HomeScreen(
                     }
                 }
 
-                item {
+                item(span = { spanSize }) {
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         Spacer(Modifier.height(12.dp))
                         Text(

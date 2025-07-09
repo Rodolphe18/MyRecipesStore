@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,12 +41,15 @@ import com.francotte.myrecipesstore.domain.model.Category
 import com.francotte.myrecipesstore.network.model.NetworkCategory
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
+import com.francotte.myrecipesstore.ui.compose.composables.nbCategoriesColumns
+import com.francotte.myrecipesstore.ui.compose.composables.nbHomeColumns
 import com.francotte.myrecipesstore.ui.theme.Orange
 import com.francotte.myrecipesstore.util.imageRequestBuilder
 
 @Composable
 fun CategoriesScreen(
     categoryUiState: CategoriesUiState,
+    windowSizeClass: WindowSizeClass,
     onReload: () -> Unit,
     onOpenCategory: (AbstractCategory) -> Unit
 ) {
@@ -57,7 +61,7 @@ fun CategoriesScreen(
             (categoryUiState.categories as? List<AbstractCategory>)?.let { categories ->
                 LazyVerticalGrid(
                     state = lazyListState,
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbCategoriesColumns),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(20.dp)

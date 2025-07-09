@@ -51,3 +51,32 @@ fun HorizontalRecipesList(
         }
     }
 }
+
+@Composable
+fun SimpleHorizontalRecipesList(
+    recipes: List<LikeableRecipe>,
+    onOpenRecipe: (List<String>,Int,String) -> Unit,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
+) {
+    val listState = rememberLazyListState()
+    Column(modifier = Modifier.padding(top = 10.dp)) {
+        if (recipes.isNotEmpty()) {
+            LazyRow(
+                state = listState,
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                itemsIndexed(
+                    items = recipes,
+                    key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal}) { index, likeableRecipe ->
+                    RecipeItem(
+                        likeableRecipe = likeableRecipe,
+                        onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
+                        onToggleFavorite = onToggleFavorite,
+                    )
+                }
+            }
+        }
+    }
+}

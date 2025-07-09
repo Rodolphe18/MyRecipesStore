@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.categories.category
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,19 +23,19 @@ fun NavController.navigateToCategoryScreen(category: String, navOptions: NavOpti
     }
 }
 
-fun NavGraphBuilder.categoryScreen(onBackClick: () -> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoryScreen(windowSizeClass:WindowSizeClass,onBackClick: () -> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
     composable<CategoryNavigationRoute> {
-        CategoryRoute(onOpenRecipe =  { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite, onBack= onBackClick)
+        CategoryRoute(windowSizeClass = windowSizeClass,onOpenRecipe =  { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite, onBack= onBackClick)
     }
     recipeDetailDestination()
 }
 
 @Composable
-fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: (List<String>, Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onBack:()->Unit) {
+fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(),windowSizeClass:WindowSizeClass, onOpenRecipe: (List<String>, Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onBack:()->Unit) {
     val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
     val title = viewModel.category
 
-    CategoryScreen(categoryUiState = uiState, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack)
+    CategoryScreen(categoryUiState = uiState,windowSizeClass = windowSizeClass, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack)
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

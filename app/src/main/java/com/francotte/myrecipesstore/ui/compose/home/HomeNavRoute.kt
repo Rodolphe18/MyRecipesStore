@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.ui.compose.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,7 +35,8 @@ fun NavGraphBuilder.homeScreen(
     sectionDestination: NavGraphBuilder.() -> Unit,
     recipeDetailDestination: NavGraphBuilder.() -> Unit,
     videoDestination: NavGraphBuilder.() -> Unit,
-    onVideoButtonClick: (String) -> Unit
+    onVideoButtonClick: (String) -> Unit,
+    windowSizeClass: WindowSizeClass
 ) {
     navigation(startDestination = HOME_ROUTE, route = BASE_ROUTE) {
         composable(route = HOME_ROUTE) {
@@ -42,7 +44,8 @@ fun NavGraphBuilder.homeScreen(
                 onRecipeClick = { ids, index, title -> onRecipeClick(ids, index, title) },
                 onToggleFavorite = onToggleFavorite,
                 onOpenSection = { onOpenSection(it) },
-                onVideoButtonClick = onVideoButtonClick
+                onVideoButtonClick = onVideoButtonClick,
+                windowSizeClass = windowSizeClass
             )
         }
         sectionDestination()
@@ -59,7 +62,8 @@ fun HomeRoute(
     onRecipeClick: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenSection: (String) -> Unit,
-    onVideoButtonClick: (String) -> Unit
+    onVideoButtonClick: (String) -> Unit,
+    windowSizeClass: WindowSizeClass
 ) {
     val latestRecipes by homeViewModel.latestRecipes.collectAsStateWithLifecycle()
     val americanRecipes by homeViewModel.americanRecipes.collectAsStateWithLifecycle()
@@ -78,7 +82,8 @@ fun HomeRoute(
             onOpenSection = onOpenSection,
             onReload = {  },
             onToggleFavorite = onToggleFavorite,
-            onVideoButtonClick = onVideoButtonClick
+            onVideoButtonClick = onVideoButtonClick,
+            windowSizeClass = windowSizeClass
         )
         if (mainUiState.shouldShowToolTipEffect() && ScreenCounter.screenCount.get() < 2 && launchCount < 3) {
             CustomTooltip(
