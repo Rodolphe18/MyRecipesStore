@@ -43,7 +43,7 @@ object ApiModule {
 
     private inline fun <reified A> providesUserApi(okhttpCallFactory: dagger.Lazy<Call.Factory>, json: Json): A {
         return Retrofit.Builder()
-            .baseUrl("http://46.202.170.205:8080")
+            .baseUrl("https://www.myrecipesstore18.com")
             .callFactory { okhttpCallFactory.get().newCall(it) }
             .addConverterFactory(
                 json.asConverterFactory("application/json".toMediaType()),
