@@ -3,7 +3,7 @@ package com.francotte.myrecipesstore.domain.model
 
 import kotlinx.serialization.Serializable
 
-data class Categories(val categories:List<AbstractCategory>)
+data class Categories(val meals:List<AbstractCategory>)
 
 
 sealed class AbstractCategory {

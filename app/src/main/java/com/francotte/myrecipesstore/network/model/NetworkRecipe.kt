@@ -3,6 +3,7 @@ package com.francotte.myrecipesstore.network.model
 import com.francotte.myrecipesstore.database.model.FullRecipeEntity
 import com.francotte.myrecipesstore.database.model.LightRecipeEntity
 import com.francotte.myrecipesstore.datastore.UserData
+import com.francotte.myrecipesstore.domain.model.LightRecipe
 import com.francotte.myrecipesstore.domain.model.Recipe
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
@@ -163,6 +164,13 @@ fun NetworkRecipe.asEntity(): FullRecipeEntity =
         strImageSource = strImageSource,
         strCreativeCommonsConfirmed = strCreativeCommonsConfirmed,
         dateModified = dateModified
+    )
+
+fun NetworkLightRecipe.asExternalModel() : LightRecipe =
+    LightRecipe(
+        strMeal = strMeal,
+        strMealThumb = strMealThumb,
+        idMeal = idMeal
     )
 
 fun NetworkRecipe.asExternalModel() : Recipe =

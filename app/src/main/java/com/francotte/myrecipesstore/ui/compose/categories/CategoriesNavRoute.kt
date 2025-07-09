@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.compose.categories
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -10,6 +11,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.domain.model.AbstractCategory
 import com.francotte.myrecipesstore.network.model.NetworkCategory
+import com.francotte.myrecipesstore.util.ScreenCounter
 import kotlinx.serialization.Serializable
 
 const val CATEGORIES_ROUTE = "categories_route"
@@ -31,4 +33,7 @@ fun NavGraphBuilder.categoriesScreen(onOpenCategory: (String) -> Unit, categoryD
 fun CategoriesRoute(viewModel: CategoriesViewModel = hiltViewModel(), onOpenCategory: (AbstractCategory) -> Unit) {
     val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
     CategoriesScreen(categoryUiState = homeUiState, onOpenCategory = onOpenCategory, onReload =  { viewModel.reload() })
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 }

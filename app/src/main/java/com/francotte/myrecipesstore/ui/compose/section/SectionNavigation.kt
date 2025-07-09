@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.compose.section
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -9,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.util.ScreenCounter
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -45,6 +47,9 @@ fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFa
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
     val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()
     SectionScreen(uiState, sectionTitle,{}, onToggleFavorite, onOpenRecipe, onBackClick)
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 
 }
 

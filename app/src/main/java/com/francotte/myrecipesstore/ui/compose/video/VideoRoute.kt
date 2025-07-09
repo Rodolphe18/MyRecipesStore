@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.francotte.myrecipesstore.util.ScreenCounter
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -119,10 +121,16 @@ fun VideoFullScreen(
             modifier = Modifier.fillMaxSize()
         )
     }
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 }
 
-fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
+fun Context.findActivity(): Activity {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    throw IllegalStateException("Context is not an Activity.")
 }

@@ -2,26 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".FoodApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:usesCleartextTraffic="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/ic_custom_launcher_foreground"
+        android:label="baselineprofile"
+        android:roundIcon="@mipmap/ic_custom_launcher_foreground"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyRecipesStore"
+        android:theme="@style/Theme.MyRecipesStore.SplashScreen"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <profileable
+            android:shell="true"
+            tools:targetApi="29" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.MyRecipesStore">
+            android:theme="@style/Theme.MyRecipesStore.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -29,9 +32,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="myapp"
                     android:host="recipe"
-                    android:pathPattern="/.*" />
+                    android:pathPattern="/.*"
+                    android:scheme="myapp" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,17 +42,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove">
-        </provider>
+            tools:node="remove"></provider>
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="1210330677148706" />
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
             android:value="6532d330d63d15c5c97407ef7b06a79d" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
     </application>
 
 </manifest>

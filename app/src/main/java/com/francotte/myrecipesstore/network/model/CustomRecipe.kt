@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.network.model
 
 import android.content.Context
 import android.net.Uri
+import com.francotte.myrecipesstore.domain.model.LightRecipe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -23,6 +24,7 @@ data class CustomRecipe(val id:String, val title: String,
                         val ingredients: List<Ingredient>,
                         val instructions: String,
                         val imageUrls: List<String>)
+
 
 fun uriToMultipart(uri: Uri, context: Context, partName: String = "images"): MultipartBody.Part? {
     val contentResolver = context.contentResolver

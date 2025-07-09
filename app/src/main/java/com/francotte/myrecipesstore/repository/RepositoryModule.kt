@@ -10,8 +10,11 @@ import com.francotte.myrecipesstore.database.repository.OfflineFirstFavoritesRep
 import com.francotte.myrecipesstore.database.repository.OfflineFirstFullRecipeRepository
 import com.francotte.myrecipesstore.database.repository.OfflineFirstFullRecipeRepositoryImpl
 import com.francotte.myrecipesstore.database.repository.OfflineFirstHomeRepository
+import com.francotte.myrecipesstore.database.repository.OfflineSearchRepository
+import com.francotte.myrecipesstore.database.repository.OfflineSearchRepositoryImpl
 import com.francotte.myrecipesstore.database.repository.RecipesRepository
 import com.francotte.myrecipesstore.datastore.UserDataSource
+import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.network.api.RecipeApi
 import dagger.Module
 import dagger.Provides
@@ -22,6 +25,17 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
+
+    @Singleton
+    @Provides
+    fun provideOfflineSearchRepository(api: RecipeApi): OfflineSearchRepository = OfflineSearchRepositoryImpl(api)
+
+    @Singleton
+    @Provides
+    fun provideSearchRepository(homeRepository: OfflineFirstHomeRepository,
+                                offlineSearchRepository: OfflineSearchRepository,
+                                userDataSource: UserDataSource): SearchRepository = SearchRepositoryImpl(homeRepository, offlineSearchRepository, userDataSource)
+
 
     @Singleton
     @Provides
@@ -50,6 +64,6 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideFavoritesRepository(offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository, userDataSource: UserDataSource): FavoritesRepository = FavoritesRepositoryImpl(offlineFirstFavoritesRepository, userDataSource)
+    fun provideFavoritesRepository(offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository, userDataSource: UserDataSource, favoriteManager: FavoriteManager): FavoritesRepository = FavoritesRepositoryImpl(offlineFirstFavoritesRepository,favoriteManager, userDataSource)
 
 }

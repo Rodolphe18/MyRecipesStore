@@ -16,6 +16,9 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
@@ -52,6 +55,7 @@ fun SectionScreen(
             SectionUiState.Error -> ErrorScreen { onReload() }
             is SectionUiState.Success -> {
                 LazyVerticalGrid(
+                    modifier = Modifier.testTag("full_section_screen").semantics { contentDescription = "full_section_screen" },
                     state = rememberLazyGridState(),
                     columns = GridCells.Fixed(2),
                     reverseLayout = false,

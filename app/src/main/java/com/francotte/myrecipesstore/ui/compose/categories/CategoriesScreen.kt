@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.ui.compose.categories
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,15 +28,20 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.francotte.myrecipesstore.domain.model.AbstractCategory
 import com.francotte.myrecipesstore.domain.model.Category
 import com.francotte.myrecipesstore.network.model.NetworkCategory
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
+import com.francotte.myrecipesstore.ui.theme.Orange
+import com.francotte.myrecipesstore.util.imageRequestBuilder
 
 @Composable
 fun CategoriesScreen(
@@ -79,7 +85,7 @@ fun CategoryItem(imageUrl: String, title: String, onClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(130.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .clickable { onClick() }) {
             GradientBackGround(Modifier.fillMaxSize())
@@ -97,8 +103,8 @@ fun CategoryImage(modifier: Modifier = Modifier, imageUrl: String) {
         modifier = modifier,
         contentScale = ContentScale.FillBounds,
         contentDescription = "",
-        painter = rememberAsyncImagePainter(model = imageUrl),
-    )
+        painter = rememberAsyncImagePainter(
+            imageRequestBuilder(LocalContext.current, imageUrl)))
 }
 
 @Composable
@@ -115,13 +121,7 @@ fun GradientBackGround(modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .scale(maxOf(aspectRatio, 1f), maxOf(1 / aspectRatio, 1f))
                 .background(
-                    brush = Brush.radialGradient(
-                        colorStops =
-                            arrayOf(
-                                0f to Color.LightGray,
-                                0.35f to Color.LightGray,
-                                0.8f to Color.LightGray),
-                    )
+                    color = Color.LightGray.copy(alpha = 0.4f)
                 )
         )
     }

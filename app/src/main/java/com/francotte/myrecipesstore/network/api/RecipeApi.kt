@@ -1,7 +1,12 @@
 package com.francotte.myrecipesstore.network.api
 
 
+import com.francotte.myrecipesstore.domain.model.AbstractCategory
+import com.francotte.myrecipesstore.network.model.NetworkArea
+import com.francotte.myrecipesstore.network.model.NetworkAreas
 import com.francotte.myrecipesstore.network.model.NetworkCategories
+import com.francotte.myrecipesstore.network.model.NetworkIngredient
+import com.francotte.myrecipesstore.network.model.NetworkIngredients
 import com.francotte.myrecipesstore.network.model.NetworkRecipeResult
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -36,7 +41,15 @@ interface RecipeApi {
 
     // List all Area
     @GET("list.php")
-    suspend fun getAllAreas(@Query("a") list: String = "list"): NetworkRecipeResult
+    suspend fun getAllAreas(@Query("a") list: String = "list"): NetworkAreas
+
+    // List all Ingredients
+    @GET("list.php")
+    suspend fun getAllIngredients(@Query("i") list: String = "list"): NetworkIngredients
+
+    // List all Categories
+    @GET("list.php")
+    suspend fun getAllCategories(@Query("c") list: String = "list"): NetworkCategories
 
     // Filter by multi-ingredient
     @GET("filter.php")

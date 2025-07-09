@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.francotte.myrecipesstore.domain.model.Category
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.repository.HomeRepository
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
@@ -20,15 +21,17 @@ class CategoryViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
 
     val categoryUiState = repository
         .observeRecipesByCategory(category)
-        .map { result ->
-            if (result.isSuccess) {
-                CategoryUiState.Success(result.getOrDefault(emptyList()))
-            } else {
-                CategoryUiState.Error
-            }
-        }
+        .map(::mapToUiState)
         .stateIn(viewModelScope, restartableWhileSubscribed, CategoryUiState.Loading)
 
+
+    fun mapToUiState(result: Result<List<LikeableRecipe>>): CategoryUiState {
+       return if (result.isSuccess) {
+            CategoryUiState.Success(recipes = result.getOrDefault(emptyList()))
+        } else {
+            CategoryUiState.Error
+        }
+    }
 
     fun reload() {
         viewModelScope.launch {

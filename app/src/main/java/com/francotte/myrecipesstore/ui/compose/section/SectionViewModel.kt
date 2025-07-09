@@ -25,30 +25,16 @@ class SectionViewModel @Inject constructor(
 
     val section = MutableStateFlow(sectionName).asStateFlow()
 
-    val sectionUiState = when (sectionName) {
-        "latest_recipes" -> repository
-            .observeLatestRecipes()
-            .map { result ->
-                if (result.isSuccess) {
-                    SectionUiState.Success(result.getOrDefault(emptyList()))
-                } else {
-                    SectionUiState.Error
-                }
+    val sectionUiState = repository
+        .observeFoodAreaSection(sectionName)
+        .map { result ->
+            if (result.isSuccess) {
+                SectionUiState.Success(result.getOrDefault(emptyList()))
+            } else {
+                SectionUiState.Error
             }
-            .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
-
-        else -> repository
-            .observeFoodAreaSection(sectionName)
-            .map { result ->
-                if (result.isSuccess) {
-                    SectionUiState.Success(result.getOrDefault(emptyList()))
-                } else {
-                    SectionUiState.Error
-                }
-            }
-            .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
-
-    }
+        }
+        .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
 
 
     fun reload() {

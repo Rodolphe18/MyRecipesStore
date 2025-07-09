@@ -32,14 +32,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.network.model.CustomRecipe
 import com.francotte.myrecipesstore.ui.theme.Orange
+import com.francotte.myrecipesstore.util.imageRequestBuilder
 
 @Composable
 fun RecipeItem(
@@ -47,6 +54,7 @@ fun RecipeItem(
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenRecipe: () -> Unit,
 ) {
+    val context = LocalContext.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
@@ -57,7 +65,9 @@ fun RecipeItem(
                 .clickable { onOpenRecipe() }
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
+                painter = rememberAsyncImagePainter(
+                    model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb)
+                ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -84,6 +94,47 @@ fun RecipeItem(
     }
 }
 
+@Composable
+fun CustomRecipeItem(
+    customRecipe: CustomRecipe,
+    onOpenRecipe: () -> Unit,
+) {
+    val baseUrl = "http://46.202.170.205:8080/"
+    val image = customRecipe.imageUrls.firstOrNull()
+    val fullUrl = baseUrl + image
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .height(180.dp)
+                .aspectRatio(1.5f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { onOpenRecipe() }
+        ) {
+//            if (fullUrl != null) {
+//                Image(
+//                    painter = rememberAsyncImagePainter(model = image),
+//                    contentDescription = image,
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                )
+//            } else {
+            Image(painterResource(R.drawable.istockphoto_1130112004_2048x2048), null)
+            //    }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = customRecipe.title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            modifier = Modifier.width(180.dp)
+        )
+    }
+}
 
 
 @Composable
@@ -92,17 +143,19 @@ fun BigRecipeItem(
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenRecipe: () -> Unit,
 ) {
-    Column(Modifier.padding(vertical = 12.dp)) {
+    Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16/9f)
+                .aspectRatio(16 / 9f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { onOpenRecipe() }
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
+                painter = rememberAsyncImagePainter(
+                    model = imageRequestBuilder(LocalContext.current, likeableRecipe.recipe.strMealThumb)
+                ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -133,8 +186,8 @@ fun BigRecipeItem(
 fun FavButton(
     modifier: Modifier = Modifier,
     isFavorite: Boolean,
-    buttonSize: Dp =45.dp,
-    iconSize:Dp= 25.dp,
+    buttonSize: Dp = 45.dp,
+    iconSize: Dp = 25.dp,
     onToggleFavorite: (Boolean) -> Unit
 ) {
     val transition = updateTransition(label = "favorite", targetState = isFavorite)
@@ -155,7 +208,9 @@ fun FavButton(
         Icon(
             imageVector = Icons.Default.Favorite,
             contentDescription = null,
-            modifier = Modifier.align(Alignment.Center).size(iconSize),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(iconSize),
             tint = iconColor
         )
     }

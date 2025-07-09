@@ -11,6 +11,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.network.model.CustomRecipe
+import com.francotte.myrecipesstore.util.ScreenCounter
 import kotlinx.serialization.Serializable
 
 const val FAVORITE_ROUTE = "favorite_route"
@@ -42,6 +44,7 @@ fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), onRecipeClick: (Lis
         onOpenRecipe = onRecipeClick,
         onToggleFavorite = onToggleFavorite
     )
+    ScreenCounter.increment()
 }
 
 

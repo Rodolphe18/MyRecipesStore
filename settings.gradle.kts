@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MyRecipesStore"
 include(":app")
- 
+include(":benchmark")

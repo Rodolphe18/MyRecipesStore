@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "823283897756",
+    "project_id": "myrecipesstore-57584",
+    "storage_bucket": "myrecipesstore-57584.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823283897756:android:b2ac821c6e97ebc3be2459",
+        "android_client_info": {
+          "package_name": "com.francotte.myrecipesstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCAEAWcVYyF22wsPzXBHnDrM2VNlRjAiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -13,6 +13,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.domain.model.Recipe
@@ -28,11 +31,11 @@ fun HorizontalRecipesList(
     val listState = rememberLazyListState()
     Column(modifier = Modifier.padding(top = 10.dp)) {
         if (recipes.isNotEmpty()) {
-            SectionTitle(title, recipes.size, onOpenSection)
+            SectionTitle(modifier = Modifier.testTag("SectionTitle_$title").semantics { contentDescription = "SectionTitle_$title" },title = title, count = recipes.size, onOpenMore = onOpenSection)
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 itemsIndexed(
@@ -47,18 +50,4 @@ fun HorizontalRecipesList(
             }
         }
     }
-}
-
-@Composable
-fun HorizontalVideoRecipesPager(
-    title: String,
-    pageCount:Int,
-    currentIndex:Int,
-    recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>,Int,String) -> Unit,
-    onOpenSection: (String) -> Unit,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
-    onVideoButtonClick: (String) -> Unit
-) {
-
 }

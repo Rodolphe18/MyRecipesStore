@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.compose.categories.category
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -9,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.util.ScreenCounter
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,5 +35,7 @@ fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(), onOpenRecipe: 
     val title = viewModel.category
 
     CategoryScreen(categoryUiState = uiState, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack)
-
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 }

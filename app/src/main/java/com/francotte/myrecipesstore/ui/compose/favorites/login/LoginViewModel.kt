@@ -12,6 +12,7 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.francotte.myrecipesstore.manager.AuthManager
 import com.francotte.myrecipesstore.network.model.AuthRequest
+import com.francotte.myrecipesstore.network.model.GoogleIdTokenRequest
 import com.francotte.myrecipesstore.network.model.Provider
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -113,15 +114,10 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager, h
     fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
         viewModelScope.launch {
             try {
-                val account = signInTask.await()
-                try {
-                    authManager.loginByGoogle(account)
-                    onSuccess(Provider.GOOGLE)
-                } catch (e: Exception) {
-                    Log.d("debug_google", "error")
-                }
+               authManager.doGoogleLogin(signInTask)
+                onSuccess(Provider.GOOGLE)
             } catch (e: Exception) {
-                Log.d("debug_google", "error")
+                Log.e("debug_google", "Erreur récupération compte Google", e)
             }
         }
     }

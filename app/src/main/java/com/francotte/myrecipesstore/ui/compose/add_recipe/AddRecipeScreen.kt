@@ -45,13 +45,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.francotte.myrecipesstore.network.model.Ingredient
 import java.io.ByteArrayOutputStream
 
 
 @Composable
-fun AddRecipeScreen(modifier: Modifier=Modifier,
-    onSubmit: (title: String, ingredients: List<Ingredient>, instructions: String, images: List<Uri>) -> Unit
+fun AddRecipeScreen(onSubmit: (title: String, ingredients: List<Ingredient>, instructions: String, images: List<Uri>) -> Unit
 ) {
     val context = LocalContext.current
     val imageUris = remember { mutableStateListOf<Uri>() }
@@ -72,12 +73,12 @@ fun AddRecipeScreen(modifier: Modifier=Modifier,
     var currentIngredient by remember { mutableStateOf("") }
     var currentQuantity by remember { mutableStateOf("") }
 
-    Column(modifier = modifier
+    Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)
         .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Ajouter une recette", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = "Add a recipe", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(16.dp))
 
         // Titre
@@ -106,7 +107,12 @@ fun AddRecipeScreen(modifier: Modifier=Modifier,
         LazyRow {
             items(imageUris) { uri ->
                 Image(
-                    painter = rememberAsyncImagePainter(uri),
+                    painter = rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+                        .data(uri)
+                        .crossfade(true)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build()),
                     contentDescription = "Photo",
                     modifier = Modifier
                         .size(180.dp)

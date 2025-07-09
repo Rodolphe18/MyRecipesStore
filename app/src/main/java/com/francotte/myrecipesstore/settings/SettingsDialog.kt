@@ -23,7 +23,9 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +48,8 @@ import com.francotte.myrecipesstore.R
 fun SettingsDialog(
     onDismiss: () -> Unit,
     onLogout: () -> Unit,
-    onShareApp: () -> Unit
+    onShareApp: () -> Unit,
+    onSubscribedClick:()->Unit
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -111,6 +114,20 @@ fun SettingsDialog(
                     onClick = onLogout,
                     tint = Color.Red
                 )
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = "Premium",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Button(
+                    onClick = { onSubscribedClick() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Devenir Premium - 10€/mois")
+                }
             }
         },
         confirmButton = {
@@ -159,7 +176,6 @@ private fun SettingsActionItem(
 }
 
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LinksPanel() {
     FlowRow(
@@ -169,22 +185,22 @@ private fun LinksPanel() {
         ),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        WeatherAppTextButton(
+        FoodAppTextButton(
             onClick = { },
         ) {
             Text(text = stringResource(R.string.feature_settings_privacy_policy))
         }
-        WeatherAppTextButton(
+        FoodAppTextButton(
             onClick = {},
         ) {
             Text(text = stringResource(R.string.feature_settings_licenses))
         }
-        WeatherAppTextButton(
+        FoodAppTextButton(
             onClick = { },
         ) {
             Text(text = stringResource(R.string.feature_settings_brand_guidelines))
         }
-        WeatherAppTextButton(
+        FoodAppTextButton(
             onClick = { },
         ) {
             Text(text = stringResource(R.string.feature_settings_feedback))
@@ -193,7 +209,7 @@ private fun LinksPanel() {
 }
 
 @Composable
-fun WeatherAppTextButton(
+fun FoodAppTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,

@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.repository
 
+import android.util.Log
 import com.francotte.myrecipesstore.database.repository.OfflineFirstFullRecipeRepository
 import com.francotte.myrecipesstore.datastore.UserDataSource
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
@@ -20,6 +21,7 @@ class FullRecipeRepositoryImpl @Inject constructor(
     userDataSource.userData,
     offlineFullRecipeData.getRecipeDetail(id)
     ) { userData, fullRecipe ->
+        Log.d("debug_detail_repo", fullRecipe.strCategory)
         try {
             val likeableRecipe = fullRecipe.mapToLikeableFullRecipe(userData)
             Result.success(likeableRecipe)

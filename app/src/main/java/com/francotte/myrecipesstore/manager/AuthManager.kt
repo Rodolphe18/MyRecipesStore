@@ -7,6 +7,7 @@ import android.util.Log
 import com.facebook.AccessToken
 import com.facebook.LoginStatusCallback
 import com.facebook.login.LoginManager
+import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.database.dao.FullRecipeDao
 import com.francotte.myrecipesstore.network.model.AuthRequest
 import com.francotte.myrecipesstore.network.model.AuthResponse
@@ -15,9 +16,12 @@ import com.francotte.myrecipesstore.network.model.Provider
 import com.francotte.myrecipesstore.network.api.AuthApi
 import com.francotte.myrecipesstore.protobuf.User
 import com.francotte.myrecipesstore.datastore.UserDataSource
+import com.francotte.myrecipesstore.network.model.FacebookAccessTokenRequest
+import com.francotte.myrecipesstore.network.model.GoogleIdTokenRequest
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.Task
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,14 +31,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,35 +53,28 @@ import kotlin.coroutines.suspendCoroutine
 @Module
 @InstallIn(SingletonComponent::class)
 object AuthModule {
+
     @Singleton
     @Provides
-    fun provideAuthManager(@ApplicationContext context: Context, api: AuthApi,preferences: UserDataSource, fullRecipeDao: FullRecipeDao): AuthManager =
-        AuthManagerImpl(context, api,preferences,fullRecipeDao)
-}
+    fun provideAuthManager(
+        @ApplicationContext context: Context,
+        api: AuthApi,
+        preferences: UserDataSource,
+        fullRecipeDao: FullRecipeDao
+    ): AuthManager =
+        AuthManager(context, api, preferences, fullRecipeDao)
 
-interface AuthManager {
-    val googleSignInIntent:Intent
-    val credentials:StateFlow<UserCredentials?>
-    val isAuthenticated:StateFlow<Boolean>
-    suspend fun createGoogle(account: GoogleSignInAccount)
-    suspend fun createUser(authRequest: AuthRequest)
-    suspend fun createFacebook(token: String)
-    suspend fun loginByEmailPassword(email: String, password: String)
-    suspend fun loginByFacebook(token: AccessToken)
-    suspend fun recoverFacebookToken(): AccessToken?
-    suspend fun loginByGoogle(account: GoogleSignInAccount)
-    suspend fun deleteUser()
-    suspend fun logout()
+
 }
 
 
-@Suppress("TooManyFunctions")
-class AuthManagerImpl @Inject constructor(
+@Singleton
+class AuthManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: AuthApi,
     private val preferences: UserDataSource,
     private val dao: FullRecipeDao
-) : AuthManager {
+) {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -82,13 +82,13 @@ class AuthManagerImpl @Inject constructor(
         context,
         GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.google_server_client_id))
             .requestEmail()
             .requestProfile()
-            //  .requestServerAuthCode(context.getString(R.string.google_server_client_id))
             .build()
     )
 
-    override val googleSignInIntent: Intent
+    val googleSignInIntent: Intent
         get() = googleSignInClient.signInIntent
 
     private val userDataFlow = preferences.userData
@@ -97,17 +97,17 @@ class AuthManagerImpl @Inject constructor(
     val userCredentials = userDataFlow
         .map { userData ->
             UserCredentials(
-                userData.userInfo.user.id ?: return@map null,
+                userData.userInfo.user.id,
                 userData.userInfo.token.takeUnless(CharSequence::isBlank) ?: return@map null
             )
         }
 
-    override val credentials = userCredentials.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+    val credentials = userCredentials.stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
     private val authenticatedFlow = userDataFlow
         .map { userData -> userData.userInfo.connected && userData.userInfo.token.isNotBlank() }
 
-    override val isAuthenticated =
+    val isAuthenticated =
         authenticatedFlow.stateIn(coroutineScope, SharingStarted.Eagerly, false)
 
     val user = userDataFlow
@@ -118,26 +118,23 @@ class AuthManagerImpl @Inject constructor(
         }
         .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
+    val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
-    suspend fun checkAuthenticated(): Boolean {
-        return authenticatedFlow.firstOrNull() == true
-    }
 
-    override suspend fun loginByEmailPassword(email: String, password: String) {
+    suspend fun loginByEmailPassword(email: String, password: String) {
         try {
-            Log.d("debug_login5", "5")
+
             onAuthResponse(
                 Provider.EMAIL,
-                api.authenticate(AuthRequest(username = email, password = password))
+                api.authUser(AuthRequest(username = email, password = password))
             )
-            Log.d("debug_login6", "6")
+            snackBarMessage.tryEmit("Welcome back $email")
         } catch (e: Exception) {
             Log.d("debug_on_auth_response", "on_auth_response")
         }
     }
 
-    override suspend fun recoverFacebookToken(): AccessToken? {
-        // Check if user is still logged-in
+    suspend fun recoverFacebookToken(): AccessToken? {
         val recoveredAccessToken =
             AccessToken.getCurrentAccessToken()?.takeUnless(AccessToken::isExpired) ?: try {
                 suspendCoroutine { cont ->
@@ -171,42 +168,68 @@ class AuthManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun loginByFacebook(token: AccessToken) {
-        //   onAuthResponse(Provider.FACEBOOK, api.authenticateWithFacebook(token.token.toRequestBody()))
+    suspend fun loginByFacebook(token: AccessToken) {
+        onAuthResponse(Provider.FACEBOOK, api.authFacebook(FacebookAccessTokenRequest(token.token)))
     }
 
-    override suspend fun loginByGoogle(account: GoogleSignInAccount) {
-        //   onAuthResponse(Provider.GOOGLE, api.authenticateWithGoogle(requireNotNull(account.serverAuthCode).toRequestBody()))
+    suspend fun loginByGoogle(account: GoogleSignInAccount) {
+        onAuthResponse(
+            Provider.GOOGLE,
+            api.authGoogle(GoogleIdTokenRequest(requireNotNull(account.idToken)))
+        )
     }
 
-    suspend fun trySilentReconnect(): Boolean {
-        // Find user connection method
-        val method = userDataFlow.firstOrNull()?.userInfo?.user?.method
-        // We only can try for FB connect
-        if (method != User.ConnectionMethod.FACEBOOK) return false
-        val fbToken = recoverFacebookToken() ?: return false
-        return runCatching { loginByFacebook(fbToken) }.isSuccess
+    suspend fun createFacebook(token: String) {
+        onAuthResponse(
+            Provider.FACEBOOK,
+            api.createFacebook(FacebookAccessTokenRequest(token))
+        )
     }
 
-    override suspend fun createFacebook(token: String) {
-//        onAuthResponse(
-//            Provider.FACEBOOK,
-//             api.createFacebook(token.toRequestBody())
-//        )
+    fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val account = signInTask.await()
+                val idToken = account.idToken
+
+                if (idToken.isNullOrEmpty()) {
+                    Log.e("debug_google", "ID token null ou vide")
+                    return@launch
+                }
+
+                val request = GoogleIdTokenRequest(idToken)
+
+                try {
+                    // Étape 1 : essayer de connecter l'utilisateur existant
+                    val response = api.authGoogle(request)
+                    Log.d("debug_google_token", api.authGoogle(request).body()?.token.toString())
+                    Log.d("debug_google_username", api.authGoogle(request).body()?.user?.username.toString())
+                    Log.d("debug_google_userID", api.authGoogle(request).body()?.user?.userId.toString())
+                    if (response.isSuccessful) {
+                        onAuthResponse(Provider.GOOGLE, response)
+                        Log.d("debug_google", "Connexion OK (utilisateur existant)")
+
+                    } else if (response.code() == 404) {
+                        // Étape 2 : utilisateur inconnu, on le crée
+                        Log.d("debug_google", "Utilisateur non trouvé, tentative de création")
+                        val created = api.createGoogle(request)
+                        onAuthResponse(Provider.GOOGLE, created)
+                        Log.d("debug_google", "Utilisateur créé")
+
+                    } else {
+                        Log.e("debug_google", "Erreur auth : ${response.code()}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("debug_google", "Erreur API Google", e)
+                }
+
+            } catch (e: Exception) {
+                Log.e("debug_google", "Erreur récupération compte Google", e)
+            }
+        }
     }
 
-    override suspend fun createGoogle(account: GoogleSignInAccount) {
-        createGoogle(requireNotNull(account.serverAuthCode))
-    }
-
-    suspend fun createGoogle(authCode: String) {
-//        onAuthResponse(
-//            Provider.GOOGLE,
-//            api.createGoogle(authCode.toRequestBody())
-//        )
-    }
-
-    override suspend fun createUser(authRequest: AuthRequest) {
+    suspend fun createUser(authRequest: AuthRequest) {
         val response = api.createUser(authRequest)
         if (response.user.username != null) {
             preferences.updateUserInfo(
@@ -223,9 +246,12 @@ class AuthManagerImpl @Inject constructor(
         provider: Provider,
         apiResponse: Response<AuthResponse>
     ) {
-        if (apiResponse.isSuccessful && apiResponse.code() == 202) {
+        Log.d("debug_api_response_code", apiResponse.code().toString())
+        Log.d("debug_api_response_success", apiResponse.isSuccessful.toString())
+        if (apiResponse.isSuccessful && apiResponse.code() == 202 || apiResponse.code() == 200) {
 
             apiResponse.body()?.let { response ->
+                Log.d("debug_api_response", response.toString())
                 preferences.updateUserInfo(
                     isConnected = true,
                     name = response.user.username!!,
@@ -245,18 +271,18 @@ class AuthManagerImpl @Inject constructor(
     }
 
 
-    override suspend fun deleteUser() {
+    suspend fun deleteUser() {
         val credentials = credentials.value ?: return
         api.deleteUser(credentials.id)
         logout()
     }
 
 
-    suspend fun signOutGoogleUser() {
+    private suspend fun signOutGoogleUser() {
         googleSignInClient.signOut().await()
     }
 
-   override suspend fun logout() {
+    suspend fun logout() {
         try {
             withContext(NonCancellable) {
                 preferences.updateUserInfo(false)
@@ -265,6 +291,7 @@ class AuthManagerImpl @Inject constructor(
                 // google
                 signOutGoogleUser()
                 dao.deleteAllFavoritesRecipes()
+                snackBarMessage.tryEmit("You have been disconnected")
             }
         } catch (e: Exception) {
             Log.d("debug_error_while_signing_out", "Error while signing out")
@@ -272,5 +299,5 @@ class AuthManagerImpl @Inject constructor(
     }
 }
 
-@Parcelize
-data class UserCredentials(val id: Long, val token: String) : Parcelable
+
+data class UserCredentials(val id: Long, val token: String)

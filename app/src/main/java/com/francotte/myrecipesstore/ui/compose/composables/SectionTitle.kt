@@ -14,19 +14,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.myrecipesstore.R
 
 
 @Composable
-fun SectionTitle(title: String, count: Int?, onOpenMore: (String) -> Unit = {}) {
+fun SectionTitle(modifier: Modifier= Modifier,title: String, count: Int?, showNavIcon:Boolean= true, paddingStart: Dp= 18.dp, onOpenMore: (String) -> Unit = {}) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(start = 18.dp)
+            .padding(start = paddingStart)
+            .testTag("SectionTitle_$title")
+            .semantics { contentDescription = "SectionTitle_$title" }
             .clickable(onClick = { onOpenMore(title) }),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -40,20 +46,23 @@ fun SectionTitle(title: String, count: Int?, onOpenMore: (String) -> Unit = {}) 
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = count.toString(),
+            count?.let { Text(
+                text = it.toString(),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(vertical = 10.dp)
                     .align(Alignment.Bottom),
                 color = MaterialTheme.colorScheme.primary
+            ) }
+
+        }
+        if (showNavIcon) {
+            Icon(
+                modifier = Modifier.weight(0.15f),
+                painter = painterResource(R.drawable.ic_more),
+                contentDescription = title,
+                tint = MaterialTheme.colorScheme.primary
             )
         }
-        Icon(
-            modifier = Modifier.weight(0.15f),
-            painter = painterResource(R.drawable.ic_more),
-            contentDescription = title,
-            tint = MaterialTheme.colorScheme.primary
-        )
     }
 }

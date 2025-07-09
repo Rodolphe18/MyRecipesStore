@@ -6,6 +6,7 @@ import com.francotte.myrecipesstore.network.model.NetworkCategories
 import com.francotte.myrecipesstore.database.repository.CategoriesRepository
 import com.francotte.myrecipesstore.domain.model.AbstractCategory
 import com.francotte.myrecipesstore.domain.model.Categories
+import com.francotte.myrecipesstore.domain.model.Category
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
@@ -18,14 +19,16 @@ class CategoriesViewModel @Inject constructor(repository: CategoriesRepository) 
 
     val categories = repository
         .observeAllMealCategories()
-        .map { result ->
-            if (result.isSuccess) {
-                CategoriesUiState.Success(result.getOrDefault(emptyList()))
-            } else {
-                CategoriesUiState.Error
-            }
-        }.stateIn(viewModelScope, restartableWhileSubscribed, CategoriesUiState.Loading)
+        .map(::mapToUiState)
+        .stateIn(viewModelScope, restartableWhileSubscribed, CategoriesUiState.Loading)
 
+    private fun mapToUiState(result: Result<List<Category>>): CategoriesUiState {
+        return if (result.isSuccess) {
+            CategoriesUiState.Success(result.getOrDefault(emptyList()))
+        } else {
+            CategoriesUiState.Error
+        }
+    }
 
     fun reload() {
         viewModelScope.launch {

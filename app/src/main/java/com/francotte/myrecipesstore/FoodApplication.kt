@@ -11,7 +11,9 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.francotte.myrecipesstore.ads.InterstitialManager
 import com.francotte.myrecipesstore.notifications.DailyNotificationWorkManager
+import com.google.android.gms.ads.MobileAds
 
 import dagger.hilt.android.HiltAndroidApp
 import java.time.LocalDateTime
@@ -25,10 +27,10 @@ class FoodApplication:Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
+        MobileAds.initialize(this) {}
         scheduleDailyRecipeNotification(this)
     }
 

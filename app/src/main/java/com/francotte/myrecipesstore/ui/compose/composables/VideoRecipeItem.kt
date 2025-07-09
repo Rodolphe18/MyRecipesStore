@@ -19,33 +19,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.util.imageRequestBuilder
 
 @Composable
 fun VideoRecipeItem(
+    modifier: Modifier = Modifier,
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenRecipe: () -> Unit,
-    onVideoButtonClick:()->Unit
+    onVideoButtonClick:()->Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 16.dp)) {
-        Box(
-            modifier = Modifier
-                .height(360.dp)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onOpenRecipe() }
-        ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(horizontal = 16.dp).height(360.dp)
+        .aspectRatio(1f)
+        .clip(RoundedCornerShape(16.dp))
+        .background(MaterialTheme.colorScheme.surfaceVariant)
+        .clickable { onOpenRecipe() }) {
+        Box {
             Image(
-                painter = rememberAsyncImagePainter(model = likeableRecipe.recipe.strMealThumb),
+                painter =
+                    rememberAsyncImagePainter(model = imageRequestBuilder(LocalContext.current, likeableRecipe.recipe.strMealThumb)),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

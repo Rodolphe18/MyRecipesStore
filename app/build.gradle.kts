@@ -10,7 +10,10 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.protobuf)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ads)
+    alias(libs.plugins.baselineprofile)
     id("kotlin-parcelize")
+
 }
 
 configurations.all {
@@ -41,6 +44,20 @@ android {
                 "proguard-rules.pro"
             )
         }
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
+    }
+
+    testOptions {
+        animationsDisabled = true
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
+    }
+    baselineProfile {
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -66,6 +83,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.benchmark.macro.junit4)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -107,18 +125,25 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.androidx.hilt.work)
-    // Hilt
     implementation("com.google.dagger:hilt-android:2.50")
     ksp("com.google.dagger:hilt-compiler:2.50")
-
-// Hilt + WorkManager
     implementation("androidx.hilt:hilt-work:1.1.0")
     ksp("androidx.hilt:hilt-compiler:1.1.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-// WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.9.0") // ou dernière version stable
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.play.services.ads)
+    implementation (libs.billing.ktx)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 
 
+    androidTestImplementation ("androidx.profileinstaller:profileinstaller:1.3.0")
+    androidTestImplementation ("androidx.benchmark:benchmark-macro-junit4:1.2.0")
+
+    androidTestUtil("androidx.test:orchestrator:1.4.2")
     configurations.all {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.jetbrains" && requested.name == "annotations") {

@@ -49,6 +49,18 @@ class HomeRepository @Inject constructor(
             }
         }
 
+    override fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
+        combine(
+            userDataSource.userData,
+            homeRepository.getRecipesListByArea("American")
+        ) { userData, latestRecipes ->
+            try {
+                val likeable = latestRecipes.mapToLikeableLightRecipes(userData).take(10)
+                Result.success(likeable)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
 
     override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> {
         return combine(
@@ -103,6 +115,7 @@ class HomeRepository @Inject constructor(
 interface LikeableLightRecipesRepository {
     fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>>
     fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
+    fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
     fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>>
     fun observeFoodAreaSection(sectionName:String): Flow<Result<List<LikeableRecipe>>>
     fun observeRecipesByCategory(category:String):Flow<Result<List<LikeableRecipe>>>

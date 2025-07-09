@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.navigation
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
@@ -44,6 +46,7 @@ fun TopAppBar(
             if (actionIcon != null) {
             IconButton(onClick = onActionClick) {
                 Icon(
+                    modifier = Modifier.size(28.dp),
                     imageVector = actionIcon,
                     contentDescription = actionIconContentDescription,
                     tint = MaterialTheme.colorScheme.onSurface

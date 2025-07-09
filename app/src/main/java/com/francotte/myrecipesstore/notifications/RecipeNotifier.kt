@@ -64,7 +64,7 @@ class RecipeNotifier @Inject constructor(
         val notification = createNotification {
             setContentTitle("Recette du jour")
             setContentText("Découvrez la recette du jour : ${recipe.strMeal}")
-            setSmallIcon(R.mipmap.ic_launcher)
+            setSmallIcon(R.mipmap.ic_custom_launcher_foreground)
             setStyle(NotificationCompat.InboxStyle().addLine(recipe.strMeal))
             setGroup(GROUP_KEY_RECIPES)
             setContentIntent(pendingIntent)
