@@ -12,18 +12,24 @@ import kotlinx.serialization.Transient
 data class CurrentUser(
     val userId: Long,
     val username: String? = null,
+    val email:String?=null,
+    val image: String?=null,
     @Transient val provider: Provider = Provider.EMAIL,
 )  {
 
     constructor(user: User) : this(
         userId = user.id,
         username = user.userName,
-        provider = user.method.toProvider()
+        provider = user.method.toProvider(),
+        image = user.image,
+        email = user.email
     )
     fun toProto() = user {
         id = userId;
         userName = username!!;
         method = provider.toConnectionMethod()
+        image = image
+        email = email
     }
 
 
