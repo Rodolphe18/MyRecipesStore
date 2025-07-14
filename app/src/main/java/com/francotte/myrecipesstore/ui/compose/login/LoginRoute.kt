@@ -1,21 +1,16 @@
-package com.francotte.myrecipesstore.ui.compose.favorites.login
+package com.francotte.myrecipesstore.ui.compose.login
 
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.util.ScreenCounter
-import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 
 const val LOGIN_ROUTE = "login_route"
 
@@ -24,22 +19,23 @@ fun NavController.navigateToLoginScreen(navOptions: NavOptions? = null) {
 }
 
 
-fun NavGraphBuilder.loginScreen(onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit, registerScreenDestination: NavGraphBuilder.() -> Unit,favoriteScreenDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.loginScreen(onOpenResetPassword:()->Unit,onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit, registerScreenDestination: NavGraphBuilder.() -> Unit,favoriteScreenDestination: NavGraphBuilder.() -> Unit,resetPasswordScreenDestination: NavGraphBuilder.() -> Unit) {
 
     composable(route = LOGIN_ROUTE) {
-        LoginRoute(onRegister = onRegister, { navigateToFavoriteScreen() })
+        LoginRoute(onRegister = onRegister, onOpenResetPassword = onOpenResetPassword, navigateToFavoriteScreen =  { navigateToFavoriteScreen() })
     }
     favoriteScreenDestination()
     registerScreenDestination()
+    resetPasswordScreenDestination()
 }
 
 @Composable
-fun LoginRoute(onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit, viewModel: LoginViewModel= hiltViewModel()) {
+fun LoginRoute(onOpenResetPassword:()->Unit,onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit, viewModel: LoginViewModel= hiltViewModel()) {
     val authSuccess by viewModel.authSuccess.collectAsStateWithLifecycle()
     val googleSignIn = rememberLauncherForActivityResult(GoogleSignInContract()) { task ->
         viewModel.doGoogleLogin(task)
     }
-    LoginScreen(viewModel, onRegister) {
+    LoginScreen(viewModel, onOpenResetPassword = onOpenResetPassword, onRegister =  onRegister) {
         googleSignIn.launch(viewModel.googleSignInIntent)
     }
     if (authSuccess) {
