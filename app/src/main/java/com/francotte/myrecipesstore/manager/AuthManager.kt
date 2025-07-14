@@ -2,21 +2,17 @@ package com.francotte.myrecipesstore.manager
 
 import android.content.Context
 import android.content.Intent
-import android.os.Parcelable
+import android.net.Uri
 import android.util.Log
-import com.facebook.AccessToken
-import com.facebook.LoginStatusCallback
 import com.facebook.login.LoginManager
 import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.database.dao.FullRecipeDao
 import com.francotte.myrecipesstore.network.model.AuthRequest
 import com.francotte.myrecipesstore.network.model.AuthResponse
 import com.francotte.myrecipesstore.network.model.CurrentUser
-import com.francotte.myrecipesstore.network.model.Provider
 import com.francotte.myrecipesstore.network.api.AuthApi
-import com.francotte.myrecipesstore.protobuf.User
 import com.francotte.myrecipesstore.datastore.UserDataSource
-import com.francotte.myrecipesstore.network.model.FacebookAccessTokenRequest
+import com.francotte.myrecipesstore.network.model.EmailRequest
 import com.francotte.myrecipesstore.network.model.GoogleIdTokenRequest
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -32,15 +28,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import kotlinx.parcelize.Parcelize
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 import javax.inject.Inject
@@ -120,71 +116,27 @@ class AuthManager @Inject constructor(
 
     val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
+    val loginIsSuccessFull = MutableStateFlow<Boolean>(false)
 
-    suspend fun loginByEmailPassword(email: String, password: String) {
+    val registeringIsSuccessFull = MutableStateFlow<Boolean>(false)
+
+    suspend fun loginByUserNamePassword(userNameOrMail: String?, password: String) {
         try {
-
             onAuthResponse(
-                Provider.EMAIL,
-                api.authUser(AuthRequest(username = email, password = password))
+                api.authUser(
+                    AuthRequest(
+                        userNameOrMail = userNameOrMail ?: "",
+                        password = password
+                    )
+                )
             )
-            snackBarMessage.tryEmit("Welcome back $email")
+
         } catch (e: Exception) {
             Log.d("debug_on_auth_response", "on_auth_response")
         }
+
     }
 
-    suspend fun recoverFacebookToken(): AccessToken? {
-        val recoveredAccessToken =
-            AccessToken.getCurrentAccessToken()?.takeUnless(AccessToken::isExpired) ?: try {
-                suspendCoroutine { cont ->
-                    LoginManager.getInstance()
-                        .retrieveLoginStatus(context, object : LoginStatusCallback {
-                            override fun onCompleted(accessToken: AccessToken) {
-                                cont.resume(accessToken)
-                            }
-
-                            override fun onFailure() {
-                                cont.resume(null)
-                            }
-
-                            override fun onError(exception: Exception) {
-                                cont.resumeWithException(exception)
-                            }
-                        })
-                }
-            } catch (e: Exception) {
-                Log.d("", "Error while retrieving login status")
-                null
-            }
-        // Only use token if it has the correct permissions
-        return recoveredAccessToken?.takeIf {
-            it.permissions.containsAll(
-                listOf(
-                    "public_profile",
-                    "email"
-                )
-            )
-        }
-    }
-
-    suspend fun loginByFacebook(token: AccessToken) {
-        onAuthResponse(Provider.FACEBOOK, api.authFacebook(FacebookAccessTokenRequest(token.token)))
-    }
-
-    suspend fun loginByGoogle(account: GoogleSignInAccount) {
-        onAuthResponse(
-            Provider.GOOGLE,
-            api.authGoogle(GoogleIdTokenRequest(requireNotNull(account.idToken)))
-        )
-    }
-
-    suspend fun createFacebook(token: String) {
-        onAuthResponse(
-            Provider.FACEBOOK,
-            api.createFacebook(FacebookAccessTokenRequest(token))
-        )
-    }
 
     fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
         coroutineScope.launch(Dispatchers.IO) {
@@ -200,22 +152,12 @@ class AuthManager @Inject constructor(
                 val request = GoogleIdTokenRequest(idToken)
 
                 try {
-                    // Étape 1 : essayer de connecter l'utilisateur existant
                     val response = api.authGoogle(request)
-                    Log.d("debug_google_token", api.authGoogle(request).body()?.token.toString())
-                    Log.d("debug_google_username", api.authGoogle(request).body()?.user?.username.toString())
-                    Log.d("debug_google_userID", api.authGoogle(request).body()?.user?.userId.toString())
                     if (response.isSuccessful) {
-                        onAuthResponse(Provider.GOOGLE, response)
-                        Log.d("debug_google", "Connexion OK (utilisateur existant)")
-
+                        onAuthResponse(response)
                     } else if (response.code() == 404) {
-                        // Étape 2 : utilisateur inconnu, on le crée
-                        Log.d("debug_google", "Utilisateur non trouvé, tentative de création")
                         val created = api.createGoogle(request)
-                        onAuthResponse(Provider.GOOGLE, created)
-                        Log.d("debug_google", "Utilisateur créé")
-
+                        onAuthResponse(created)
                     } else {
                         Log.e("debug_google", "Erreur auth : ${response.code()}")
                     }
@@ -229,44 +171,89 @@ class AuthManager @Inject constructor(
         }
     }
 
-    suspend fun createUser(authRequest: AuthRequest) {
-        val response = api.createUser(authRequest)
-        if (response.user.username != null) {
-            preferences.updateUserInfo(
-                isConnected = true,
-                name = response.user.username,
-                userId = response.user.userId,
-                userToken = response.token
-            )
-        }
+    suspend fun createUser(
+        username: String,
+        email: String,
+        password: String,
+        imageUri: Uri?,
+    ) {
+        val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
+        val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
+        val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
+        val imagePart = imageUri.toMultiPartBody(context)
+
+        val response = api.createUser(
+            username = usernamePart,
+            email = emailPart,
+            password = passwordPart,
+            image = imagePart
+        )
+        onAuthResponse(response, true)
+    }
+
+    suspend fun updateUser(username: String?, imageUri: Uri?) {
+        val token = "Bearer ${credentials.value?.token}"
+        val userName = username?.toRequestBody("text/plain".toMediaTypeOrNull())
+        val imagePart = imageUri.toMultiPartBody(context)
+
+        val response = api.updateUserProfile(
+            token = token,
+            username = userName,
+            image = imagePart
+        )
+        onAuthResponse(response, isUpdating = true)
     }
 
 
-    private suspend fun onAuthResponse(
-        provider: Provider,
-        apiResponse: Response<AuthResponse>
-    ) {
-        Log.d("debug_api_response_code", apiResponse.code().toString())
-        Log.d("debug_api_response_success", apiResponse.isSuccessful.toString())
-        if (apiResponse.isSuccessful && apiResponse.code() == 202 || apiResponse.code() == 200) {
-
+    suspend fun onAuthResponse(
+        apiResponse: Response<AuthResponse>, isRegistering: Boolean = false, isUpdating: Boolean=false) {
+        Log.d("debug_auth", apiResponse.code().toString())
+        Log.d("debug_auth1", apiResponse.message())
+        Log.d("debug_auth2", apiResponse.isSuccessful.toString())
+        if (apiResponse.code() == 202 || apiResponse.code() == 200) {
             apiResponse.body()?.let { response ->
-                Log.d("debug_api_response", response.toString())
                 preferences.updateUserInfo(
                     isConnected = true,
                     name = response.user.username!!,
                     userId = response.user.userId,
-                    userToken = response.token
+                    userToken = response.token,
+                    email = response.user.email ?: "",
+                    image = response.user.image ?: ""
                 )
+                if (isRegistering) {
+                    snackBarMessage.tryEmit("Welcome ${response.user.username}! Your account has been created successfully")
+                } else if (isUpdating) {
+                    snackBarMessage.tryEmit("Your account has been updated successfully")
+                } else {
+                    snackBarMessage.tryEmit("Welcome back ${response.user.username}")
+                }
+                loginIsSuccessFull.value = true
             }
-        }
+        } else if (apiResponse.code() == 413) {
+            snackBarMessage.tryEmit("Payload Too Large")
+        } else {
+            if (isRegistering) {
+                snackBarMessage.tryEmit("Your account can't be created : user already exists")
+            } else {
+            snackBarMessage.tryEmit("Email/Password combination failed !")
+        }}
     }
 
-    suspend fun resetPassword(email: String) {
-        try {
-            // api.resetPassword(email.toRequestBody())
+
+    suspend fun requestPasswordReset(email: String): Result<Unit> {
+        return try {
+            val response = api.requestPasswordReset(EmailRequest(email))
+            Log.d("debug_reset_code", response.code().toString())
+            Log.d("debug_reset_message", response.message().toString())
+            if (response.isSuccessful) {
+                Log.d("debug_reset_success", email)
+                Result.success(Unit)
+            } else {
+                Log.d("debug_reset_failure", email)
+                Result.failure(Exception("Erreur : ${response.code()}"))
+            }
         } catch (e: Exception) {
-            Log.d("Unable to reset password", "Unable to reset password")
+            Result.failure(e)
         }
     }
 
@@ -275,6 +262,10 @@ class AuthManager @Inject constructor(
         val credentials = credentials.value ?: return
         api.deleteUser(credentials.id)
         logout()
+    }
+
+    suspend fun deleteAllUsers() {
+        api.deleteAllUsers()
     }
 
 
@@ -286,6 +277,7 @@ class AuthManager @Inject constructor(
         try {
             withContext(NonCancellable) {
                 preferences.updateUserInfo(false)
+                preferences.deleteFavoriteIds()
                 // facebook
                 LoginManager.getInstance().logOut()
                 // google
