@@ -27,7 +27,8 @@ interface UserDataSource {
     val userData: Flow<UserData>
     suspend fun setFavoritesIds(favoritesIds: Set<String>)
     suspend fun setFavoriteId(favoriteId: String, isFavorite: Boolean)
-    suspend fun updateUserInfo(isConnected:Boolean, name:String="", userId:Long=0, userToken:String="")
+    suspend fun updateUserInfo(isConnected:Boolean, name:String="", userId:Long=0, userToken:String="", email:String="",image: String="")
+    suspend fun deleteFavoriteIds()
 }
 
 @Module
@@ -81,7 +82,7 @@ class FoodPreferencesDataSource @Inject constructor(
         }
     }
 
-   override suspend fun updateUserInfo(isConnected:Boolean, name:String, userId:Long, userToken:String) {
+   override suspend fun updateUserInfo(isConnected:Boolean, name:String, userId:Long, userToken:String, userEmail:String, profilPicture: String) {
         try {
         userPreferences.updateData {
             it.copy {
@@ -90,13 +91,28 @@ class FoodPreferencesDataSource @Inject constructor(
                     user = user {
                         userName = name
                         id = userId
+                        email = userEmail
+                        image = profilPicture
                     }
                     token = userToken
+
                 }
             }
         }
         } catch (ioException: IOException) {
             Log.e("FoodPreferences", "Failed to update user info", ioException)
+        }
+    }
+
+    override suspend fun deleteFavoriteIds() {
+        try {
+            userPreferences.updateData {
+                it.copy {
+                    this.favoritesIds.clear()
+                 }
+            }
+        } catch (ioException: IOException) {
+            Log.e("FoodPreferences", "Failed to update favorite ids", ioException)
         }
     }
 
