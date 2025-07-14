@@ -1,27 +1,33 @@
 package com.francotte.myrecipesstore.manager
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
-import com.francotte.myrecipesstore.network.api.FavoriteApi
+import androidx.core.graphics.scale
 import com.francotte.myrecipesstore.datastore.UserDataSource
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
+import com.francotte.myrecipesstore.network.api.FavoriteApi
 import com.francotte.myrecipesstore.network.model.CustomRecipe
 import com.francotte.myrecipesstore.network.model.Ingredient
-import com.francotte.myrecipesstore.network.model.serializeIngredients
-import com.francotte.myrecipesstore.network.model.toPart
 import com.francotte.myrecipesstore.network.model.uriToMultipart
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 class FavoriteManager @Inject constructor(
@@ -31,12 +37,12 @@ class FavoriteManager @Inject constructor(
     private val foodPreferencesDataSource: UserDataSource
 ) {
 
-
     private val credentials: StateFlow<UserCredentials?> = authManager.credentials
 
     val goToLoginScreenEvent = MutableSharedFlow<Unit>()
 
     val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+
 
     suspend fun initFavorites() {
         try {
@@ -51,59 +57,96 @@ class FavoriteManager @Inject constructor(
         likeableRecipe: LikeableRecipe
     ) {
         val cred = credentials.firstOrNull()
-            if (cred == null) {
-                goToLoginScreenEvent.emit(Unit)
-            } else {
-                val recipeId = likeableRecipe.recipe.idMeal
-                val isFavorite = api.getRecipeFavoriteStatus(
-                    recipeId,
-                    "Bearer ${cred.token}"
-                )
-                val willBeFavorite = !isFavorite
-                withContext(NonCancellable) {
-                    if (willBeFavorite) {
-                        api.addFavorite(
-                            recipeId,
-                            "Bearer ${cred.token}"
-                        )
-                        foodPreferencesDataSource.setFavoriteId(recipeId, true)
-                        snackBarMessage.tryEmit("Recipe added to favorites")
-                    } else {
-                        api.removeFavorite(
-                            recipeId,
-                            "Bearer ${cred.token}"
-                        )
-                        foodPreferencesDataSource.setFavoriteId(recipeId, false)
-                        snackBarMessage.tryEmit("Recipe deleted from favorites")
-                    }
+        if (cred == null) {
+            goToLoginScreenEvent.emit(Unit)
+        } else {
+            val recipeId = likeableRecipe.recipe.idMeal
+            val isFavorite = api.getRecipeFavoriteStatus(
+                recipeId,
+                "Bearer ${cred.token}"
+            )
+            val willBeFavorite = !isFavorite
+            withContext(NonCancellable) {
+                if (willBeFavorite) {
+                    api.addFavorite(
+                        recipeId,
+                        "Bearer ${cred.token}"
+                    )
+                    foodPreferencesDataSource.setFavoriteId(recipeId, true)
+                    snackBarMessage.tryEmit("Recipe added to favorites")
+                } else {
+                    api.removeFavorite(
+                        recipeId,
+                        "Bearer ${cred.token}"
+                    )
+                    foodPreferencesDataSource.setFavoriteId(recipeId, false)
+                    snackBarMessage.tryEmit("Recipe deleted from favorites")
                 }
             }
+        }
     }
 
     suspend fun createRecipe(
         title: String,
         ingredients: List<Ingredient>,
         instructions: String,
-        images: List<Uri>
+        image: Uri?
     ) {
-        val titlePart = toPart(title)
-        val instructionsPart = toPart(instructions)
-        val ingredientsPart = serializeIngredients(ingredients)
-        val imageParts = images.mapNotNull { uri ->
-            uriToMultipart(uri, context, "images")
+        val titlePart = title.toRequestBody("text/plain".toMediaTypeOrNull())
+        val instructionsPart = instructions.toRequestBody("text/plain".toMediaTypeOrNull())
+        val ingredientsPart =
+            Json.encodeToString(ingredients).toRequestBody("text/plain".toMediaType())
+        val imagePart = image.toMultiPartBody(context)
+        api.addRecipe(
+            "Bearer ${credentials.value?.token}",
+            imagePart,
+            titlePart,
+            instructionsPart,
+            ingredientsPart
+        )
+        withContext(Dispatchers.Main) {
+            snackBarMessage.emit("Your recipe has been created successfully !")
         }
-
-        //  api.addRecipe("Bearer ${credentials.value?.token}",imageParts, titlePart, instructionsPart, ingredientsPart)
     }
 
     suspend fun getUserRecipes(): List<CustomRecipe> {
         return if (credentials.value?.token != null) {
+            Log.d("debug_user_recipes", api.getUserRecipes("Bearer ${credentials.value?.token}").toString())
             api.getUserRecipes("Bearer ${credentials.value?.token}")
         } else {
             emptyList()
         }
     }
 
+}
+
+fun Uri?.toMultiPartBody(context: Context): MultipartBody.Part? {
+    val imagePart = this?.let { uri ->
+        val resolver = context.contentResolver
+
+        val inputStream = resolver.openInputStream(uri)
+        Log.d("debug_upload", "inputStream is null: ${inputStream == null}")
+        val originalBitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+
+        val resizedBitmap = originalBitmap?.let {
+            val maxSize = 800
+            val width = it.width
+            val height = it.height
+            val scale = minOf(maxSize / width.toFloat(), maxSize / height.toFloat(), 1f)
+            it.scale((width * scale).toInt(), (height * scale).toInt())
+        }
+
+        val file = File.createTempFile("upload", ".jpg", context.cacheDir)
+        val outputStream = FileOutputStream(file)
+        resizedBitmap?.compress(Bitmap.CompressFormat.JPEG, 80, outputStream) // Qualité 80%
+        outputStream.flush()
+        outputStream.close()
+
+        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+        MultipartBody.Part.createFormData("image", file.name, requestFile)
+    }
+    return imagePart
 }
 
 
