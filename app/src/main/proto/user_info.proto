@@ -12,6 +12,8 @@ message User {
     GOOGLE = 2;
   }
   ConnectionMethod method = 3;
+  string email = 4;
+  string image = 5;
 }
 
 message UserInfo {
