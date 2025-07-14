@@ -1,6 +1,5 @@
 package com.francotte.myrecipesstore.ui.navigation
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
@@ -13,12 +12,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -39,7 +34,7 @@ import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.ui.compose.add_recipe.ADD_ROUTE
 import com.francotte.myrecipesstore.ui.compose.categories.CATEGORIES_ROUTE
 import com.francotte.myrecipesstore.ui.compose.favorites.FAVORITE_ROUTE
-import com.francotte.myrecipesstore.ui.compose.favorites.login.LOGIN_ROUTE
+import com.francotte.myrecipesstore.ui.compose.login.LOGIN_ROUTE
 import com.francotte.myrecipesstore.ui.compose.home.HOME_ROUTE
 import com.francotte.myrecipesstore.ui.compose.search.SEARCH_ROUTE
 import com.francotte.myrecipesstore.ui.theme.Orange
@@ -68,10 +63,10 @@ fun RowScope.CustomNavigationBarItem(
             Orange,
             Orange,
             selectedIndicatorColor,
-            Color.DarkGray,
-            Color.DarkGray,
-            Color.DarkGray,
-            Color.DarkGray
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.primaryContainer,
         ),
         alwaysShowLabel = alwaysShowLabel,
     )
