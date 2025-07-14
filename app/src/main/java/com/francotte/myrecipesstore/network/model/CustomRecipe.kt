@@ -23,26 +23,19 @@ data class Ingredient(
 data class CustomRecipe(val id:String, val title: String,
                         val ingredients: List<Ingredient>,
                         val instructions: String,
-                        val imageUrls: List<String>)
+                        val imageUrl: String?)
 
 
-fun uriToMultipart(uri: Uri, context: Context, partName: String = "images"): MultipartBody.Part? {
+fun uriToMultipart(uri: Uri?, context: Context, partName: String = "images"): MultipartBody.Part? {
     val contentResolver = context.contentResolver
-    val inputStream = contentResolver.openInputStream(uri) ?: return null
-    val fileName = uri.lastPathSegment ?: "image.jpg"
+    val inputStream = uri?.let { contentResolver.openInputStream(it) ?: return null }
+    val fileName = uri?.lastPathSegment ?: "image.jpg"
     val file = File(context.cacheDir, fileName)
 
-    file.outputStream().use { fileOut -> inputStream.copyTo(fileOut) }
+    file.outputStream().use { fileOut -> inputStream?.copyTo(fileOut) }
 
     val mediaType = "image/*".toMediaType()
     val requestBody = file.asRequestBody(mediaType)
     return MultipartBody.Part.createFormData(partName, file.name, requestBody)
 }
 
-fun toPart(value: String): RequestBody =
-    value.toRequestBody("text/plain".toMediaType())
-
-fun serializeIngredients(ingredients: List<Ingredient>): RequestBody {
-    val json = Json.encodeToString(ingredients)
-    return json.toRequestBody("text/plain".toMediaType())
-}

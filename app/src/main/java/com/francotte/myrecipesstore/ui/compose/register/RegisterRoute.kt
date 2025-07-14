@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.ui.compose.favorites.register
+package com.francotte.myrecipesstore.ui.compose.register
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,8 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.francotte.myrecipesstore.ui.compose.favorites.login.LoginScreen
-import com.francotte.myrecipesstore.ui.compose.favorites.login.LoginViewModel
+import com.francotte.myrecipesstore.ui.compose.login.LoginViewModel
 import com.francotte.myrecipesstore.util.ScreenCounter
 
 
@@ -29,9 +28,6 @@ fun NavGraphBuilder.registerScreen(onBackPressed: () -> Unit,navigateToFavoriteS
 @Composable
 fun RegisterRoute(onBackPressed:()->Unit, navigateToFavoriteScreen: () ->Unit, viewModel: LoginViewModel = hiltViewModel()) {
     val authSuccess by viewModel.authSuccess.collectAsStateWithLifecycle()
-    // val googleSignIn = activity.registerForActivityResult(GoogleSignInContract()) { task ->
-    //    viewModel.doGoogleLogin(task)
-    // }
     RegisterScreen(onBackPressed, viewModel)
     if (authSuccess) navigateToFavoriteScreen()
     ScreenCounter.increment()

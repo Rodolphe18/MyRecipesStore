@@ -1,6 +1,5 @@
 package com.francotte.myrecipesstore.ui.compose.favorites
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,17 +9,12 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.network.model.CustomRecipe
 import com.francotte.myrecipesstore.repository.FavoritesRepository
-import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,7 +42,8 @@ class FavViewModel @Inject constructor(
         }
     }
 
-    fun loadFavoritesData() {
+    @OptIn(FlowPreview::class)
+    private fun loadFavoritesData() {
         viewModelScope.launch {
             combine<Result<List<LikeableRecipe>>, Result<List<CustomRecipe>>, String, FavoriteUiState>(
                 favoritesRepository

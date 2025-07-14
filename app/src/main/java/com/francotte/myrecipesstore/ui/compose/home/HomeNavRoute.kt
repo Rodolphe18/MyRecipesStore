@@ -73,14 +73,12 @@ fun HomeRoute(
     val launchCount by launchCounterViewModel.launchCount.collectAsStateWithLifecycle()
     Box(Modifier.fillMaxSize()) {
         HomeScreen(
-
             latestRecipes = latestRecipes,
             americanRecipes = americanRecipes,
             areasRecipes = areasRecipes,
             englishRecipes = englishRecipes,
             onOpenRecipe = onRecipeClick,
             onOpenSection = onOpenSection,
-            onReload = {  },
             onToggleFavorite = onToggleFavorite,
             onVideoButtonClick = onVideoButtonClick,
             windowSizeClass = windowSizeClass

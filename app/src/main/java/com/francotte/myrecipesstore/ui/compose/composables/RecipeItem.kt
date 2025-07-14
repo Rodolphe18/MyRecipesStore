@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.composables
 
+import android.util.Log
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
@@ -99,9 +100,8 @@ fun CustomRecipeItem(
     customRecipe: CustomRecipe,
     onOpenRecipe: () -> Unit,
 ) {
-    val baseUrl = "http://46.202.170.205:8080/"
-    val image = customRecipe.imageUrls.firstOrNull()
-    val fullUrl = baseUrl + image
+    val image = customRecipe.imageUrl
+    Log.d("debug_user_recipes1", image.toString())
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
@@ -111,17 +111,17 @@ fun CustomRecipeItem(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { onOpenRecipe() }
         ) {
-//            if (fullUrl != null) {
-//                Image(
-//                    painter = rememberAsyncImagePainter(model = image),
-//                    contentDescription = image,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                )
-//            } else {
+           if (image != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = image),
+                    contentDescription = image,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+            } else {
             Image(painterResource(R.drawable.istockphoto_1130112004_2048x2048), null)
-            //    }
+            }
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(

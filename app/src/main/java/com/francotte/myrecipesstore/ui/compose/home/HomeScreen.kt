@@ -76,7 +76,6 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     windowSizeClass: WindowSizeClass,
-    onReload: () -> Unit,
     latestRecipes: LatestRecipes,
     americanRecipes: AmericanRecipes,
     areasRecipes: AreasRecipes,
@@ -142,7 +141,7 @@ fun HomeScreen(
                         showNavIcon = false
                     )
                     when (latestRecipes) {
-                        LatestRecipes.Error -> ErrorScreen { }
+                        LatestRecipes.Error -> ErrorScreen { viewModel.reload() }
                         LatestRecipes.Loading -> CustomCircularProgressIndicator()
                         is LatestRecipes.Success -> {
                             if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
@@ -189,7 +188,7 @@ fun HomeScreen(
             }
 
             item(span = { spanSize }) {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(32.dp))
                 AdMobBanner(height = 50.dp)
             }
 

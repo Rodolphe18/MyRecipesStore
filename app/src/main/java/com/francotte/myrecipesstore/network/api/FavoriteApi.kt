@@ -47,7 +47,7 @@ interface FavoriteApi {
     @POST("users/recipes")
     suspend fun addRecipe(
         @Header("Authorization") token: String,
-        @Part images: List<MultipartBody.Part>,
+        @Part image: MultipartBody.Part?,
         @Part("title") title: RequestBody,
         @Part("instructions") instructions: RequestBody,
         @Part("ingredients") ingredients: RequestBody

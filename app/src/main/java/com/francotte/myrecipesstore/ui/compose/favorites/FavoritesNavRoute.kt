@@ -42,7 +42,6 @@ fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), windowSizeClass: Wi
         windowSizeClass = windowSizeClass,
         searchText = searchText,
         onSearchTextChanged = viewModel::onSearchTextChange,
-        onReload = {},
         onOpenRecipe = onRecipeClick,
         onToggleFavorite = onToggleFavorite
     )

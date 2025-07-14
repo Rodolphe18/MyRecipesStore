@@ -43,6 +43,7 @@ junitKtx = "1.2.1"
 runner = "1.6.2"
 
 [libraries]
+androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }
 androidx-material3-window-size = { module = "androidx.compose.material3:material3-window-size-class" }

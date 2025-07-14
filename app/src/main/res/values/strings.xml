@@ -15,9 +15,12 @@
     <string name="continue_with_apple">Continue with Apple</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="onboarding_join_label">Log in or sign up to save and rate your favorite recipes</string>
+    <string name="add_recipe_access">Login to add new recipes</string>
+    <string name="empty_recipes_screen">No recipes found !\nTry different ingredients and \ncook up something new ! 🍲🧑‍🍳</string>
+    <string name="add_favorites_recipes">Add your favorites \nrecipes</string>
     <string name="onboarding_separator">OR</string>
     <string name="onboarding_mail_connexion">Login with my email</string>
-    <string name="onboarding_account_creation">No account? Sign up now</string>
+    <string name="onboarding_account_creation">No account ? Sign up now</string>
     <string name="onboarding_connexion_mail_title">Login</string>
     <string name="continue_with_facebook">Continue with Facebook</string>
     <string name="account_provider_unknown_message">Nous n\'avons pas trouvé de compte 750g lié à ce compte. Souhaitez-vous le créer ?</string>
@@ -31,8 +34,8 @@
     <string name="sign_up_creation">Créez directement un compte</string>
     <string name="sign_up_add_picture">Add a picture</string>
     <string name="sign_up_username">Pseudo</string>
-    <string name="sign_up_name">Name</string>
-    <string name="sign_up_email">E-mail</string>
+    <string name="sign_up_name">UserName</string>
+    <string name="sign_up_email">Email</string>
     <string name="sign_up_login">Password</string>
     <string name="sign_up_login_confirmation">Password confirmation</string>
     <string name="sign_up_conditions">J\'ai lu et j\'accepte les conditions d\'utilisation de 750g (CGU et CPU)</string>
@@ -42,7 +45,7 @@
     <string name="sign_in_google_button">Login with Google</string>
     <string name="sign_in_facebook_button">Login with Facebook</string>
     <string name="sign_in_forgotten_password">Password forgotten ?</string>
-    <string name="sign_in_connexion_button">I login</string>
+    <string name="sign_in_connexion_button">Login</string>
     <string name="sign_in_join_label">Pas encore de compte ?\nInscrivez-vous !</string>
     <string name="sign_in_forgotten_password_message">Afin d’obtenir votre mot de passe, veuillez nous indiquer votre adresse email associée à votre compte.</string>
     <string name="sign_in_forgotten_password_button">Obtenir</string>

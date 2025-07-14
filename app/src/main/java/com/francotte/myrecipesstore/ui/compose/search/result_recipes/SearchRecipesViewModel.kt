@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.search.result_recipes
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,6 +39,7 @@ class SearchRecipesViewModel @Inject constructor(
         SearchMode.INGREDIENTS -> repository
             .observeRecipesByIngredients(listOf(item))
             .map { result ->
+                Log.d("debug_result_vm", result.toString())
                 if (result.isSuccess) {
                     SearchRecipesUiState.Success(result.getOrDefault(emptyList()))
                 } else {

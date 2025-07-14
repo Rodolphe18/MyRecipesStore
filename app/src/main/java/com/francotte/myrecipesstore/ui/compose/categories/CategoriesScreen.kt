@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -43,6 +44,8 @@ import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgres
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.nbCategoriesColumns
 import com.francotte.myrecipesstore.ui.compose.composables.nbHomeColumns
+import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
+import com.francotte.myrecipesstore.ui.theme.LightYellow
 import com.francotte.myrecipesstore.ui.theme.Orange
 import com.francotte.myrecipesstore.util.imageRequestBuilder
 
@@ -60,6 +63,9 @@ fun CategoriesScreen(
         is CategoriesUiState.Success -> {
             (categoryUiState.categories as? List<AbstractCategory>)?.let { categories ->
                 LazyVerticalGrid(
+                    modifier = Modifier.drawBehind {
+                        drawRect(LightYellow.copy(0.1f))
+                    },
                     state = lazyListState,
                     columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbCategoriesColumns),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -94,6 +100,7 @@ fun CategoryItem(imageUrl: String, title: String, onClick: () -> Unit) {
                 .clickable { onClick() }) {
             GradientBackGround(Modifier.fillMaxSize())
             CategoryImage(modifier = Modifier.fillMaxSize(), imageUrl = imageUrl)
+
         }
         Spacer(Modifier.height(4.dp))
         CategoryMetaData(modifier = Modifier.align(Alignment.CenterHorizontally), title = title)
@@ -118,14 +125,12 @@ fun CategoryMetaData(modifier: Modifier= Modifier, title: String) {
 
 @Composable
 fun GradientBackGround(modifier: Modifier = Modifier) {
-    BoxWithConstraints(modifier.fillMaxSize()) {
-        val aspectRatio = maxWidth / maxHeight
+    Box(modifier.fillMaxSize()) {
         Box(
             modifier
                 .fillMaxSize()
-                .scale(maxOf(aspectRatio, 1f), maxOf(1 / aspectRatio, 1f))
                 .background(
-                    color = Color.LightGray.copy(alpha = 0.4f)
+                    color = Color.LightGray.copy(alpha = 0.1f)
                 )
         )
     }

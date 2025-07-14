@@ -1,17 +1,18 @@
 package com.francotte.myrecipesstore.ui.navigation
 
 import android.net.Uri
-import android.util.Log
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
-import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.network.model.Ingredient
 import com.francotte.myrecipesstore.ui.compose.add_recipe.addRecipeScreen
-import com.francotte.myrecipesstore.ui.compose.categories.CATEGORIES_ROUTE
 import com.francotte.myrecipesstore.ui.compose.categories.categoriesScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.categoryScreen
 import com.francotte.myrecipesstore.ui.compose.categories.category.navigateToCategoryScreen
@@ -19,12 +20,18 @@ import com.francotte.myrecipesstore.ui.compose.detail.deepLinkRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.detail.detailRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.detail.navigateToDetailRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.favoritesScreen
-import com.francotte.myrecipesstore.ui.compose.favorites.login.loginScreen
+import com.francotte.myrecipesstore.ui.compose.login.loginScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.navigateToFavoriteScreen
-import com.francotte.myrecipesstore.ui.compose.favorites.register.navigateToRegisterScreen
-import com.francotte.myrecipesstore.ui.compose.favorites.register.registerScreen
+import com.francotte.myrecipesstore.ui.compose.register.navigateToRegisterScreen
+import com.francotte.myrecipesstore.ui.compose.register.registerScreen
 import com.francotte.myrecipesstore.ui.compose.home.BASE_ROUTE
 import com.francotte.myrecipesstore.ui.compose.home.homeScreen
+import com.francotte.myrecipesstore.ui.compose.login.navigateToLoginScreen
+import com.francotte.myrecipesstore.ui.compose.profile.profileScreen
+import com.francotte.myrecipesstore.ui.compose.reset.request_reset.navigateToRequestResetPasswordScreen
+import com.francotte.myrecipesstore.ui.compose.reset.request_reset.requestResetPasswordScreen
+import com.francotte.myrecipesstore.ui.compose.reset.reset.navigateToResetPasswordScreen
+import com.francotte.myrecipesstore.ui.compose.reset.reset.resetPasswordScreen
 import com.francotte.myrecipesstore.ui.compose.search.result_mode.navigateToSearchModeScreen
 import com.francotte.myrecipesstore.ui.compose.search.result_mode.searchModeScreen
 import com.francotte.myrecipesstore.ui.compose.search.result_recipes.navigateToSearchRecipesScreen
@@ -34,7 +41,6 @@ import com.francotte.myrecipesstore.ui.compose.section.navigateToSection
 import com.francotte.myrecipesstore.ui.compose.section.sectionScreen
 import com.francotte.myrecipesstore.ui.compose.video.navigateToVideoFullScreen
 import com.francotte.myrecipesstore.ui.compose.video.videoFullScreen
-import com.francotte.myrecipesstore.util.ScreenCounter
 
 @Composable
 fun NavHost(
@@ -43,13 +49,26 @@ fun NavHost(
     windowSizeClass: WindowSizeClass,
     startDestination: String = BASE_ROUTE,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
-    onAddRecipe: (title: String, ingredients: List<Ingredient>, instructions: String, images: List<Uri>) -> Unit,
-) {
+    isAuthenticated: Boolean,
+    onSubmit:(title: String, ingredients: List<Ingredient>, instructions: String,image: Uri?)->Unit,
+    resetPasswordToken:String?=null) {
+
+    val alreadyNavigated = remember { mutableStateOf(false) }
+
+    LaunchedEffect(resetPasswordToken) {
+        if (resetPasswordToken != null && !alreadyNavigated.value) {
+            alreadyNavigated.value = true
+            navController.navigateToResetPasswordScreen(resetPasswordToken)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
+        profileScreen(navController::popBackStack)
+        resetPasswordScreen()
         homeScreen(
             onRecipeClick = navController::navigateToDetailRecipeScreen,
             onToggleFavorite = onToggleFavorite,
@@ -90,7 +109,7 @@ fun NavHost(
                     windowSizeClass = windowSizeClass)
             }
         )
-        addRecipeScreen(onAddRecipe)
+        addRecipeScreen(isAuthenticated, navController::navigateToLoginScreen, onSubmit)
         searchScreen(onSearchModeSelected = navController::navigateToSearchModeScreen) {
             searchModeScreen(
                 onItemSelected = navController::navigateToSearchRecipesScreen,
@@ -139,6 +158,10 @@ fun NavHost(
                             onToggleFavorite
                         )
                     }, windowSizeClass = windowSizeClass)
+            },
+            onOpenResetPassword = navController::navigateToRequestResetPasswordScreen,
+            resetPasswordScreenDestination = {
+                requestResetPasswordScreen(navController::popBackStack)
             }
         )
         favoritesScreen(

@@ -118,8 +118,12 @@ class OfflineFirstHomeRepository @Inject constructor(
     }
 
     override fun getRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>> = flow {
-        val networkData = network.getRecipesListByMultiIngredients(ingredients.joinToString()).meals.filterIsInstance<NetworkLightRecipe>()
-        emit(networkData.map { it.asExternalModel() })
+        try {
+            val networkData = network.getRecipesListByMultiIngredients(ingredients.joinToString()).meals.filterIsInstance<NetworkLightRecipe>()
+            emit(networkData.map { it.asExternalModel() })
+        } catch (e: Exception) {
+            emit(emptyList())
+        }
     }
 
 

@@ -1,6 +1,5 @@
 package com.francotte.myrecipesstore
 
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
@@ -8,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -20,8 +18,8 @@ import com.francotte.myrecipesstore.ui.compose.add_recipe.navigateToAddRecipeScr
 import com.francotte.myrecipesstore.ui.compose.categories.CATEGORIES_ROUTE
 import com.francotte.myrecipesstore.ui.compose.categories.navigateToCategoriesScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.FAVORITE_ROUTE
-import com.francotte.myrecipesstore.ui.compose.favorites.login.LOGIN_ROUTE
-import com.francotte.myrecipesstore.ui.compose.favorites.login.navigateToLoginScreen
+import com.francotte.myrecipesstore.ui.compose.login.LOGIN_ROUTE
+import com.francotte.myrecipesstore.ui.compose.login.navigateToLoginScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.navigateToFavoriteScreen
 import com.francotte.myrecipesstore.ui.compose.home.HOME_ROUTE
 import com.francotte.myrecipesstore.ui.compose.home.navigateToHomeScreen
@@ -30,7 +28,6 @@ import com.francotte.myrecipesstore.ui.compose.search.navigateToSearchScreen
 import com.francotte.myrecipesstore.ui.navigation.TopLevelDestination
 import com.francotte.myrecipesstore.util.LaunchCounterManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,10 +36,11 @@ fun rememberAppState(
     navController: NavHostController = rememberNavController(),
     favoriteManager: FavoriteManager,
     authManager: AuthManager,
-    launchCounterManager: LaunchCounterManager
+    launchCounterManager: LaunchCounterManager,
+    resetPasswordToken:String?=null
 ): AppState {
     return remember(navController, coroutineScope) {
-        AppState(navController, coroutineScope, favoriteManager, authManager, launchCounterManager)
+        AppState(navController, coroutineScope, favoriteManager, authManager, launchCounterManager,resetPasswordToken)
     }
 }
 
@@ -52,7 +50,8 @@ class AppState(
     coroutineScope: CoroutineScope,
     val favoriteManager: FavoriteManager,
     val authManager: AuthManager,
-    launchCounterManager: LaunchCounterManager
+    launchCounterManager: LaunchCounterManager,
+    val resetPasswordToken:String?=null
 ) {
 
     private val previousDestination = mutableStateOf<NavDestination?>(null)

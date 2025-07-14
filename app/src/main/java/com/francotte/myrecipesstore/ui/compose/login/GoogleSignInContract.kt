@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.ui.compose.favorites.login
+package com.francotte.myrecipesstore.ui.compose.login
 
 import android.content.Context
 import android.content.Intent

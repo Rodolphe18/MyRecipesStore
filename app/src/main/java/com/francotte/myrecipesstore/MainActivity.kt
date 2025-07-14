@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -37,6 +38,7 @@ import com.francotte.myrecipesstore.manager.AuthManager
 import com.francotte.myrecipesstore.manager.FavoriteManager
 import com.francotte.myrecipesstore.permissions.NotificationPermissionEffect
 import com.francotte.myrecipesstore.ui.compose.composables.SplashScreen
+import com.francotte.myrecipesstore.ui.compose.reset.reset.navigateToResetPasswordScreen
 import com.francotte.myrecipesstore.ui.theme.FoodTheme
 import com.francotte.myrecipesstore.util.LaunchCounterManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -62,6 +64,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+
+
        // viewModel.loadInterstitial(this)
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -84,11 +89,14 @@ class MainActivity : ComponentActivity() {
             Log.d("debug_is_authenticated", isAuthenticated.toString())
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             Log.d("debug_connected", isAuthenticated.toString())
+            val data: Uri? = intent?.data
             val state = rememberAppState(
                 favoriteManager = favoriteManager,
                 authManager = authManager,
-                launchCounterManager = launchCounterManager
+                launchCounterManager = launchCounterManager,
+                resetPasswordToken = data?.getQueryParameter("token")
             )
+
             FoodTheme {
                 FoodApp(context = this, appState = state, windowSizeClass = calculateWindowSizeClass(activity = this))
                 NotificationPermissionEffect()
