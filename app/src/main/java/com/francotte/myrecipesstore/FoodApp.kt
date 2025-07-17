@@ -3,6 +3,7 @@ package com.francotte.myrecipesstore
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
@@ -49,14 +51,18 @@ import kotlinx.coroutines.launch
     ExperimentalMaterial3Api::class
 )
 @Composable
-fun FoodApp(@ApplicationContext context: Context, appState: AppState, windowSizeClass: WindowSizeClass) {
+fun FoodApp(
+    @ApplicationContext context: Context,
+    appState: AppState,
+    windowSizeClass: WindowSizeClass
+) {
     val isAuthenticated by appState.authManager.isAuthenticated.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     val currentBackStackEntry = appState.navController.currentBackStackEntryAsState().value
     val currentDestination = currentBackStackEntry?.destination?.route
-
+    val customRecipeHasBeenUpdated by appState.favoriteManager.customRecipehasBeenUpdatedSuccessfully.collectAsStateWithLifecycle()
     if (showSettingsDialog) {
         SettingsDialog(
             onDismiss = { showSettingsDialog = false },
@@ -95,6 +101,8 @@ fun FoodApp(@ApplicationContext context: Context, appState: AppState, windowSize
         )
     }
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
@@ -108,6 +116,7 @@ fun FoodApp(@ApplicationContext context: Context, appState: AppState, windowSize
             val destination = appState.currentTopLevelDestination
             if (destination != null) {
                 TopAppBar(
+                    modifier = Modifier.statusBarsPadding(),
                     profileImage = image,
                     titleRes = destination.titleTextId,
                     actionIcon = Icons.Outlined.Settings,
@@ -154,11 +163,36 @@ fun FoodApp(@ApplicationContext context: Context, appState: AppState, windowSize
                     .consumeWindowInsets(padding),
                 windowSizeClass = windowSizeClass,
                 isAuthenticated = isAuthenticated,
-                onSubmit = { recipeTitle,ingredients,instructions,url ->
-                    scope.launch { appState.favoriteManager.createRecipe(recipeTitle,ingredients,instructions,url) }
+                onSubmit = { recipeTitle, ingredients, instructions, url ->
+                    scope.launch {
+                        appState.favoriteManager.createRecipe(
+                            recipeTitle,
+                            ingredients,
+                            instructions,
+                            url
+                        )
+                    }
                 },
+                onUpdate = { recipeId, recipeTitle, ingredients, instructions, url ->
+                    scope.launch {
+                        try {
+                            appState.favoriteManager.updateRecipe(
+                                recipeId,
+                                recipeTitle,
+                                ingredients,
+                                instructions,
+                                url
+                            )
+                        } catch (e: Exception) {
+                            Log.d("debug_update1", e.printStackTrace().toString())
+                            Log.d("debug_update2", e.message.toString())
+
+                        }
+                    }
+                },
+                customRecipeHasBeenUpdated = customRecipeHasBeenUpdated,
                 resetPasswordToken = appState.resetPasswordToken
-                    )
+            )
             LaunchedEffect(Unit) {
                 appState.favoriteManager.snackBarMessage.collect { message ->
                     snackBarHostState.showSnackbar(message)

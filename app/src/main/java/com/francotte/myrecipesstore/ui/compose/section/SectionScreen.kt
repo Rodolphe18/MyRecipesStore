@@ -6,13 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,6 +24,8 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
+import com.francotte.myrecipesstore.ui.compose.composables.nbHomeColumns
+import com.francotte.myrecipesstore.ui.compose.composables.nbSectionColumns
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -31,6 +33,7 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 @Composable
 fun SectionScreen(
     sectionUiState: SectionUiState,
+    windowSizeClass: WindowSizeClass,
     titleRes: String,
     onReload: () -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
@@ -57,7 +60,7 @@ fun SectionScreen(
                 LazyVerticalGrid(
                     modifier = Modifier.testTag("full_section_screen").semantics { contentDescription = "full_section_screen" },
                     state = rememberLazyGridState(),
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbSectionColumns),
                     reverseLayout = false,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -78,7 +81,7 @@ fun SectionScreen(
                             likeableRecipe = likeableRecipe,
                             onToggleFavorite = onToggleFavorite,
                             onOpenRecipe = {
-                                onOpenRecipe(likeableRecipes.map { it.recipe.strMeal }, index, likeableRecipe.recipe.strMeal)
+                                onOpenRecipe(likeableRecipes.map { it.recipe.idMeal}, index, likeableRecipe.recipe.strMeal)
                             })
                     }
                 }

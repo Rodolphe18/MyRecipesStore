@@ -3,7 +3,6 @@ package com.francotte.myrecipesstore.ui.compose.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -17,13 +16,12 @@ fun NavController.navigateToSearchScreen(navOptions: NavOptions? = null) {
     this.navigate(SEARCH_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.searchScreen(onSearchModeSelected: (SearchMode) -> Unit, modeDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.searchScreen(onSearchModeSelected: (SearchMode) -> Unit) {
     composable(route = SEARCH_ROUTE) {
         SearchRoute {
             onSearchModeSelected(it)
         }
     }
-    modeDestination()
 }
 
 @Composable

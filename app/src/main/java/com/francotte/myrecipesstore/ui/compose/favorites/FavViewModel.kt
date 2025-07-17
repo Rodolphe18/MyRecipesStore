@@ -43,7 +43,7 @@ class FavViewModel @Inject constructor(
     }
 
     @OptIn(FlowPreview::class)
-    private fun loadFavoritesData() {
+    fun loadFavoritesData() {
         viewModelScope.launch {
             combine<Result<List<LikeableRecipe>>, Result<List<CustomRecipe>>, String, FavoriteUiState>(
                 favoritesRepository

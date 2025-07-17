@@ -118,8 +118,6 @@ class AuthManager @Inject constructor(
 
     val loginIsSuccessFull = MutableStateFlow<Boolean>(false)
 
-    val registeringIsSuccessFull = MutableStateFlow<Boolean>(false)
-
     suspend fun loginByUserNamePassword(userNameOrMail: String?, password: String) {
         try {
             onAuthResponse(

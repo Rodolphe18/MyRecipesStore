@@ -56,6 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.myrecipesstore.R
+import com.francotte.myrecipesstore.ui.compose.composables.CustomButton
+import com.francotte.myrecipesstore.ui.compose.composables.CustomTextField
+import com.francotte.myrecipesstore.ui.compose.composables.PasswordField
 import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
 import com.francotte.myrecipesstore.ui.theme.Orange
 
@@ -72,11 +75,8 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .drawBehind {
-                drawRect(whiteYellowVerticalGradient())
-            }
             .verticalScroll(rememberScrollState())
-            .padding(top = 10.dp, bottom = 30.dp),
+            .padding(top = 10.dp, bottom = 30.dp, start = 16.dp, end= 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -85,15 +85,13 @@ fun LoginScreen(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(vertical = 8.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonGoogle(
             onClick = doGoogleLogin,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.continue_with_google)
         )
 
@@ -112,8 +110,7 @@ fun LoginScreen(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            horizontalArrangement = Arrangement.Center
         ) {
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
@@ -133,7 +130,8 @@ fun LoginScreen(
         CustomTextField(
             loginUserNameOrMail,
             { loginUserNameOrMail = it },
-           label =  "Username or Email"
+            label = "Username or Email",
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text)
         )
         Spacer(modifier = Modifier.height(16.dp))
         PasswordField(loginPassword, { loginPassword = it })
@@ -146,28 +144,8 @@ fun LoginScreen(
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { viewModel.loginWithMailAndPassword(loginUserNameOrMail, loginPassword) },
-            enabled = canConnect,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(46.dp)
-                .padding(horizontal = 16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6D4C41), // Café brun
-                contentColor = Color(0xFFF6E8D6), // Texte beige
-                disabledContainerColor = Color(0xFFBCAAA4), // plus pâle
-                disabledContentColor = Color.White.copy(alpha = 0.6f)
-            )
-        ) {
-            Text(
-                text = stringResource(id = R.string.sign_in_connexion_button),
-                fontSize = 18.sp,
-                color = Color.White
-            )
-        }
-
-
+        CustomButton(onClick = { viewModel.loginWithMailAndPassword(loginUserNameOrMail, loginPassword) },
+            enabled = canConnect, contentText = R.string.sign_in_connexion_button)
         Text(
             text = stringResource(id = R.string.onboarding_account_creation),
             modifier = Modifier
@@ -195,7 +173,7 @@ fun ButtonGoogle(
     Row(
         modifier = modifier
             .height(56.dp)
-            .border(Dp.Hairline, Color(0xFF6D4C41),RoundedCornerShape(12.dp))
+            .border(Dp.Hairline, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(12.dp))
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -206,108 +184,7 @@ fun ButtonGoogle(
             modifier = Modifier.size(28.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text, color = Color.Black)
+        Text(text = text, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
-
-@Composable
-fun CustomTextField(
-    text: String,
-    onTextChange: (String) -> Unit,
-    label:String=""
-) {
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        BasicTextField(
-            value = text,
-            onValueChange = onTextChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            textStyle = LocalTextStyle.current.copy(color = Color(0xFF6D4C41)),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            decorationBox = { innerTextField ->
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (text.isEmpty()) {
-                            Text(
-                                text = label,
-                                color = Color(0xFF6D4C41),
-                                fontSize = 14.sp
-                            )
-                        }
-                        innerTextField()
-                    }
-                }
-            }
-        )
-    }
-}
-
-
-@Composable
-fun PasswordField(
-    password: String,
-    onPasswordChange: (String) -> Unit
-) {
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        BasicTextField(
-            value = password,
-            onValueChange = onPasswordChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            textStyle = LocalTextStyle.current.copy(color = Color(0xFF6D4C41)),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            decorationBox = { innerTextField ->
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (password.isEmpty()) {
-                            Text(
-                                text = "Password",
-                                color = Color(0xFF6D4C41),
-                                fontSize = 14.sp
-                            )
-                        }
-                        innerTextField()
-                    }
-                    IconButton(
-                        onClick = { passwordVisible = !passwordVisible }
-                    ) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                            tint = Color(0xFF6D4C41)
-                        )
-                    }
-                }
-            }
-        )
-    }
-}

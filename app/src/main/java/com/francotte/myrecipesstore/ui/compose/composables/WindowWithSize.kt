@@ -12,30 +12,17 @@ val WindowWidthSizeClass.nbHomeColumns: Int
 
 val WindowWidthSizeClass.nbCategoriesColumns: Int
     get() = when (this) {
-        WindowWidthSizeClass.Compact -> 2
-        WindowWidthSizeClass.Medium -> 3
-        else -> 3
+        WindowWidthSizeClass.Compact -> 3
+        WindowWidthSizeClass.Medium -> 4
+        else -> 4
     }
 
-val WindowWidthSizeClass.nbFavoritesColumns: Int
+val WindowWidthSizeClass.nbSectionColumns: Int
     get() = when (this) {
         WindowWidthSizeClass.Compact -> 2
         WindowWidthSizeClass.Medium -> 4
         else -> 4
     }
 
-val WindowWidthSizeClass.nbCommentsAndNotesColumns: Int
-    get() = when (this) {
-        WindowWidthSizeClass.Compact -> 1
-        WindowWidthSizeClass.Medium -> 2
-        else -> 2
-    }
 
-val WindowWidthSizeClass.nbPhotosColumns: Int
-    get() = when (this) {
-        WindowWidthSizeClass.Compact -> 2
-        WindowWidthSizeClass.Medium -> 4
-        WindowWidthSizeClass.Expanded -> 6
-        else -> 6
-    }
 

@@ -118,6 +118,7 @@ class HomeViewModel @Inject constructor(
             _areasRecipes.value = AreasRecipes.Loading
             _englishRecipes.value = EnglishRecipes.Loading
             loadInitialData()
+            loadMore()
             isReloading = false
         }
     }

@@ -20,11 +20,10 @@ fun NavController.navigateToSearchModeScreen(searchMode: SearchMode, navOptions:
     }
 }
 
-fun NavGraphBuilder.searchModeScreen(onItemSelected:(String,SearchMode)->Unit, onBack: () -> Unit, recipesResultDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.searchModeScreen(onItemSelected:(String,SearchMode)->Unit, onBack: () -> Unit) {
     composable<SearchModeNavRoute> {
         SearchModeRoute(onItemSelected=  { item, mode -> onItemSelected(item,mode) }, onBack = onBack)
     }
-    recipesResultDestination()
 }
 
 @Composable

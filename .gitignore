@@ -13,4 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+keystore.properties
 app/src/main/java/com/francotte/myrecipesstore/api/ApiKey.kt

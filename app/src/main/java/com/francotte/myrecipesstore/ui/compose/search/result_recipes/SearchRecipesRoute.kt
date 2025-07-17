@@ -22,11 +22,10 @@ fun NavController.navigateToSearchRecipesScreen(item:String,mode: SearchMode, na
     }
 }
 
-fun NavGraphBuilder.searchRecipesScreen(windowSizeClass: WindowSizeClass,onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit, detailRecipeDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.searchRecipesScreen(windowSizeClass: WindowSizeClass,onOpenRecipe:(List<String>, Int, String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, onBack:()->Unit) {
     composable<SearchRecipesNavRoute> {
         SearchRecipesRoute(windowSizeClass = windowSizeClass,onOpenRecipe=onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack = onBack)
     }
-    detailRecipeDestination()
 }
 
 @Composable

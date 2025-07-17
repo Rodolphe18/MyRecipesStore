@@ -22,15 +22,33 @@ fun NavController.navigateToFavoriteScreen(navOptions: NavOptions? = null) {
     this.navigate(FAVORITE_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.favoritesScreen(windowSizeClass: WindowSizeClass,onToggleFavorite:(LikeableRecipe, Boolean)->Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.favoritesScreen(
+    windowSizeClass: WindowSizeClass,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    onCustomRecipeClick: (String) -> Unit,
+    customRecipeHasBeenUpdated: Boolean
+) {
     composable(route = FAVORITE_ROUTE) {
-        FavoriteRoute(windowSizeClass = windowSizeClass, onRecipeClick = { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite)
-    recipeDetailDestination()
-}
+        FavoriteRoute(
+            windowSizeClass = windowSizeClass,
+            onRecipeClick = { ids, index, title -> onOpenRecipe(ids, index, title) },
+            onToggleFavorite = onToggleFavorite,
+            onCustomRecipeClick = { id -> onCustomRecipeClick(id) },
+            customRecipeHasBeenUpdated = customRecipeHasBeenUpdated
+        )
+    }
 }
 
 @Composable
-fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), windowSizeClass: WindowSizeClass, onRecipeClick: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean)->Unit) {
+fun FavoriteRoute(
+    viewModel: FavViewModel = hiltViewModel(),
+    windowSizeClass: WindowSizeClass,
+    onRecipeClick: (List<String>, Int, String) -> Unit,
+    onCustomRecipeClick: (String) -> Unit,
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    customRecipeHasBeenUpdated: Boolean
+) {
     val favoriteUiState by viewModel.favoritesRecipesState.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
 
@@ -43,7 +61,9 @@ fun FavoriteRoute(viewModel: FavViewModel = hiltViewModel(), windowSizeClass: Wi
         searchText = searchText,
         onSearchTextChanged = viewModel::onSearchTextChange,
         onOpenRecipe = onRecipeClick,
-        onToggleFavorite = onToggleFavorite
+        onToggleFavorite = onToggleFavorite,
+        onOpenCustomRecipe = onCustomRecipeClick,
+        customRecipeHasBeenUpdated = customRecipeHasBeenUpdated
     )
     ScreenCounter.increment()
 }

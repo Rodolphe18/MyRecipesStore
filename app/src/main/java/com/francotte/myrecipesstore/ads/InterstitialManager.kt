@@ -25,6 +25,7 @@ import javax.inject.Singleton
 class InterstitialManager {
 
     private var mInterstitialAd: InterstitialAd? = null
+    private var hasShownAd = false
 
     private val _shouldKeepSplashScreen = MutableStateFlow(true)
     val shouldKeepSplashScreen = _shouldKeepSplashScreen.asStateFlow()
@@ -32,7 +33,18 @@ class InterstitialManager {
     private var _hasTimedOut = MutableStateFlow(false)
     var hasTimedOut = _hasTimedOut.asStateFlow()
 
+    init {
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(2000)
+            _shouldKeepSplashScreen.value = false
+        }
+    }
+
     fun loadAndShowAd(activity: Activity) {
+        if (hasShownAd) {
+            _shouldKeepSplashScreen.value = false
+            return
+        }
         _hasTimedOut.value = false
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -41,11 +53,6 @@ class InterstitialManager {
                 _hasTimedOut.value = true
                 _shouldKeepSplashScreen.update { false }
             }
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(5000)
-                _shouldKeepSplashScreen.update { false }
         }
 
         val adRequest = AdRequest.Builder().build()
@@ -66,6 +73,7 @@ class InterstitialManager {
                                 _shouldKeepSplashScreen.update { false }
                             }
                         }
+                    hasShownAd = true
                     mInterstitialAd?.show(activity)
                 }
 

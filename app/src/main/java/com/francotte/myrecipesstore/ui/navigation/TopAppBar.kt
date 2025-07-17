@@ -68,7 +68,7 @@ fun TopAppBar(
                     Icon(
                         modifier = Modifier
                             .offset((-6).dp)
-                            .size(36.dp),
+                            .size(32.dp),
                         imageVector = actionIcon,
                         contentDescription = actionIconContentDescription,
                         tint = MaterialTheme.colorScheme.onSurface,

@@ -22,7 +22,7 @@ import com.francotte.myrecipesstore.R
 
 
 @Composable
-fun ErrorScreen(modifier: Modifier = Modifier, onButtonClick: (() -> Unit)) {
+fun ErrorScreen(modifier: Modifier = Modifier, retry: (() -> Unit)) {
     Column(modifier = modifier.fillMaxSize().padding(20.dp).offset(y=20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Image(painterResource(R.drawable.ic_error), null)
         Spacer(Modifier.height(16.dp))
@@ -33,7 +33,7 @@ fun ErrorScreen(modifier: Modifier = Modifier, onButtonClick: (() -> Unit)) {
             textAlign = TextAlign.Center)
         Spacer(Modifier.height(16.dp))
         Button(
-            onClick = onButtonClick,
+            onClick = retry,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.error_button_text))

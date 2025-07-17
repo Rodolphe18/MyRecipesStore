@@ -1,6 +1,7 @@
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.ir.backend.js.compile
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -20,6 +21,9 @@ configurations.all {
     exclude(group = "com.intellij", module = "annotations")
 }
 
+val keystoreProperties = Properties().apply {
+    load(File(rootDir, "keystore.properties").inputStream())
+}
 
 android {
     namespace = "com.francotte.myrecipesstore"
@@ -36,9 +40,19 @@ android {
 
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -142,6 +156,10 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
 
+    implementation("androidx.compose.material3:material3:1.2.1") // ou version plus récente
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("com.google.android.material:material:1.11.0")
 
     androidTestImplementation ("androidx.profileinstaller:profileinstaller:1.3.0")
     androidTestImplementation ("androidx.benchmark:benchmark-macro-junit4:1.2.0")

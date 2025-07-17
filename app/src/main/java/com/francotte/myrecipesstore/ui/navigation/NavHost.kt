@@ -1,7 +1,7 @@
 package com.francotte.myrecipesstore.ui.navigation
 
+
 import android.net.Uri
-import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,14 +20,14 @@ import com.francotte.myrecipesstore.ui.compose.detail.deepLinkRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.detail.detailRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.detail.navigateToDetailRecipeScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.favoritesScreen
-import com.francotte.myrecipesstore.ui.compose.login.loginScreen
 import com.francotte.myrecipesstore.ui.compose.favorites.navigateToFavoriteScreen
-import com.francotte.myrecipesstore.ui.compose.register.navigateToRegisterScreen
-import com.francotte.myrecipesstore.ui.compose.register.registerScreen
 import com.francotte.myrecipesstore.ui.compose.home.BASE_ROUTE
 import com.francotte.myrecipesstore.ui.compose.home.homeScreen
+import com.francotte.myrecipesstore.ui.compose.login.loginScreen
 import com.francotte.myrecipesstore.ui.compose.login.navigateToLoginScreen
 import com.francotte.myrecipesstore.ui.compose.profile.profileScreen
+import com.francotte.myrecipesstore.ui.compose.register.navigateToRegisterScreen
+import com.francotte.myrecipesstore.ui.compose.register.registerScreen
 import com.francotte.myrecipesstore.ui.compose.reset.request_reset.navigateToRequestResetPasswordScreen
 import com.francotte.myrecipesstore.ui.compose.reset.request_reset.requestResetPasswordScreen
 import com.francotte.myrecipesstore.ui.compose.reset.reset.navigateToResetPasswordScreen
@@ -39,6 +39,8 @@ import com.francotte.myrecipesstore.ui.compose.search.result_recipes.searchRecip
 import com.francotte.myrecipesstore.ui.compose.search.searchScreen
 import com.francotte.myrecipesstore.ui.compose.section.navigateToSection
 import com.francotte.myrecipesstore.ui.compose.section.sectionScreen
+import com.francotte.myrecipesstore.ui.compose.user_recipes.customRecipeDetailScreen
+import com.francotte.myrecipesstore.ui.compose.user_recipes.navigateToCustomRecipeDetailScreen
 import com.francotte.myrecipesstore.ui.compose.video.navigateToVideoFullScreen
 import com.francotte.myrecipesstore.ui.compose.video.videoFullScreen
 
@@ -50,8 +52,11 @@ fun NavHost(
     startDestination: String = BASE_ROUTE,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     isAuthenticated: Boolean,
-    onSubmit:(title: String, ingredients: List<Ingredient>, instructions: String,image: Uri?)->Unit,
-    resetPasswordToken:String?=null) {
+    customRecipeHasBeenUpdated: Boolean,
+    onUpdate: (recipeId: String, title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit,
+    onSubmit: (title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit,
+    resetPasswordToken: String? = null
+) {
 
     val alreadyNavigated = remember { mutableStateOf(false) }
 
@@ -67,118 +72,62 @@ fun NavHost(
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        profileScreen(navController::popBackStack)
-        resetPasswordScreen()
         homeScreen(
             onRecipeClick = navController::navigateToDetailRecipeScreen,
             onToggleFavorite = onToggleFavorite,
             onOpenSection = navController::navigateToSection,
-            sectionDestination = {
-                sectionScreen(
-                    onBackClick = navController::popBackStack,
-                    onRecipeClick = navController::navigateToDetailRecipeScreen,
-                    onToggleFavorite = onToggleFavorite
-                ) {
-                    detailRecipeScreen(onBackClick = navController::popBackStack, onToggleFavorite)
-                }
-            },
-            recipeDetailDestination = {
-                detailRecipeScreen(onBackClick = navController::popBackStack, onToggleFavorite)
-            },
             onVideoButtonClick = navController::navigateToVideoFullScreen,
-            videoDestination = {
-                videoFullScreen()
-            },
             windowSizeClass = windowSizeClass
         )
         categoriesScreen(
-            windowSizeClass= windowSizeClass,
+            windowSizeClass = windowSizeClass,
             onOpenCategory = navController::navigateToCategoryScreen,
-            categoryDestination = {
-                categoryScreen(
-                    onBackClick = {
-                        navController.popBackStack()
-                    },
-                    onOpenRecipe = navController::navigateToDetailRecipeScreen,
-                    onToggleFavorite = onToggleFavorite,
-                    recipeDetailDestination = {
-                        detailRecipeScreen(onBackClick = {
-                            navController.popBackStack()
-                        }, onToggleFavorite = onToggleFavorite)
-                    },
-                    windowSizeClass = windowSizeClass)
-            }
         )
+        categoryScreen(windowSizeClass,navController::popBackStack,navController::navigateToDetailRecipeScreen,onToggleFavorite)
         addRecipeScreen(isAuthenticated, navController::navigateToLoginScreen, onSubmit)
-        searchScreen(onSearchModeSelected = navController::navigateToSearchModeScreen) {
-            searchModeScreen(
-                onItemSelected = navController::navigateToSearchRecipesScreen,
-                onBack = navController::popBackStack
-            ) {
-                searchRecipesScreen(
-                    onOpenRecipe = navController::navigateToDetailRecipeScreen,
-                    onToggleFavorite = onToggleFavorite,
-                    onBack = navController::popBackStack,
-                    detailRecipeDestination = {
-                        detailRecipeScreen(
-                            onBackClick = navController::popBackStack,
-                            onToggleFavorite
-                        )
-                    },
-                    windowSizeClass = windowSizeClass)
-            }
-        }
+        searchModeScreen(
+            onItemSelected = navController::navigateToSearchRecipesScreen,
+            onBack = navController::popBackStack
+        )
+        sectionScreen(
+            onBackClick = navController::popBackStack,
+            onRecipeClick = navController::navigateToDetailRecipeScreen,
+            onToggleFavorite = onToggleFavorite,
+            windowSizeClass = windowSizeClass
+        )
+        searchRecipesScreen(
+            onOpenRecipe = navController::navigateToDetailRecipeScreen,
+            onToggleFavorite = onToggleFavorite,
+            onBack = navController::popBackStack,
+            windowSizeClass = windowSizeClass
+        )
+        searchScreen(onSearchModeSelected = navController::navigateToSearchModeScreen)
         loginScreen(
             onRegister = navController::navigateToRegisterScreen,
             navigateToFavoriteScreen = navController::navigateToFavoriteScreen,
-            registerScreenDestination = {
-                registerScreen(
-                    onBackPressed = navController::popBackStack,
-                    navigateToFavoriteScreen = navController::navigateToFavoriteScreen
-                ) {
-                    favoritesScreen(
-                        onToggleFavorite = onToggleFavorite,
-                        windowSizeClass = windowSizeClass,
-                        onOpenRecipe = navController::navigateToDetailRecipeScreen,
-                        recipeDetailDestination = {
-                            detailRecipeScreen(
-                                onBackClick = navController::popBackStack,
-                                onToggleFavorite
-                            )
-                        })
-                }
-            },
-            favoriteScreenDestination = {
-                favoritesScreen(
-                    onToggleFavorite = onToggleFavorite,
-                    onOpenRecipe = navController::navigateToDetailRecipeScreen,
-                    recipeDetailDestination = {
-                        detailRecipeScreen(
-                            onBackClick = navController::popBackStack,
-                            onToggleFavorite
-                        )
-                    }, windowSizeClass = windowSizeClass)
-            },
             onOpenResetPassword = navController::navigateToRequestResetPasswordScreen,
-            resetPasswordScreenDestination = {
-                requestResetPasswordScreen(navController::popBackStack)
-            }
+        )
+        registerScreen(
+            onBackPressed = navController::popBackStack,
+            navigateToFavoriteScreen = navController::navigateToFavoriteScreen
         )
         favoritesScreen(
-            onToggleFavorite = onToggleFavorite,
-            onOpenRecipe = navController::navigateToDetailRecipeScreen,
-            recipeDetailDestination = {
-                detailRecipeScreen(
-                    onBackClick = navController::popBackStack,
-                    onToggleFavorite
-                )
-            },
-            windowSizeClass = windowSizeClass
+            windowSizeClass,
+            onToggleFavorite,
+            navController::navigateToDetailRecipeScreen,
+            navController::navigateToCustomRecipeDetailScreen,
+            customRecipeHasBeenUpdated
         )
         deepLinkRecipeScreen(
             onBackClick = navController::popBackStack,
             onToggleFavorite = onToggleFavorite
         )
+        detailRecipeScreen(onBackClick = navController::popBackStack, onToggleFavorite)
+        customRecipeDetailScreen(navController::popBackStack, onUpdate)
+        videoFullScreen()
+        profileScreen(navController::popBackStack)
+        requestResetPasswordScreen(onBackPressed = navController::popBackStack)
+        resetPasswordScreen()
     }
 }
 

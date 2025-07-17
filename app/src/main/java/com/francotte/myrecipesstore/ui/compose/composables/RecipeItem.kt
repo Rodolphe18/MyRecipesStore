@@ -1,6 +1,5 @@
 package com.francotte.myrecipesstore.ui.compose.composables
 
-import android.util.Log
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
@@ -22,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,8 +41,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import coil.request.CachePolicy
-import coil.request.ImageRequest
 import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.network.model.CustomRecipe
@@ -59,7 +57,7 @@ fun RecipeItem(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .height(180.dp)
+                .height(175.dp)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -101,17 +99,16 @@ fun CustomRecipeItem(
     onOpenRecipe: () -> Unit,
 ) {
     val image = customRecipe.imageUrl
-    Log.d("debug_user_recipes1", image.toString())
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .height(180.dp)
-                .aspectRatio(1.5f)
+                .height(175.dp)
+                .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { onOpenRecipe() }
         ) {
-           if (image != null) {
+            if (image != null) {
                 Image(
                     painter = rememberAsyncImagePainter(model = image),
                     contentDescription = image,
@@ -120,7 +117,7 @@ fun CustomRecipeItem(
                         .fillMaxSize()
                 )
             } else {
-            Image(painterResource(R.drawable.istockphoto_1130112004_2048x2048), null)
+                Image(imageVector = Icons.Default.Photo, contentDescription = null, modifier = Modifier.fillMaxSize())
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -130,8 +127,7 @@ fun CustomRecipeItem(
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center,
-            maxLines = 2,
-            modifier = Modifier.width(180.dp)
+            maxLines = 2
         )
     }
 }
@@ -154,7 +150,10 @@ fun BigRecipeItem(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = imageRequestBuilder(LocalContext.current, likeableRecipe.recipe.strMealThumb)
+                    model = imageRequestBuilder(
+                        LocalContext.current,
+                        likeableRecipe.recipe.strMealThumb
+                    )
                 ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,

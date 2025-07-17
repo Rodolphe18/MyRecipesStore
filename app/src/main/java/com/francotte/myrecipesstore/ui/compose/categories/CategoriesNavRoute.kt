@@ -21,13 +21,12 @@ fun NavController.navigateToCategoriesScreen(navOptions: NavOptions? = null) {
     this.navigate(CATEGORIES_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.categoriesScreen(windowSizeClass: WindowSizeClass,onOpenCategory: (String) -> Unit, categoryDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoriesScreen(windowSizeClass: WindowSizeClass,onOpenCategory: (String) -> Unit) {
     composable(route = CATEGORIES_ROUTE) {
         CategoriesRoute(windowSizeClass = windowSizeClass) {
             onOpenCategory(it.strCategory)
         }
     }
-    categoryDestination()
 }
 
 @Composable

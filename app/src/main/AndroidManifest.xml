@@ -11,61 +11,48 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_custom_launcher_foreground"
-        android:label="baselineprofile"
+        android:label="@string/app_launcher_name"
         android:roundIcon="@mipmap/ic_custom_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyRecipesStore.SplashScreen"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-        <profileable
-            android:shell="true"
-            tools:targetApi="29" />
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.MyRecipesStore.SplashScreen">
+            >
+
+            <!-- Deep links -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="recipe"
-                    android:pathPattern="/.*"
-                    android:scheme="myapp" />
+                <data android:host="recipe" android:pathPattern="/.*" android:scheme="myapp" />
             </intent-filter>
-            <intent-filter >
+
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:scheme="myrecipesapp"
-                    android:host="reset-password" />
+                <data android:scheme="myrecipesapp" android:host="reset-password" />
             </intent-filter>
+
+            <!-- Launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Divers -->
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="1210330677148706" />
+        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="6532d330d63d15c5c97407ef7b06a79d" />
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713" />
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove"></provider>
-
-        <meta-data
-            android:name="com.facebook.sdk.ApplicationId"
-            android:value="1210330677148706" />
-        <meta-data
-            android:name="com.facebook.sdk.ClientToken"
-            android:value="6532d330d63d15c5c97407ef7b06a79d" />
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            tools:node="remove" />
     </application>
-
 </manifest>

@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -51,10 +52,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.network.model.CurrentUser
 import com.francotte.myrecipesstore.ui.compose.add_recipe.bitmapToUri
 import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
@@ -107,11 +110,7 @@ fun ProfileScreen(
         }
 
         AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    drawRect(whiteYellowVerticalGradient())
-                },
+            modifier = Modifier.fillMaxSize(),
             visible = visible,
             enter = slideInVertically(
                 initialOffsetY = { fullHeight -> fullHeight }, // depuis le bas
@@ -185,13 +184,13 @@ fun ProfileScreen(
                 val isValid = state.text.length >= 6
 
                 Column(verticalArrangement = Arrangement.Center) {
-                    Text("Username", color = Color(0xFF5D4037))
+                    Text("Username", color = MaterialTheme.colorScheme.onSurface)
                     BasicTextField(
                         state = state,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
-                            .background(Color(0xFFF6E8D6), RoundedCornerShape(4.dp))
+                            .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         decorator = { innerTextField ->
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
@@ -202,19 +201,19 @@ fun ProfileScreen(
                     if (state.text.isNotEmpty() && state.text.toString() != currentName) {
                         Text(
                             text = if (isValid) "Valid ✅" else "At least 6 characters",
-                            color = if (isValid) Color(0xFF81C784) else Color(0xFFEF9A9A),
+                            color = if (isValid) Color(0xFF81C784) else Color.Red,
                             fontSize = 12.sp
                         )
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Column(verticalArrangement = Arrangement.Center) {
-                    Text("Email", color = Color(0xFF5D4037))
+                    Text("Email", color = MaterialTheme.colorScheme.onSurface)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(Color(0xFFF6E8D6))
                             .padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart
                     ) {
@@ -222,9 +221,9 @@ fun ProfileScreen(
                     }
 
                     Text(
-                            text = "Email adress is not modifiable",
-                            color = Color.DarkGray,
-                            fontSize = 12.sp
+                            text = stringResource(R.string.supporting_text_email),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 11.sp
                         )
                 }
                 Spacer(modifier = Modifier.height(24.dp))

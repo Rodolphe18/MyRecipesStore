@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MyRecipesStore" parent="Theme.Material3.DayNight.NoActionBar" >
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-       <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item> <!-- ou true si ton fond est clair -->
-    </style>
 
+    <style name="Theme.MyRecipesStore" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false
+        </item> <!-- ou true si ton fond est clair -->
+    </style>
 
     <style name="Theme.MyRecipesStore.SplashScreen" parent="Theme.SplashScreen.IconBackground">
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_recipe_launcher</item>
-        <item name="windowSplashScreenBackground">#FFF8541A</item>
+        <item name="windowSplashScreenBackground">#FFF8541A</item> <!-- Orange -->
         <item name="windowSplashScreenIconBackgroundColor">#FFF8541A</item>
         <item name="postSplashScreenTheme">@style/Theme.MyRecipesStore</item>
     </style>

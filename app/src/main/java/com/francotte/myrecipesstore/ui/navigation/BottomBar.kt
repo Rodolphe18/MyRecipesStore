@@ -1,8 +1,11 @@
 package com.francotte.myrecipesstore.ui.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +22,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +47,7 @@ import com.francotte.myrecipesstore.ui.theme.Orange
 @Composable
 fun RowScope.CustomNavigationBarItem(
     selected: Boolean,
-    selectedIndicatorColor:Color,
+    selectedIndicatorColor: Color,
     onClick: () -> Unit,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -79,45 +83,65 @@ fun BottomBar(
     destinations: List<TopLevelDestination>,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     currentDestination: NavDestination?,
-    isAuthenticated:Boolean
+    isAuthenticated: Boolean
 ) {
     NavigationBar(modifier = modifier) {
-        val customDestinations = if (isAuthenticated) destinations.filterNot { it == TopLevelDestination.LOGIN } else destinations.filterNot { it == TopLevelDestination.FAVORITES }
+        val customDestinations =
+            if (isAuthenticated) destinations.filterNot { it == TopLevelDestination.LOGIN } else destinations.filterNot { it == TopLevelDestination.FAVORITES }
         customDestinations.forEach { destination ->
             val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
-            CustomNavigationBarItem(
-                selected = selected,
-                selectedIndicatorColor = if (destination == TopLevelDestination.ADD) Color.Transparent else Orange.copy(0.1f),
-                onClick = { onNavigateToDestination(destination) },
-                icon = {
-                    if (destination == TopLevelDestination.ADD) {
-                        Box(Modifier
-                            .size(45.dp)
-                            .clip(CircleShape)
-                            .background(Color.Red)) {
-                            Icon(Icons.Filled.Add, null, Modifier.align(Alignment.Center), Color.White)
-                        }
 
-                    } else {
+            if (destination == TopLevelDestination.ADD) {
+                // Custom ADD button (no ripple, full control)
+                Box(
+                    modifier = Modifier
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(55.dp)
+                            .clip(CircleShape)
+                            .background(Orange)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                onNavigateToDestination(destination)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                }
+            } else {
+                CustomNavigationBarItem(
+                    selected = selected,
+                    selectedIndicatorColor = Orange.copy(0.1f),
+                    onClick = { onNavigateToDestination(destination) },
+                    icon = {
                         Icon(
                             imageVector = destination.icon,
                             contentDescription = null
                         )
-                    }
-                },
-                label = {
-                    if (destination != TopLevelDestination.ADD) {
+                    },
+                    label = {
                         Text(
                             stringResource(destination.titleTextId),
                             fontWeight = FontWeight.Light,
                             fontSize = 10.sp
                         )
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
+
 
 sealed class TopLevelDestination(
     val icon: ImageVector,
@@ -129,30 +153,36 @@ sealed class TopLevelDestination(
         R.string.home,
         HOME_ROUTE
     )
+
     data object CATEGORIES : TopLevelDestination(
         Icons.Filled.ShoppingCart,
         R.string.categories,
         CATEGORIES_ROUTE
     )
+
     data object ADD : TopLevelDestination(
         Icons.Filled.Add,
         R.string.add,
         ADD_ROUTE
     )
+
     data object SEARCH : TopLevelDestination(
         Icons.Filled.Search,
         R.string.search,
         SEARCH_ROUTE
     )
+
     data object FAVORITES : TopLevelDestination(
         Icons.Filled.Favorite,
         R.string.favorites,
         FAVORITE_ROUTE
     )
+
     data object LOGIN : TopLevelDestination(
         Icons.Filled.Lock,
         R.string.login,
-        LOGIN_ROUTE)
+        LOGIN_ROUTE
+    )
 }
 
 private fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestination): Boolean {

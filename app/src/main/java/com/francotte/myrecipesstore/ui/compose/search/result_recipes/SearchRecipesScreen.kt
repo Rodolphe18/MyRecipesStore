@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -20,10 +19,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DoNotDisturbAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,7 +42,7 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgressIndicator
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
-import com.francotte.myrecipesstore.ui.compose.composables.nbFavoritesColumns
+import com.francotte.myrecipesstore.ui.compose.composables.nbSectionColumns
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 import com.francotte.myrecipesstore.ui.theme.LightYellow
 
@@ -116,7 +112,7 @@ fun SearchRecipesScreen(
                 } else {
                     LazyVerticalGrid(
                         state = rememberLazyGridState(),
-                        columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbFavoritesColumns),
+                        columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbSectionColumns),
                         reverseLayout = false,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),

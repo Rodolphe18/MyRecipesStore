@@ -36,8 +36,6 @@ fun NavGraphBuilder.resetPasswordScreen() {
 
         if (token != null) {
             ResetPasswordScreen(token = token)
-        } else {
-            // Afficher un écran d’erreur ou rien
         }
     }
 }

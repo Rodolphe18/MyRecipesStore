@@ -19,14 +19,12 @@ fun NavController.navigateToLoginScreen(navOptions: NavOptions? = null) {
 }
 
 
-fun NavGraphBuilder.loginScreen(onOpenResetPassword:()->Unit,onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit, registerScreenDestination: NavGraphBuilder.() -> Unit,favoriteScreenDestination: NavGraphBuilder.() -> Unit,resetPasswordScreenDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.loginScreen(onOpenResetPassword:()->Unit,onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit) {
 
     composable(route = LOGIN_ROUTE) {
         LoginRoute(onRegister = onRegister, onOpenResetPassword = onOpenResetPassword, navigateToFavoriteScreen =  { navigateToFavoriteScreen() })
     }
-    favoriteScreenDestination()
-    registerScreenDestination()
-    resetPasswordScreenDestination()
+
 }
 
 @Composable

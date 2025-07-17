@@ -36,12 +36,6 @@ class SectionViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
 
-
-    fun reload() {
-        viewModelScope.launch {
-            restartableWhileSubscribed.restart()
-        }
-    }
 }
 
 sealed interface SectionUiState {

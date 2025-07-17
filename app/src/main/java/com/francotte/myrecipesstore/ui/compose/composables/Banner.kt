@@ -1,9 +1,20 @@
 package com.francotte.myrecipesstore.ui.compose.composables
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -86,6 +97,54 @@ fun <T> LazyListWithBanners(items: List<T>, bannerInterval: Int = 5,itemContent:
                 )
             } else if (actualItemIndex < items.size) {
                 itemContent(items[actualItemIndex])
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LazyGridWithBannersIndexed(
+    totalItemCount: Int,
+    columns: Int = 2,
+    bannerInterval: Int = 4,
+    state: LazyGridState,
+    horizontalArrangement: Arrangement.HorizontalOrVertical,
+    verticalArrangement:Arrangement.HorizontalOrVertical,
+    flingBehavior: FlingBehavior,
+    contentPadding: PaddingValues,
+    bannerContent: @Composable () -> Unit,
+    itemContent: @Composable LazyGridItemScope.(index: Int) -> Unit,
+) {
+    val totalCountWithBanners = totalItemCount + (totalItemCount / bannerInterval)
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
+        modifier = Modifier.fillMaxSize(),
+        state = state,
+        contentPadding = contentPadding,
+        flingBehavior = flingBehavior,
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = verticalArrangement
+    ) {
+        items(
+            count = totalCountWithBanners,
+            span = { index ->
+                if ((index + 1) % (bannerInterval + 1) == 0) {
+                    GridItemSpan(columns)
+                } else {
+                    GridItemSpan(1)
+                }
+            }
+        ) { index ->
+            if ((index + 1) % (bannerInterval + 1) == 0) {
+                bannerContent()
+            } else {
+                val realIndex = index - (index / (bannerInterval + 1))
+                if (realIndex < totalItemCount) {
+                    itemContent(realIndex)
+                }
             }
         }
     }

@@ -42,3 +42,24 @@ val MediumGrey = Color(0x88, 0x88, 0x88)
 @Stable
 val RadialGradientCenterColor = (Color(0x88, 0x88, 0x88))
 
+@Stable
+val SearchItemColor1 = Color(0xFFFFF3E0)
+
+@Stable
+val SearchItemColor2 = Color(0xFFFFECB3)
+
+@Stable
+val SearchItemColor3 = Color(0xFFFFF8E1)
+
+@Stable
+val SearchItemDarkModeColor1 = Color(0xFF424242)
+
+@Stable
+val SearchItemDarkModeColor2 = Color(0xFF37474F)
+
+@Stable
+val SearchItemDarkModeColor3 = Color(0xFF263238)
+
+
+
+

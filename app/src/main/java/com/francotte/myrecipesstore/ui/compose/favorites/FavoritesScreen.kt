@@ -2,7 +2,6 @@ package com.francotte.myrecipesstore.ui.compose.favorites
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -52,8 +51,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -70,22 +69,24 @@ import com.francotte.myrecipesstore.ui.compose.composables.CustomCircularProgres
 import com.francotte.myrecipesstore.ui.compose.composables.ErrorScreen
 import com.francotte.myrecipesstore.ui.compose.composables.RecipeItem
 import com.francotte.myrecipesstore.ui.compose.composables.SectionTitle
-import com.francotte.myrecipesstore.ui.compose.composables.nbFavoritesColumns
-import com.francotte.myrecipesstore.ui.compose.user_recipes.UserRecipesScreen
+import com.francotte.myrecipesstore.ui.compose.composables.nbSectionColumns
+import com.francotte.myrecipesstore.ui.compose.user_recipes.CustomRecipeDetailViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.nio.file.WatchEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     viewModel: FavViewModel = hiltViewModel<FavViewModel>(),
+    customRecipeDetailViewModel: CustomRecipeDetailViewModel = hiltViewModel<CustomRecipeDetailViewModel>(),
     windowSizeClass: WindowSizeClass,
     favoriteUiState: FavoriteUiState,
     searchText: String,
     onSearchTextChanged: (String) -> Unit,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onOpenCustomRecipe: (String) -> Unit,
+    customRecipeHasBeenUpdated: Boolean
 ) {
     val lazyGridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
@@ -98,6 +99,11 @@ fun FavoritesScreen(
         if (searchText.isEmpty()) {
             delay(3000)
             focusManager.clearFocus()
+        }
+    }
+    LaunchedEffect(customRecipeHasBeenUpdated) {
+        if (customRecipeHasBeenUpdated) {
+            viewModel.reload()
         }
     }
     LaunchedEffect(lazyGridState) {
@@ -164,7 +170,7 @@ fun FavoritesScreen(
                     ) {
                         LazyVerticalGrid(
                             state = lazyGridState,
-                            columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbFavoritesColumns),
+                            columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbSectionColumns),
                             reverseLayout = false,
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -174,12 +180,25 @@ fun FavoritesScreen(
                             val likeableRecipes = favoriteUiState.favoritesRecipes
                             val customRecipes = favoriteUiState.customRecipes
                             if (customRecipes.isNotEmpty()) {
-                                item(span = { GridItemSpan(2) }) {
-                                    UserRecipesScreen(customRecipes)
+                                item(span = { GridItemSpan(windowSizeClass.widthSizeClass.nbSectionColumns) }) {
+                                    CustomRecipesSection(
+                                        Modifier.layout { measurable, constraints ->
+                                            val placeable = measurable.measure(
+                                                constraints.copy(
+                                                    maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
+                                                ),
+                                            )
+                                            layout(placeable.width, placeable.height) {
+                                                placeable.place(0, 0)
+                                            }
+                                        },
+                                        customRecipes, onOpenCustomRecipe,
+                                    )
                                 }
-                                item(span = { GridItemSpan(2) }) {
+                                item(span = { GridItemSpan(windowSizeClass.widthSizeClass.nbSectionColumns) }) {
                                     SectionTitle(
                                         title = "Favorites",
+                                        showNavIcon = false,
                                         count = likeableRecipes.size,
                                         paddingStart = 4.dp
                                     )

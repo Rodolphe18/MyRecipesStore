@@ -27,14 +27,14 @@ class ResetPasswordViewModel @Inject constructor(
                 ))
                 if (response.isSuccessful) {
                     isSuccess = true
-                    uiState = "Mot de passe mis à jour avec succès."
+                    uiState = "Password updated successfully"
                 } else {
                     isSuccess = false
-                    uiState = response.errorBody()?.string() ?: "Erreur inconnue."
+                    uiState = response.errorBody()?.string() ?: "Unknown error"
                 }
             } catch (e: Exception) {
                 isSuccess = false
-                uiState = "Erreur : ${e.localizedMessage}"
+                uiState = "Error : ${e.localizedMessage}"
             }
         }
     }

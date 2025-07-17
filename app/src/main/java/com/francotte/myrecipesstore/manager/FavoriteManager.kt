@@ -11,11 +11,11 @@ import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.network.api.FavoriteApi
 import com.francotte.myrecipesstore.network.model.CustomRecipe
 import com.francotte.myrecipesstore.network.model.Ingredient
-import com.francotte.myrecipesstore.network.model.uriToMultipart
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
@@ -43,6 +43,7 @@ class FavoriteManager @Inject constructor(
 
     val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
+    val customRecipehasBeenUpdatedSuccessfully = MutableStateFlow(false)
 
     suspend fun initFavorites() {
         try {
@@ -94,20 +95,55 @@ class FavoriteManager @Inject constructor(
     ) {
         val titlePart = title.toRequestBody("text/plain".toMediaTypeOrNull())
         val instructionsPart = instructions.toRequestBody("text/plain".toMediaTypeOrNull())
-        val ingredientsPart =
-            Json.encodeToString(ingredients).toRequestBody("text/plain".toMediaType())
+        val ingredientsJson = Json.encodeToString(ingredients)
+        val ingredientsBody = ingredientsJson.toRequestBody("text/plain".toMediaType())
         val imagePart = image.toMultiPartBody(context)
         api.addRecipe(
             "Bearer ${credentials.value?.token}",
             imagePart,
             titlePart,
             instructionsPart,
-            ingredientsPart
+            ingredientsBody
         )
         withContext(Dispatchers.Main) {
             snackBarMessage.emit("Your recipe has been created successfully !")
         }
     }
+
+
+    suspend fun updateRecipe(
+        recipeId: String,
+        title: String,
+        ingredients: List<Ingredient>,
+        instructions: String,
+        image: Uri?
+    ) {
+        val titlePart = title.toRequestBody("text/plain".toMediaTypeOrNull())
+        val instructionsPart = instructions.toRequestBody("text/plain".toMediaTypeOrNull())
+        val ingredientsJson = Json.encodeToString(ingredients)
+        val ingredientsBody = ingredientsJson.toRequestBody("text/plain".toMediaType())
+        val imagePart = image.toMultiPartBody(context)
+        val response = api.updateRecipe(
+            "Bearer ${credentials.value?.token}",
+            recipeId,
+            imagePart,
+            titlePart,
+            instructionsPart,
+            ingredientsBody
+        )
+        if (response.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                customRecipehasBeenUpdatedSuccessfully.value = true
+                snackBarMessage.emit("Your recipe has been updated successfully !")
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                snackBarMessage.emit("An error occurred!")
+            }
+        }
+
+    }
+
 
     suspend fun getUserRecipes(): List<CustomRecipe> {
         return if (credentials.value?.token != null) {
@@ -115,6 +151,14 @@ class FavoriteManager @Inject constructor(
             api.getUserRecipes("Bearer ${credentials.value?.token}")
         } else {
             emptyList()
+        }
+    }
+
+    suspend fun getUserCustomRecipe(customRecipeId:String): CustomRecipe? {
+        return if (credentials.value?.token != null) {
+            api.getUserRecipe("Bearer ${credentials.value?.token}", customRecipeId)
+        } else {
+            null
         }
     }
 
@@ -139,7 +183,7 @@ fun Uri?.toMultiPartBody(context: Context): MultipartBody.Part? {
 
         val file = File.createTempFile("upload", ".jpg", context.cacheDir)
         val outputStream = FileOutputStream(file)
-        resizedBitmap?.compress(Bitmap.CompressFormat.JPEG, 80, outputStream) // Qualité 80%
+        resizedBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream) // Qualité 80%
         outputStream.flush()
         outputStream.close()
 

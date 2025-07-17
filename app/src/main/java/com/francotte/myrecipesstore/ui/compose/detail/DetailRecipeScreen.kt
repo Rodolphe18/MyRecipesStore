@@ -185,7 +185,7 @@ fun DetailRecipeScreen(
                         }
 
                         Text(
-                            text = "Ingrédients",
+                            text = "Ingredients",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 8.dp),
@@ -214,7 +214,7 @@ fun DetailRecipeScreen(
                         Button(
                             onClick = {
                                 val shoppingListText = buildString {
-                                    appendLine("🛒 Liste de courses : ${link.recipe.strMeal}")
+                                    appendLine("🛒 Groceries list : ${link.recipe.strMeal}")
                                     appendLine()
                                     ingredients.forEach { (ingredient, measure) ->
                                         appendLine("- $ingredient: $measure")
@@ -225,7 +225,7 @@ fun DetailRecipeScreen(
                                     type = "text/plain"
                                     putExtra(
                                         Intent.EXTRA_SUBJECT,
-                                        "Ma liste de courses pour ${link.recipe.strMeal}"
+                                        "My groceries list for ${link.recipe.strMeal}"
                                     )
                                     putExtra(Intent.EXTRA_TEXT, shoppingListText)
                                 }
@@ -233,7 +233,7 @@ fun DetailRecipeScreen(
                                 context.startActivity(
                                     Intent.createChooser(
                                         shareIntent,
-                                        "Partager la liste de courses via"
+                                        "Share the groceries list with"
                                     )
                                 )
                             },
@@ -248,10 +248,10 @@ fun DetailRecipeScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Share,
-                                contentDescription = "Partager",
+                                contentDescription = "Share",
                                 modifier = Modifier.padding(end = 8.dp)
                             )
-                            Text("Partager la liste de courses")
+                            Text("Share the groceries list")
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))

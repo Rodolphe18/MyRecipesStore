@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.repository.SearchRepository
-import com.francotte.myrecipesstore.ui.compose.categories.category.CategoryUiState
 import com.francotte.myrecipesstore.ui.compose.search.SearchMode
 import com.francotte.myrecipesstore.util.restartableWhileSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel

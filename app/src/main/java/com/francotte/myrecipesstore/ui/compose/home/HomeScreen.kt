@@ -48,12 +48,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
 import com.francotte.myrecipesstore.domain.model.Recipe
 import com.francotte.myrecipesstore.ui.compose.composables.AdMobBanner
@@ -92,7 +94,7 @@ fun HomeScreen(
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
 
-   val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     var hasLoadedMore by remember { mutableStateOf(false) }
     LaunchedEffect(scrollState) {
         snapshotFlow { scrollState.firstVisibleItemScrollOffset }
@@ -136,7 +138,7 @@ fun HomeScreen(
                 // Latest Recipes Section
                 Column {
                     SectionTitle(
-                        title = "LatestRecipes",
+                        title = stringResource(R.string.latest_recipes_title),
                         count = null,
                         showNavIcon = false
                     )
@@ -187,15 +189,12 @@ fun HomeScreen(
                 }
             }
 
-            item(span = { spanSize }) {
-                Spacer(Modifier.height(32.dp))
-                AdMobBanner(height = 50.dp)
-            }
-
+         //   item(span = { spanSize }) { Spacer(Modifier.height(32.dp)) }
+         //   item(span = { spanSize }) { AdMobBanner(height = 50.dp) }
             item(span = { spanSize }) {
                 when (americanRecipes) {
                     AmericanRecipes.Error -> ErrorScreen { }
-                    AmericanRecipes.Loading -> CustomCircularProgressIndicator()
+                    AmericanRecipes.Loading -> {}
                     is AmericanRecipes.Success -> {
                         HorizontalRecipesList(
                             "American",

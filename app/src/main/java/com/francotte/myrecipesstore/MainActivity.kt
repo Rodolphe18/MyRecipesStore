@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -30,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -62,33 +65,34 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        //  WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
-
-
-       // viewModel.loadInterstitial(this)
+        val splashScreen = installSplashScreen()
+        //  viewModel.loadInterstitial(this)
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect {
-                    enableEdgeToEdge()
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            lightScrim = android.graphics.Color.TRANSPARENT,
+                            darkScrim = android.graphics.Color.TRANSPARENT,
+                        ),
+                        navigationBarStyle = SystemBarStyle.auto(
+                            lightScrim = lightScrim,
+                            darkScrim = darkScrim,
+                        ),
+                    )
                 }
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            splashScreen.setKeepOnScreenCondition {
-                false
-             //   viewModel.uiState.value.shouldKeepSplashScreen()
-            }
-        }
-        if (viewModel.uiState.value is MainActivityUiState.Success && (viewModel.uiState.value as MainActivityUiState.Success).hasTimedOut) {
-            viewModel.retryLoadInterstitial(this)
-        }
+        splashScreen.setKeepOnScreenCondition { viewModel.uiState.value.shouldKeepSplashScreen() }
+        //  viewModel.uiState.value.shouldKeepSplashScreen()
+        //   if (viewModel.uiState.value is MainActivityUiState.Success && (viewModel.uiState.value as MainActivityUiState.Success).hasTimedOut) {
+        //      viewModel.retryLoadInterstitial(this)
+        //  }
         setContent {
-            val isAuthenticated by authManager.isAuthenticated.collectAsStateWithLifecycle()
-            Log.d("debug_is_authenticated", isAuthenticated.toString())
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            Log.d("debug_connected", isAuthenticated.toString())
             val data: Uri? = intent?.data
             val state = rememberAppState(
                 favoriteManager = favoriteManager,
@@ -98,7 +102,11 @@ class MainActivity : ComponentActivity() {
             )
 
             FoodTheme {
-                FoodApp(context = this, appState = state, windowSizeClass = calculateWindowSizeClass(activity = this))
+                FoodApp(
+                    context = this,
+                    appState = state,
+                    windowSizeClass = calculateWindowSizeClass(activity = this)
+                )
                 NotificationPermissionEffect()
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && uiState.shouldKeepSplashScreen()) {
                     SplashScreen()
@@ -109,5 +117,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * The default light scrim, as defined by androidx and the platform:
+ * https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:activity/activity/src/main/java/androidx/activity/EdgeToEdge.kt;l=35-38;drc=27e7d52e8604a080133e8b842db10c89b4482598
+ */
+private val lightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
+
+/**
+ * The default dark scrim, as defined by androidx and the platform:
+ * https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:activity/activity/src/main/java/androidx/activity/EdgeToEdge.kt;l=40-44;drc=27e7d52e8604a080133e8b842db10c89b4482598
+ */
+private val darkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
 
 

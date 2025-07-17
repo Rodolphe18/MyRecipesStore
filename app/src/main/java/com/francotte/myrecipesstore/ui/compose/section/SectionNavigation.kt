@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.section
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,26 +28,26 @@ fun NavController.navigateToSection(
 
 fun NavGraphBuilder.sectionScreen(
     onBackClick: () -> Unit,
+    windowSizeClass: WindowSizeClass,
     onRecipeClick: (List<String>,Int,String) -> Unit,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
-    recipeDetailDestination: NavGraphBuilder.() -> Unit
+    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
 ) {
     composable<SectionRoute> {
         SectionRoute(
             onToggleFavorite = onToggleFavorite,
+            windowSizeClass = windowSizeClass,
             onOpenRecipe = { ids, index, title -> onRecipeClick(ids, index, title) },
             onBackClick = onBackClick
         )
     }
-    recipeDetailDestination()
 }
 
 @Composable
-fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(), onToggleFavorite:(LikeableRecipe, Boolean)-> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onBackClick:()->Unit) {
+fun SectionRoute(sectionViewModel: SectionViewModel= hiltViewModel(),windowSizeClass: WindowSizeClass, onToggleFavorite:(LikeableRecipe, Boolean)-> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onBackClick:()->Unit) {
 
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
     val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()
-    SectionScreen(uiState, sectionTitle,{}, onToggleFavorite, onOpenRecipe, onBackClick)
+    SectionScreen(uiState, windowSizeClass, sectionTitle,{}, onToggleFavorite, onOpenRecipe, onBackClick)
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

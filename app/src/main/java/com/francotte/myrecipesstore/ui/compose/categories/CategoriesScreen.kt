@@ -1,5 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.categories
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -63,13 +65,13 @@ fun CategoriesScreen(
         is CategoriesUiState.Success -> {
             (categoryUiState.categories as? List<AbstractCategory>)?.let { categories ->
                 LazyVerticalGrid(
-                    modifier = Modifier.drawBehind {
-                        drawRect(LightYellow.copy(0.1f))
-                    },
+//                    modifier = Modifier.drawBehind {
+//                        drawRect(LightYellow.copy(0.1f))
+//                    },
                     state = lazyListState,
                     columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbCategoriesColumns),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(20.dp)
                 ) {
                     items(items = categories) { category ->
@@ -95,9 +97,10 @@ fun CategoryItem(imageUrl: String, title: String, onClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(130.dp)
+                .aspectRatio(1.35f)
                 .clip(RoundedCornerShape(20.dp))
-                .clickable { onClick() }) {
+                .clickable { onClick() }
+                .animateContentSize()) {
             GradientBackGround(Modifier.fillMaxSize())
             CategoryImage(modifier = Modifier.fillMaxSize(), imageUrl = imageUrl)
 
@@ -112,7 +115,7 @@ fun CategoryItem(imageUrl: String, title: String, onClick: () -> Unit) {
 fun CategoryImage(modifier: Modifier = Modifier, imageUrl: String) {
     Image(
         modifier = modifier,
-        contentScale = ContentScale.FillBounds,
+        contentScale = ContentScale.None,
         contentDescription = "",
         painter = rememberAsyncImagePainter(
             imageRequestBuilder(LocalContext.current, imageUrl)))
@@ -120,7 +123,7 @@ fun CategoryImage(modifier: Modifier = Modifier, imageUrl: String) {
 
 @Composable
 fun CategoryMetaData(modifier: Modifier= Modifier, title: String) {
-    Text(modifier = modifier, text = title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+    Text(modifier = modifier, text = title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
 }
 
 @Composable

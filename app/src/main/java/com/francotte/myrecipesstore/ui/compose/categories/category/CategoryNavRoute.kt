@@ -23,11 +23,10 @@ fun NavController.navigateToCategoryScreen(category: String, navOptions: NavOpti
     }
 }
 
-fun NavGraphBuilder.categoryScreen(windowSizeClass:WindowSizeClass,onBackClick: () -> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit, recipeDetailDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.categoryScreen(windowSizeClass:WindowSizeClass,onBackClick: () -> Unit, onOpenRecipe: (List<String>,Int,String) -> Unit, onToggleFavorite:(LikeableRecipe, Boolean) -> Unit) {
     composable<CategoryNavigationRoute> {
         CategoryRoute(windowSizeClass = windowSizeClass,onOpenRecipe =  { ids, index, title -> onOpenRecipe(ids,index,title) }, onToggleFavorite = onToggleFavorite, onBack= onBackClick)
     }
-    recipeDetailDestination()
 }
 
 @Composable

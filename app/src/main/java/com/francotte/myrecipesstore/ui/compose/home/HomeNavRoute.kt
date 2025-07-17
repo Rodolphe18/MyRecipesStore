@@ -32,9 +32,6 @@ fun NavGraphBuilder.homeScreen(
     onRecipeClick: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenSection: (String) -> Unit,
-    sectionDestination: NavGraphBuilder.() -> Unit,
-    recipeDetailDestination: NavGraphBuilder.() -> Unit,
-    videoDestination: NavGraphBuilder.() -> Unit,
     onVideoButtonClick: (String) -> Unit,
     windowSizeClass: WindowSizeClass
 ) {
@@ -48,9 +45,7 @@ fun NavGraphBuilder.homeScreen(
                 windowSizeClass = windowSizeClass
             )
         }
-        sectionDestination()
-        recipeDetailDestination()
-        videoDestination()
+
     }
 }
 

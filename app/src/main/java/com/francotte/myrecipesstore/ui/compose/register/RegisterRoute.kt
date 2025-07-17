@@ -18,11 +18,10 @@ fun NavController.navigateToRegisterScreen(navOptions: NavOptions? = null) {
     this.navigate(REGISTER_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.registerScreen(onBackPressed: () -> Unit,navigateToFavoriteScreen: () ->Unit, favoriteScreenDestination: NavGraphBuilder.() -> Unit) {
+fun NavGraphBuilder.registerScreen(onBackPressed: () -> Unit,navigateToFavoriteScreen: () ->Unit) {
     composable(route = REGISTER_ROUTE) {
         RegisterRoute(onBackPressed = onBackPressed, navigateToFavoriteScreen = { navigateToFavoriteScreen() })
     }
-    favoriteScreenDestination()
 }
 
 @Composable

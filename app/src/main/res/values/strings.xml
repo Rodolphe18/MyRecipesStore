@@ -15,7 +15,7 @@
     <string name="continue_with_apple">Continue with Apple</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="onboarding_join_label">Log in or sign up to save and rate your favorite recipes</string>
-    <string name="add_recipe_access">Login to add new recipes</string>
+    <string name="add_recipe_access">Login to create new recipes !</string>
     <string name="empty_recipes_screen">No recipes found !\nTry different ingredients and \ncook up something new ! 🍲🧑‍🍳</string>
     <string name="add_favorites_recipes">Add your favorites \nrecipes</string>
     <string name="onboarding_separator">OR</string>
@@ -71,4 +71,11 @@
     <string name="feature_settings_logout">Log out</string>
     <string name="google_server_client_id">431140586774-o1p6cnlk42macn41t4ld0t0bh2kr21fi.apps.googleusercontent.com</string>
     <string name="core_notifications_news_notification_group_summary">%1$d recipes updates</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="add_recipe">Add recipe</string>
+    <string name="update_recipe">Update recipe</string>
+    <string name="my_recipes">My recipes</string>
+    <string name="latest_recipes_title">LatestRecipes</string>
+    <string name="supporting_text_email">Email adress is not modifiable</string>
+    <string name="app_launcher_name">My Recipes Store</string>
 </resources>

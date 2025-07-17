@@ -28,7 +28,6 @@ class AddRecipeViewModel @Inject constructor(private val favoriteManager: Favori
         recipeInstructions = ""
         currentIngredient =""
         currentQuantity = ""
-        recipeIngredients.clear()
     }
 
 }

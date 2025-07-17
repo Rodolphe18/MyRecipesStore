@@ -33,13 +33,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -60,9 +57,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -72,6 +67,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.ui.compose.add_recipe.bitmapToUri
+import com.francotte.myrecipesstore.ui.compose.composables.CustomButton
 import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
 import com.francotte.myrecipesstore.ui.compose.login.LoginViewModel
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
@@ -137,11 +133,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
         }
 
         AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    drawRect(whiteYellowVerticalGradient())
-                },
+            modifier = Modifier.fillMaxSize(),
             visible = visible,
             enter = slideInVertically(
                 initialOffsetY = { fullHeight -> fullHeight }, // depuis le bas
@@ -156,7 +148,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                 modifier = Modifier.padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 12.dp))
+                Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 24.dp))
                 if (image == null) {
                     val scale = remember { Animatable(1f) }
                     LaunchedEffect(Unit) {
@@ -210,7 +202,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                             .clip(CircleShape)
                     )
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(36.dp))
                 RegisterTextField(
                     registerName,
                     { registerName = it },
@@ -237,35 +229,17 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                     "secure password ✅",
                     "Password"
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = {
-                        viewModel.createUserWithMailAndPassword(
-                            username = registerName,
-                            email = registerEmail,
-                            password = registerPassword,
-                            imageUri = image
-                        )
-                    },
+                Spacer(modifier = Modifier.height(48.dp))
+                CustomButton(onClick = {
+                    viewModel.createUserWithMailAndPassword(
+                        username = registerName,
+                        email = registerEmail,
+                        password = registerPassword,
+                        imageUri = image
+                    )
+                },
                     enabled = canConnect,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(46.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF6D4C41), // Café brun
-                        contentColor = Color(0xFFF6E8D6), // Texte beige
-                        disabledContainerColor = Color(0xFFBCAAA4), // plus pâle
-                        disabledContentColor = Color.White.copy(alpha = 0.6f)
-                    )
-                ) {
-                    Text(
-                        text = "Subscribe",
-                        fontSize = 16.sp,
-                        color = Color.White
-                    )
-                }
-
-
+                    contentText =  R.string.subscribe)
             }
             if (showImagePickerDialog) {
                 AlertDialog(
