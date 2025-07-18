@@ -17,11 +17,11 @@
         android:theme="@style/Theme.MyRecipesStore.SplashScreen"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <profileable android:shell="true" tools:targetApi="q" />
 
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            >
+            android:exported="true">
 
             <!-- Deep links -->
             <intent-filter>

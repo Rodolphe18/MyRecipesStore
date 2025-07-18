@@ -11,11 +11,13 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.Call
+import okhttp3.Dispatcher
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.create
+import java.util.concurrent.ExecutorService
 import javax.inject.Singleton
 
 @Module
@@ -25,14 +27,6 @@ object ApiModule {
     private inline fun <reified A> providesFoodApi(okhttpCallFactory: dagger.Lazy<Call.Factory>, json: Json): A {
         return Retrofit.Builder()
             .baseUrl("https://www.themealdb.com/api/json/v2/$API_KEY/")
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor(
-                        HttpLoggingInterceptor()
-                            .setLevel(HttpLoggingInterceptor.Level.BODY)
-                    )
-                    .build()
-            )
             .callFactory { okhttpCallFactory.get().newCall(it) }
             .addConverterFactory(
                 json.asConverterFactory("application/json".toMediaType()),
@@ -54,8 +48,9 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun okHttpCallFactory(): Call.Factory =
+    fun okHttpCallFactory(sharedExecutor: ExecutorService): Call.Factory =
         OkHttpClient.Builder()
+            .dispatcher(Dispatcher(sharedExecutor))
             .addInterceptor(
                 okhttp3.logging.HttpLoggingInterceptor()
                     .apply {

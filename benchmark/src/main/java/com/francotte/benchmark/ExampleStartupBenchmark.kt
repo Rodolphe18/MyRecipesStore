@@ -38,12 +38,12 @@ class StartupBaselineProfileGenerator {
 
         device.wait(Until.findObject(By.desc("homeScreenReady")), 20_000)
 
-        device.findObject(By.desc("VideoRecipeItem_0")).click()
-        device.wait(
-            Until.hasObject(By.res("com.francotte.myrecipesstore", "full_detail_screen")),
-            5_000
-        )
-        device.pressBack()
+//        device.findObject(By.desc("VideoRecipeItem_0")).click()
+//        device.wait(
+//            Until.hasObject(By.res("com.francotte.myrecipesstore", "full_detail_screen")),
+//            5_000
+//        )
+//        device.pressBack()
 
         device.findObject(By.desc("SectionTitle_American")).click()
         device.wait(

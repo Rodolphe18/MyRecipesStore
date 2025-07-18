@@ -25,6 +25,9 @@ import javax.inject.Inject
 class FoodApplication:Application(), Configuration.Provider {
 
     @Inject
+    override lateinit var workManagerConfiguration: Configuration
+
+    @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -33,11 +36,6 @@ class FoodApplication:Application(), Configuration.Provider {
         MobileAds.initialize(this) {}
         scheduleDailyRecipeNotification(this)
     }
-
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
 
 }
 

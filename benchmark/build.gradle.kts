@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.test)
     alias(libs.plugins.kotlin.android)
+    id("androidx.baselineprofile")
 }
 
 android {
@@ -15,9 +16,9 @@ android {
     }
 
     testOptions.managedDevices.devices {
-        create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel2Api31") {
-            device = "Pixel 2"
-            apiLevel = 31
+        create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel7Api35") {
+            device = "Pixel 7"
+            apiLevel = 35
             systemImageSource = "aosp"
         }
     }
@@ -39,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.junit)
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.uiautomator)

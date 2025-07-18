@@ -1,32 +1,4 @@
 #######################################
-# Jetpack Compose
-#######################################
--keep class androidx.compose.** { *; }
--keep class androidx.activity.ComponentActivity { *; }
--keepclassmembers class * {
-    @androidx.compose.runtime.Composable <methods>;
-}
--dontwarn androidx.compose.**
--dontwarn kotlin.Unit
-
-#######################################
-# Hilt / Dagger
-#######################################
--keep class dagger.** { *; }
--keep interface dagger.** { *; }
--keep class javax.inject.** { *; }
--keep class dagger.hilt.** { *; }
--dontwarn dagger.**
--dontwarn javax.inject.**
--dontwarn dagger.hilt.**
-
-#######################################
-# Room
-#######################################
--keep class androidx.room.** { *; }
--dontwarn androidx.room.**
-
-#######################################
 # Navigation Compose
 #######################################
 -keep class androidx.navigation.** { *; }
@@ -45,7 +17,7 @@
 -dontwarn coil.**
 
 #######################################
-# Retrofit + Serialization
+# Serialization
 #######################################
 -keepattributes Signature, Exceptions, *Annotation*
 -keep class retrofit2.** { *; }
@@ -53,10 +25,11 @@
 
 -keep class kotlinx.serialization.** { *; }
 -dontwarn kotlinx.serialization.**
-
-# Retrofit HTTP annotations
--keepclassmembers class * {
-    @retrofit2.http.* <methods>;
+-keepclassmembers class kotlinx.serialization.json.** {
+    *** Companion;
+}
+-keepclasseswithmembers class kotlinx.serialization.json.** {
+    kotlinx.serialization.KSerializer serializer(...);
 }
 
 #######################################
@@ -64,24 +37,12 @@
 #######################################
 -dontwarn kotlinx.coroutines.**
 -keep class kotlinx.coroutines.** { *; }
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
 
-#######################################
-# Google Play Services (Ads / Auth)
-#######################################
--keep class com.google.android.gms.** { *; }
--dontwarn com.google.android.gms.**
-
-#######################################
-# Facebook SDK
-#######################################
--keep class com.facebook.** { *; }
--dontwarn com.facebook.**
-
-#######################################
-# WorkManager
-#######################################
--keep class androidx.work.** { *; }
--dontwarn androidx.work.**
 
 #######################################
 # SplashScreen API
@@ -105,12 +66,6 @@
 -dontwarn com.google.protobuf.**
 
 #######################################
-# OkHttp Logging Interceptor
-#######################################
--keep class okhttp3.logging.** { *; }
--dontwarn okhttp3.logging.**
-
-#######################################
 # Debug/Test-only dependencies (à ignorer en prod)
 #######################################
 -dontwarn io.mockk.**
@@ -124,4 +79,4 @@
 #######################################
 -dontwarn androidx.test.uiautomator.**
 
-
+-dontwarn javax.annotation.**

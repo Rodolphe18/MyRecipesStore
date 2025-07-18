@@ -17,9 +17,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.util.concurrent.ExecutorService
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -127,10 +130,11 @@ object DataStoreModule {
     internal fun providesUserPreferencesDataStore(
         @ApplicationContext context: Context,
         userPreferencesSerializer: UserPreferencesSerializer,
+        sharedExecutor: ExecutorService
     ): DataStore<UserPreferences> =
         DataStoreFactory.create(
             serializer = userPreferencesSerializer,
-            scope = CoroutineScope(Dispatchers.IO),
+            scope = CoroutineScope(sharedExecutor.asCoroutineDispatcher() + SupervisorJob()),
         ) {
             context.dataStoreFile("user_preferences.pb")
         }

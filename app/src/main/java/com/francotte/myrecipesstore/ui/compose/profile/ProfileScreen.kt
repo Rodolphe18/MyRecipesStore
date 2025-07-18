@@ -96,7 +96,7 @@ fun ProfileScreen(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = "Register",
+                title = "Profile",
                 scrollBehavior = topAppBarScrollBehavior,
                 navigationIconEnabled = true,
                 onNavigationClick = onBackClick

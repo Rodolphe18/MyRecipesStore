@@ -6,6 +6,9 @@
     <string name="add">Add</string>
     <string name="favorites">Favorites</string>
     <string name="login">Login</string>
+    <string name="instructions">Instructions</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="title">Title</string>
     <string name="club_login_page_join_description">Login to access your favorite recipes!</string>
     <string name="error_title">An error occurs while loading</string>
     <string name="error_subtitle">Try again by clicking the button below</string>

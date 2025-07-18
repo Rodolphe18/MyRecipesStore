@@ -14,6 +14,7 @@ import com.francotte.myrecipesstore.network.api.AuthApi
 import com.francotte.myrecipesstore.datastore.UserDataSource
 import com.francotte.myrecipesstore.network.model.EmailRequest
 import com.francotte.myrecipesstore.network.model.GoogleIdTokenRequest
+import com.francotte.myrecipesstore.util.ApplicationScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -56,9 +57,10 @@ object AuthModule {
         @ApplicationContext context: Context,
         api: AuthApi,
         preferences: UserDataSource,
-        fullRecipeDao: FullRecipeDao
+        fullRecipeDao: FullRecipeDao,
+       @ApplicationScope coroutineScope: CoroutineScope
     ): AuthManager =
-        AuthManager(context, api, preferences, fullRecipeDao)
+        AuthManager(context, api, preferences, fullRecipeDao,coroutineScope)
 
 
 }
@@ -69,10 +71,9 @@ class AuthManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: AuthApi,
     private val preferences: UserDataSource,
-    private val dao: FullRecipeDao
+    private val dao: FullRecipeDao,
+    @ApplicationScope private val coroutineScope: CoroutineScope
 ) {
-
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val googleSignInClient = GoogleSignIn.getClient(
         context,
@@ -137,7 +138,7 @@ class AuthManager @Inject constructor(
 
 
     fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
-        coroutineScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
             try {
                 val account = signInTask.await()
                 val idToken = account.idToken
