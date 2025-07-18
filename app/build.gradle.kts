@@ -21,9 +21,6 @@ configurations.all {
     exclude(group = "com.intellij", module = "annotations")
 }
 
-val keystoreProperties = Properties().apply {
-    load(File(rootDir, "keystore.properties").inputStream())
-}
 
 android {
     namespace = "com.francotte.myrecipesstore"
@@ -33,26 +30,17 @@ android {
         applicationId = "com.francotte.myrecipesstore"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-        }
-    }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -155,6 +143,9 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
+
+    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+    implementation("androidx.startup:startup-runtime:1.1.1")
 
     implementation("androidx.compose.material3:material3:1.2.1") // ou version plus récente
     implementation("androidx.activity:activity-compose:1.8.2")
