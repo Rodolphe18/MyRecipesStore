@@ -76,24 +76,26 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(top = 10.dp, bottom = 30.dp, start = 16.dp, end= 16.dp),
+            .padding(top = 8.dp, bottom = 30.dp, start = 16.dp, end= 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = stringResource(id = R.string.club_login_page_join_description),
             textAlign = TextAlign.Center,
+            fontSize = 22.sp,
+            lineHeight = 30.sp,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ButtonGoogle(
-            onClick = doGoogleLogin,
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.continue_with_google)
-        )
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        ButtonGoogle(
+//            onClick = doGoogleLogin,
+//            modifier = Modifier.fillMaxWidth(),
+//            text = stringResource(id = R.string.continue_with_google)
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 //        Button(
@@ -107,26 +109,26 @@ fun LoginScreen(
 //
 //        Spacer(modifier = Modifier.height(16.dp))
 
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            HorizontalDivider(
-                modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "ou",
-                modifier = Modifier.padding(horizontal = 8.dp),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            HorizontalDivider(
-                modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Row(
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.Center
+//        ) {
+//            HorizontalDivider(
+//                modifier = Modifier.weight(1f),
+//                color = MaterialTheme.colorScheme.onSurface
+//            )
+//            Text(
+//                text = "or",
+//                modifier = Modifier.padding(horizontal = 8.dp),
+//                color = MaterialTheme.colorScheme.onSurface
+//            )
+//            HorizontalDivider(
+//                modifier = Modifier.weight(1f),
+//                color = MaterialTheme.colorScheme.onSurface,
+//            )
+//        }
+ //       Spacer(modifier = Modifier.height(16.dp))
         CustomTextField(
             loginUserNameOrMail,
             { loginUserNameOrMail = it },
@@ -141,6 +143,7 @@ fun LoginScreen(
                 .padding(top = 10.dp)
                 .clickable { onOpenResetPassword() },
             textDecoration = TextDecoration.Underline,
+            fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -158,7 +161,8 @@ fun LoginScreen(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 textDecoration = TextDecoration.Underline
-            )
+            ),
+            fontSize = 16.sp
         )
     }
 }

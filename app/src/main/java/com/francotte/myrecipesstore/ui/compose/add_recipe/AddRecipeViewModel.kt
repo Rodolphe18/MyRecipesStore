@@ -20,6 +20,7 @@ class AddRecipeViewModel @Inject constructor(private val favoriteManager: Favori
     var recipeInstructions by mutableStateOf("")
     var currentIngredient by mutableStateOf("")
     var currentQuantity by mutableStateOf("")
+    var quantityType by mutableStateOf("")
     var recipeIngredients = mutableStateListOf<Ingredient>()
 
     fun onRecipeCreated() {
@@ -27,6 +28,7 @@ class AddRecipeViewModel @Inject constructor(private val favoriteManager: Favori
         recipeTitle = ""
         recipeInstructions = ""
         currentIngredient =""
+        quantityType = ""
         currentQuantity = ""
     }
 

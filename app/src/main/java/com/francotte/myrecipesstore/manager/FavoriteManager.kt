@@ -147,8 +147,7 @@ class FavoriteManager @Inject constructor(
 
     suspend fun getUserRecipes(): List<CustomRecipe> {
         return if (credentials.value?.token != null) {
-            Log.d("debug_user_recipes", api.getUserRecipes("Bearer ${credentials.value?.token}").toString())
-            api.getUserRecipes("Bearer ${credentials.value?.token}")
+             api.getUserRecipes("Bearer ${credentials.value?.token}")
         } else {
             emptyList()
         }
@@ -169,7 +168,6 @@ fun Uri?.toMultiPartBody(context: Context): MultipartBody.Part? {
         val resolver = context.contentResolver
 
         val inputStream = resolver.openInputStream(uri)
-        Log.d("debug_upload", "inputStream is null: ${inputStream == null}")
         val originalBitmap = BitmapFactory.decodeStream(inputStream)
         inputStream?.close()
 

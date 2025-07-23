@@ -22,7 +22,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ApiModule {
+object
+ApiModule {
 
     private inline fun <reified A> providesFoodApi(okhttpCallFactory: dagger.Lazy<Call.Factory>, json: Json): A {
         return Retrofit.Builder()
@@ -38,6 +39,14 @@ object ApiModule {
     private inline fun <reified A> providesUserApi(okhttpCallFactory: dagger.Lazy<Call.Factory>, json: Json): A {
         return Retrofit.Builder()
             .baseUrl("https://www.myrecipesstore18.com")
+            .client(
+                OkHttpClient.Builder()
+                    .addInterceptor(
+                        HttpLoggingInterceptor()
+                            .setLevel(HttpLoggingInterceptor.Level.BODY)
+                    )
+                    .build()
+            )
             .callFactory { okhttpCallFactory.get().newCall(it) }
             .addConverterFactory(
                 json.asConverterFactory("application/json".toMediaType()),

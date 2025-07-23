@@ -209,11 +209,13 @@ fun CustomRecipeDetailScreen(
                                     viewModel.recipeIngredients.add(
                                         Ingredient(
                                             viewModel.currentIngredient,
-                                            viewModel.currentQuantity
+                                            viewModel.currentQuantity,
+                                            viewModel.quantityType
                                         )
                                     )
                                     viewModel.currentIngredient = ""
                                     viewModel.currentQuantity = ""
+                                    viewModel.quantityType = ""
                                     focusManager.clearFocus()
                                 }
                             }) {
@@ -231,9 +233,9 @@ fun CustomRecipeDetailScreen(
                 Column {
                     if (viewModel.recipeIngredients.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        viewModel.recipeIngredients.forEach { (ingredient, qty) ->
+                        viewModel.recipeIngredients.forEach { (ingredient, qty, measureType) ->
                             Text(
-                                "- $ingredient: $qty",
+                                "- $ingredient: $qty $measureType",
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }

@@ -27,7 +27,6 @@ class LaunchCounterManager(context: Context) {
     }
 
     fun getLaunchCount(): Int {
-        Log.d("debug_launch_count", prefs.getInt(KEY_LAUNCH_COUNT, 0).toString())
         return prefs.getInt(KEY_LAUNCH_COUNT, 0)
     }
 

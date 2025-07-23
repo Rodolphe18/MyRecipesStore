@@ -16,8 +16,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -88,7 +91,7 @@ fun FoodApp(
             onShareApp = {
                 val sendIntent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "Essaie cette app incroyable !")
+                    putExtra(Intent.EXTRA_TEXT, "Try this app! it is incredible!")
                     putExtra(Intent.EXTRA_TITLE, context.resources.getString(R.string.app_name))
                     putExtra(Intent.EXTRA_SUBJECT, context.resources.getString(R.string.app_name))
                     type = "text/plain"
@@ -97,12 +100,27 @@ fun FoodApp(
                 context.startActivity(shareIntent)
                 showSettingsDialog = false
             },
-            onSubscribedClick = {}
+            onDeleteAccount = {
+                scope.launch {
+                    appState.authManager.deleteUser()
+                    currentDestination?.let { route ->
+                        if (route == FAVORITE_ROUTE) {
+                            appState.navController.navigateToLoginScreen(navOptions {
+                                popUpTo(0) { inclusive = true }
+                            })
+                        } else {
+                            appState.navController.navigate(route) {
+                                popUpTo(FAVORITE_ROUTE) { inclusive = true }
+                            }
+                        }
+                    }
+                    showSettingsDialog = false
+                }
+            }
         )
     }
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
@@ -116,13 +134,14 @@ fun FoodApp(
             val destination = appState.currentTopLevelDestination
             if (destination != null) {
                 TopAppBar(
-                    modifier = Modifier.statusBarsPadding(),
+                    modifier = Modifier.statusBarsPadding().padding(horizontal = 4.dp),
                     profileImage = image,
                     titleRes = destination.titleTextId,
                     actionIcon = Icons.Outlined.Settings,
                     actionIconContentDescription = "settings",
                     onActionClick = { showSettingsDialog = true },
                     navigationIconEnabled = true,
+                    navigationIcon = Icons.Filled.AccountCircle,
                     onNavigationClick = { appState.navController.navigateToProfileScreen() }
                 )
             }
@@ -137,7 +156,6 @@ fun FoodApp(
                 currentDestination = appState.currentDestination,
                 isAuthenticated = isAuthenticated
             )
-
         }
     ) { padding ->
         Box(
@@ -184,9 +202,7 @@ fun FoodApp(
                                 url
                             )
                         } catch (e: Exception) {
-                            Log.d("debug_update1", e.printStackTrace().toString())
                             Log.d("debug_update2", e.message.toString())
-
                         }
                     }
                 },

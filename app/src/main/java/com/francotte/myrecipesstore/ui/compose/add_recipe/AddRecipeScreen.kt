@@ -71,6 +71,7 @@ import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.network.model.Ingredient
 import com.francotte.myrecipesstore.ui.compose.composables.CustomButton
 import com.francotte.myrecipesstore.ui.compose.composables.CustomTextField
+import com.francotte.myrecipesstore.ui.compose.register.MeasurementUnitDropDownMenu
 import com.francotte.myrecipesstore.ui.theme.Orange
 import java.io.ByteArrayOutputStream
 
@@ -96,12 +97,11 @@ fun AddRecipeScreen(
         }
     }
     if (!isAuthenticated) {
-        LoginRedirectScreen { goToLoginScreen() }
+        LoginRedirectScreen(goToLoginScreen)
     }
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp).verticalScroll(rememberScrollState())) {
         AnimatedVisibility(
             visible = showAnimation,
-            modifier = Modifier.align(Alignment.BottomCenter),
             enter = slideInVertically(
                 initialOffsetY = { it },
                 animationSpec = tween(600)
@@ -119,17 +119,13 @@ fun AddRecipeScreen(
                         viewModel.imageUri = uri
                     }
                 }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .verticalScroll(rememberScrollState())
+            Column(modifier = Modifier.fillMaxSize()
             ) {
-
                 CustomTextField(
                     viewModel.recipeTitle,
                     { viewModel.recipeTitle = it },
-                    label = "Title"
+                    label = "Title",
+                    verticalPadding = 12.dp
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -201,8 +197,9 @@ fun AddRecipeScreen(
                         viewModel.currentIngredient,
                         { viewModel.currentIngredient = it },
                         label = "Ingredient",
-                        modifier = Modifier.weight(1.2f),
-                        verticalPadding = 12.dp
+                        modifier = Modifier.weight(0.6f),
+                        verticalPadding = 12.dp,
+                        maxLines = 3
                     )
 
                     CustomTextField(
@@ -210,25 +207,30 @@ fun AddRecipeScreen(
                         { viewModel.currentQuantity = it },
                         label = "Qty",
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(0.5f),
+                        modifier = Modifier.weight(0.3f),
                         verticalPadding = 12.dp
                     )
+                    MeasurementUnitDropDownMenu(Modifier.weight(0.45f)) {
+                        viewModel.quantityType = it.displayName
+                    }
                     Box(
                         modifier = Modifier
                             .height(50.dp)
-                            .weight(0.3f)
-                            .clip(CircleShape)
+                            .weight(0.2f)
+                            .clip(RoundedCornerShape(12.dp))
                             .background(Orange)
                             .clickable {
                                 if (viewModel.currentIngredient.isNotBlank()) {
                                     viewModel.recipeIngredients.add(
                                         Ingredient(
                                             viewModel.currentIngredient,
-                                            viewModel.currentQuantity
+                                            viewModel.currentQuantity,
+                                            viewModel.quantityType
                                         )
                                     )
                                     viewModel.currentIngredient = ""
                                     viewModel.currentQuantity = ""
+                                    viewModel.quantityType = ""
                                     focusManager.clearFocus()
                                 }
                             }) {
@@ -246,8 +248,8 @@ fun AddRecipeScreen(
                 Column {
                     if (viewModel.recipeIngredients.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        viewModel.recipeIngredients.forEach { (ingredient, qty) ->
-                            Text("- $ingredient: $qty", color = MaterialTheme.colorScheme.onSurface)
+                        viewModel.recipeIngredients.forEach { (ingredient, qty, measureType) ->
+                            Text("• $ingredient: $qty $measureType", color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -261,7 +263,7 @@ fun AddRecipeScreen(
                     label = "Instructions",
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
                     minLines = 5,
-                    maxLines = 10,
+                    maxLines = 50
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -278,6 +280,7 @@ fun AddRecipeScreen(
                     enabled = viewModel.recipeTitle.isNotBlank() && viewModel.recipeInstructions.isNotBlank() && viewModel.recipeIngredients.isNotEmpty(),
                     contentText = R.string.add_recipe
                 )
+                Spacer(modifier = Modifier.height(500.dp))
             }
         }
     }
@@ -305,7 +308,7 @@ fun LoginRedirectScreen(
             contentDescription = null,
             modifier = Modifier.size(180.dp)
         )
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = stringResource(R.string.add_recipe_access),
@@ -317,14 +320,14 @@ fun LoginRedirectScreen(
             lineHeight = 30.sp
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Box(
             modifier = Modifier
                 .height(56.dp)
                 .width(240.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Orange.copy(alpha = 0.9f))
+                .background(Orange)
                 .clickable { goToLoginScreen() },
             contentAlignment = Alignment.Center
         ) {

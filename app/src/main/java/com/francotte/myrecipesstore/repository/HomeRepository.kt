@@ -40,7 +40,6 @@ class HomeRepository @Inject constructor(
             userDataSource.userData,
             homeRepository.getRecipesListByArea("British")
         ) { userData, latestRecipes ->
-            Log.d("debug1", userData.toString())
             try {
                 val likeable = latestRecipes.mapToLikeableLightRecipes(userData)
                 Result.success(likeable)
@@ -72,7 +71,6 @@ class HomeRepository @Inject constructor(
                 }
             ) { it.toMap() }
         ) { userData, recipesMap ->
-            Log.d("debug1", recipesMap.toString())
             try {
                 val likeableRecipesMap = recipesMap.mapValues { (_, recipes) ->
                     recipes.mapToLikeableLightRecipes(userData)

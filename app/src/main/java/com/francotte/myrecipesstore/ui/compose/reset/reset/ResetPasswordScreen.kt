@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.francotte.myrecipesstore.ui.compose.composables.CustomTextField
 import kotlinx.serialization.Serializable
 
 
@@ -45,11 +46,11 @@ fun NavGraphBuilder.resetPasswordScreen() {
 fun ResetPasswordScreen(token: String, viewModel: ResetPasswordViewModel = hiltViewModel()) {
     var password by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Nouveau mot de passe")
-        TextField(value = password, onValueChange = { password = it })
+    Column(modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)) {
+        Text("New password")
+        CustomTextField(text = password, onTextChange = { password = it })
         Button(onClick = { viewModel.resetPassword(token, password) }) {
-            Text("Confirmer")
+            Text("Confirm")
         }
 
         if (viewModel.uiState.isNotBlank()) {

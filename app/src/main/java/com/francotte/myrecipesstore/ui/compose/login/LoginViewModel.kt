@@ -8,6 +8,7 @@ import com.francotte.myrecipesstore.manager.AuthManager
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,6 @@ class LoginViewModel @Inject constructor(
 
     val loading = MutableStateFlow(false)
 
-    // Google
     val googleSignInIntent = authManager.googleSignInIntent
 
     val authSuccess = MutableStateFlow(false)
@@ -29,29 +29,18 @@ class LoginViewModel @Inject constructor(
     val resetState = MutableStateFlow<Result<Unit>?>(null)
 
     fun requestReset(email: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
            resetState.value = authManager.requestPasswordReset(email)
         }
     }
 
-    fun deleteUser() {
-        viewModelScope.launch {
-            authManager.deleteUser()
-        }
-    }
-
-    fun deleteAllUsers() {
-        viewModelScope.launch {
-            authManager.deleteAllUsers()
-        }
-    }
-
     fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 authManager.doGoogleLogin(signInTask)
                 onSuccess()
             } catch (e: Exception) {
+                onError()
                 Log.e("debug_google", "Erreur récupération compte Google", e)
             }
         }
@@ -61,7 +50,7 @@ class LoginViewModel @Inject constructor(
                                       email: String,
                                       password: String,
                                       imageUri: Uri?) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             authManager.createUser(username,email,password,imageUri)
             if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
         }
@@ -70,8 +59,8 @@ class LoginViewModel @Inject constructor(
     fun loginWithMailAndPassword(userNameOrMail: String?, password: String?) {
         if (!loading.value) {
             val nameOrMail = userNameOrMail?.takeUnless(CharSequence::isBlank) ?: return
-           val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
-            viewModelScope.launch {
+            val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
+            viewModelScope.launch(Dispatchers.Default) {
                 loading.value = true
                 try {
                     authManager.loginByUserNamePassword(nameOrMail, pwd)

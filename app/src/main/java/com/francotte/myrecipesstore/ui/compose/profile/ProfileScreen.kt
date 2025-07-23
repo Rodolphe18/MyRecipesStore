@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.compose.profile
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -24,10 +25,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +48,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -60,7 +62,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.network.model.CurrentUser
 import com.francotte.myrecipesstore.ui.compose.add_recipe.bitmapToUri
-import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 import com.francotte.myrecipesstore.ui.theme.Orange
 
@@ -82,8 +83,8 @@ fun ProfileScreen(
     val focusManager = LocalFocusManager.current
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val launcherGallery =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-            updatedImage = it
+        rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+            updatedImage = it.firstOrNull()
         }
     val launcherCamera =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
@@ -122,11 +123,13 @@ fun ProfileScreen(
             )
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 20.dp))
-                if (currentImage == null) {
+                if (updatedImage == null && currentImage == "https://www.myrecipesstore18.com/null") {
                     val scale = remember { Animatable(1f) }
                     LaunchedEffect(Unit) {
                         scale.animateTo(
@@ -166,11 +169,10 @@ fun ProfileScreen(
                             )
                         }
                     }
-
                 } else {
                     Image(
                         painter = rememberAsyncImagePainter(
-                            model = if (updatedImage != null) updatedImage else currentImage
+                            model = updatedImage ?: currentImage
                         ),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
@@ -221,10 +223,10 @@ fun ProfileScreen(
                     }
 
                     Text(
-                            text = stringResource(R.string.supporting_text_email),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 11.sp
-                        )
+                        text = stringResource(R.string.supporting_text_email),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 11.sp
+                    )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
@@ -235,7 +237,7 @@ fun ProfileScreen(
                         )
                         focusManager.clearFocus()
                         state.edit {
-                            this.replace(start = 0, end =0, text = "")
+                            this.replace(start = 0, end = 0, text = "")
                         }
                     },
                     modifier = Modifier
@@ -244,6 +246,7 @@ fun ProfileScreen(
                 ) {
                     Text(text = "Update", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 }
+                Spacer(modifier = Modifier.height(500.dp))
             }
             if (showImagePickerDialog) {
                 AlertDialog(

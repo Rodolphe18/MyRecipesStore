@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.myrecipesstore.ui.compose.login.LoginViewModel
@@ -33,12 +34,13 @@ import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 fun RequestResetPasswordScreen(viewModel: LoginViewModel= hiltViewModel(), onBack:()->Unit) {
     var email by remember { mutableStateOf("") }
     val resetState by viewModel.resetState.collectAsState()
+    val focus = LocalFocusManager.current
 
     val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(title = "Password forgotten ?", navigationIconEnabled = true, onNavigationClick = onBack, scrollBehavior = topAppBarScrollBehavior, navigationIcon = Icons.Filled.Close)
+            TopAppBar(title = "Password forgotten ?", navigationIconEnabled = true, navigationIcon = Icons.Filled.Close,onNavigationClick = onBack, scrollBehavior = topAppBarScrollBehavior)
         }
     ) { padding ->
     Column(modifier = Modifier.padding(16.dp)) {
@@ -58,10 +60,12 @@ fun RequestResetPasswordScreen(viewModel: LoginViewModel= hiltViewModel(), onBac
         resetState?.let {
             when {
                 it.isSuccess -> {
-                    Text("Email envoyé ✅", color = Color.Green)
+                    Text("Email sent successfully ✅", color = Color.Green)
+                    email = ""
+                    focus.clearFocus()
                 }
                 it.isFailure -> {
-                    Text("Erreur lors de l'envoi ❌", color = Color.Red)
+                    Text("An error occured. Try again", color = Color.Red)
                 }
             }
         }

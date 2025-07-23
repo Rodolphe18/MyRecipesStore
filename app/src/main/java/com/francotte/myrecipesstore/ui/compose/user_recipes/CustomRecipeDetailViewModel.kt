@@ -41,6 +41,7 @@ class CustomRecipeDetailViewModel @Inject constructor(
     var recipeInstructions by mutableStateOf("")
     var currentIngredient by mutableStateOf("")
     var currentQuantity by mutableStateOf("")
+    var quantityType by mutableStateOf("")
     var recipeIngredients = mutableStateListOf<Ingredient>()
 
     val hasBeenUpdated = MutableStateFlow(false)
@@ -51,6 +52,7 @@ class CustomRecipeDetailViewModel @Inject constructor(
         recipeInstructions = ""
         currentIngredient =""
         currentQuantity = ""
+        quantityType = ""
     }
 
     init {

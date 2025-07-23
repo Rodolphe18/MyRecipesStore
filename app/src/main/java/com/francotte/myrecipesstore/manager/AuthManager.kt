@@ -58,9 +58,9 @@ object AuthModule {
         api: AuthApi,
         preferences: UserDataSource,
         fullRecipeDao: FullRecipeDao,
-       @ApplicationScope coroutineScope: CoroutineScope
+        @ApplicationScope coroutineScope: CoroutineScope
     ): AuthManager =
-        AuthManager(context, api, preferences, fullRecipeDao,coroutineScope)
+        AuthManager(context, api, preferences, fullRecipeDao, coroutineScope)
 
 
 }
@@ -137,37 +137,25 @@ class AuthManager @Inject constructor(
     }
 
 
-    fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
-        coroutineScope.launch {
-            try {
-                val account = signInTask.await()
-                val idToken = account.idToken
+    suspend fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
+        val account = signInTask.await()
+        val idToken = account.idToken
 
-                if (idToken.isNullOrEmpty()) {
-                    Log.e("debug_google", "ID token null ou vide")
-                    return@launch
-                }
-
-                val request = GoogleIdTokenRequest(idToken)
-
-                try {
-                    val response = api.authGoogle(request)
-                    if (response.isSuccessful) {
-                        onAuthResponse(response)
-                    } else if (response.code() == 404) {
-                        val created = api.createGoogle(request)
-                        onAuthResponse(created)
-                    } else {
-                        Log.e("debug_google", "Erreur auth : ${response.code()}")
-                    }
-                } catch (e: Exception) {
-                    Log.e("debug_google", "Erreur API Google", e)
-                }
-
-            } catch (e: Exception) {
-                Log.e("debug_google", "Erreur récupération compte Google", e)
-            }
+        if (idToken.isNullOrEmpty()) {
+            Log.e("debug_google", "ID token null ou vide")
+            throw Exception()
         }
+        val request = GoogleIdTokenRequest(idToken)
+        val response = api.authGoogle(request)
+        if (response.isSuccessful) {
+            onAuthResponse(response)
+        } else if (response.code() == 404) {
+            val created = api.createGoogle(request)
+            onAuthResponse(created)
+        } else {
+            throw UnknownError()
+        }
+
     }
 
     suspend fun createUser(
@@ -205,11 +193,12 @@ class AuthManager @Inject constructor(
 
 
     suspend fun onAuthResponse(
-        apiResponse: Response<AuthResponse>, isRegistering: Boolean = false, isUpdating: Boolean=false) {
-        Log.d("debug_auth", apiResponse.code().toString())
-        Log.d("debug_auth1", apiResponse.message())
-        Log.d("debug_auth2", apiResponse.isSuccessful.toString())
+        apiResponse: Response<AuthResponse>,
+        isRegistering: Boolean = false,
+        isUpdating: Boolean = false
+    ) {
         if (apiResponse.code() == 202 || apiResponse.code() == 200) {
+            loginIsSuccessFull.value = true
             apiResponse.body()?.let { response ->
                 preferences.updateUserInfo(
                     isConnected = true,
@@ -226,29 +215,31 @@ class AuthManager @Inject constructor(
                 } else {
                     snackBarMessage.tryEmit("Welcome back ${response.user.username}")
                 }
-                loginIsSuccessFull.value = true
             }
         } else if (apiResponse.code() == 413) {
+            loginIsSuccessFull.value = false
             snackBarMessage.tryEmit("Payload Too Large")
-        } else {
+        } else if (apiResponse.code() == 409) {
+            loginIsSuccessFull.value = false
+            snackBarMessage.tryEmit("Your account can't be created : user already exists")
+        }
+        else {
+            loginIsSuccessFull.value = false
             if (isRegistering) {
-                snackBarMessage.tryEmit("Your account can't be created : user already exists")
-            } else {
-            snackBarMessage.tryEmit("Email/Password combination failed !")
-        }}
+                snackBarMessage.tryEmit("Unknown error. Retry later")
+               } else {
+                snackBarMessage.tryEmit("Email/Password combination failed !")
+            }
+        }
     }
 
 
     suspend fun requestPasswordReset(email: String): Result<Unit> {
         return try {
             val response = api.requestPasswordReset(EmailRequest(email))
-            Log.d("debug_reset_code", response.code().toString())
-            Log.d("debug_reset_message", response.message().toString())
             if (response.isSuccessful) {
-                Log.d("debug_reset_success", email)
                 Result.success(Unit)
             } else {
-                Log.d("debug_reset_failure", email)
                 Result.failure(Exception("Erreur : ${response.code()}"))
             }
         } catch (e: Exception) {
@@ -259,8 +250,17 @@ class AuthManager @Inject constructor(
 
     suspend fun deleteUser() {
         val credentials = credentials.value ?: return
-        api.deleteUser(credentials.id)
-        logout()
+        try {
+            withContext(NonCancellable) {
+                api.deleteUser(credentials.id)
+                preferences.deleteUser()
+                snackBarMessage.tryEmit("Your account has been deleted successfully")
+                signOutGoogleUser()
+                dao.deleteAllFavoritesRecipes()
+            }
+        } catch (e: Exception) {
+            Log.d("debug_error_while_signing_out", "Error while signing out")
+        }
     }
 
     suspend fun deleteAllUsers() {
@@ -275,14 +275,18 @@ class AuthManager @Inject constructor(
     suspend fun logout() {
         try {
             withContext(NonCancellable) {
+                if (isAuthenticated.value) {
+                    snackBarMessage.tryEmit("You have been disconnected")
+                } else {
+                    snackBarMessage.tryEmit("You are not connected")
+                }
                 preferences.updateUserInfo(false)
                 preferences.deleteFavoriteIds()
-                // facebook
-                LoginManager.getInstance().logOut()
+                // facebook - LoginManager.getInstance().logOut()
                 // google
                 signOutGoogleUser()
                 dao.deleteAllFavoritesRecipes()
-                snackBarMessage.tryEmit("You have been disconnected")
+
             }
         } catch (e: Exception) {
             Log.d("debug_error_while_signing_out", "Error while signing out")

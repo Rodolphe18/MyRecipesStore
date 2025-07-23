@@ -21,7 +21,6 @@ class FullRecipeRepositoryImpl @Inject constructor(
     userDataSource.userData,
     offlineFullRecipeData.getRecipeDetail(id)
     ) { userData, fullRecipe ->
-        Log.d("debug_detail_repo", fullRecipe.strCategory)
         try {
             val likeableRecipe = fullRecipe.mapToLikeableFullRecipe(userData)
             Result.success(likeableRecipe)

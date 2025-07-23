@@ -32,6 +32,7 @@ interface UserDataSource {
     suspend fun setFavoriteId(favoriteId: String, isFavorite: Boolean)
     suspend fun updateUserInfo(isConnected:Boolean, name:String="", userId:Long=0, userToken:String="", email:String="",image: String="")
     suspend fun deleteFavoriteIds()
+    suspend fun deleteUser()
 }
 
 @Module
@@ -116,6 +117,24 @@ class FoodPreferencesDataSource @Inject constructor(
             }
         } catch (ioException: IOException) {
             Log.e("FoodPreferences", "Failed to update favorite ids", ioException)
+        }
+    }
+
+    override suspend fun deleteUser() {
+        userPreferences.updateData {
+            it.copy {
+                this.favoritesIds.clear()
+                this.userInfo = userInfo {
+                    connected = false
+                    user = user {
+                        userName = ""
+                        id = -1
+                        email = ""
+                        image = ""
+                    }
+                    token = ""
+                }
+            }
         }
     }
 

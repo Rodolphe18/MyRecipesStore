@@ -44,7 +44,7 @@ fun CustomTooltip(
                 displayedText.value = fullText.substring(0, i + 1)
                 delay(delayPerChar)
             }
-            delay(2000L)
+            delay(300L)
             visible = false
         } else {
             displayedText.value = ""

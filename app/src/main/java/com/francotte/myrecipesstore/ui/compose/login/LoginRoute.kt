@@ -19,8 +19,7 @@ fun NavController.navigateToLoginScreen(navOptions: NavOptions? = null) {
 }
 
 
-fun NavGraphBuilder.loginScreen(onOpenResetPassword:()->Unit,onRegister:() -> Unit, navigateToFavoriteScreen: () ->Unit) {
-
+fun NavGraphBuilder.loginScreen(onOpenResetPassword:()->Unit, onRegister:() -> Unit, navigateToFavoriteScreen:() -> Unit) {
     composable(route = LOGIN_ROUTE) {
         LoginRoute(onRegister = onRegister, onOpenResetPassword = onOpenResetPassword, navigateToFavoriteScreen =  { navigateToFavoriteScreen() })
     }
@@ -36,8 +35,7 @@ fun LoginRoute(onOpenResetPassword:()->Unit,onRegister:() -> Unit, navigateToFav
     LoginScreen(viewModel, onOpenResetPassword = onOpenResetPassword, onRegister =  onRegister) {
         googleSignIn.launch(viewModel.googleSignInIntent)
     }
-    if (authSuccess) {
-        navigateToFavoriteScreen() }
+    if (authSuccess) { navigateToFavoriteScreen() }
     ScreenCounter.increment()
 }
 

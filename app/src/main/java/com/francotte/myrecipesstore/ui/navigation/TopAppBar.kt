@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,14 +40,14 @@ fun TopAppBar(
     @StringRes titleRes: Int? = null,
     title: String? = null,
     actionIcon: ImageVector? = null,
-    navigationIcon: ImageVector = Icons.Default.ArrowBack,
+    navigationIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
     actionIconContentDescription: String? = "",
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
     onActionClick: () -> Unit = {},
     onNavigationClick: () -> Unit = {},
     navigationIconEnabled: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    profileImage: String? = null
+    profileImage: String? = null,
 ) {
     CenterAlignedTopAppBar(
         scrollBehavior = scrollBehavior,
@@ -67,7 +69,6 @@ fun TopAppBar(
                 IconButton(onClick = onActionClick) {
                     Icon(
                         modifier = Modifier
-                            .offset((-6).dp)
                             .size(32.dp),
                         imageVector = actionIcon,
                         contentDescription = actionIconContentDescription,
@@ -78,7 +79,7 @@ fun TopAppBar(
         },
         navigationIcon = {
             if (navigationIconEnabled) {
-                if (profileImage != null) {
+                if (profileImage != null && profileImage != "https://www.myrecipesstore18.com/null") {
                     Image(
                         painter = rememberAsyncImagePainter(
                             model = profileImage
@@ -86,7 +87,7 @@ fun TopAppBar(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .offset(x = 16.dp)
+                            .offset(x=12.dp)
                             .size(45.dp)
                             .clip(CircleShape)
                             .clickable {
@@ -94,8 +95,9 @@ fun TopAppBar(
                             }
                     )
                 } else {
-                    IconButton(onClick =onNavigationClick) {
+                    IconButton(onClick = onNavigationClick) {
                         Icon(
+                            modifier = Modifier.size(35.dp),
                             imageVector = navigationIcon,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,

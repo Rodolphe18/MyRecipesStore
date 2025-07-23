@@ -38,7 +38,6 @@ class SearchRecipesViewModel @Inject constructor(
         SearchMode.INGREDIENTS -> repository
             .observeRecipesByIngredients(listOf(item))
             .map { result ->
-                Log.d("debug_result_vm", result.toString())
                 if (result.isSuccess) {
                     SearchRecipesUiState.Success(result.getOrDefault(emptyList()))
                 } else {

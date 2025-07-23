@@ -16,7 +16,8 @@ import java.io.File
 @Serializable
 data class Ingredient(
     val name: String,
-    val quantity: String
+    val quantity: String,
+    val measureType:String
 )
 
 @Serializable

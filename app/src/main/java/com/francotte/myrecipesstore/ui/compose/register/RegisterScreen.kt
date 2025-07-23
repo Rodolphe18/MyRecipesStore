@@ -1,7 +1,6 @@
 package com.francotte.myrecipesstore.ui.compose.register
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -25,10 +24,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -51,7 +52,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -68,7 +68,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.ui.compose.add_recipe.bitmapToUri
 import com.francotte.myrecipesstore.ui.compose.composables.CustomButton
-import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
 import com.francotte.myrecipesstore.ui.compose.login.LoginViewModel
 import com.francotte.myrecipesstore.ui.navigation.TopAppBar
 import com.francotte.myrecipesstore.ui.theme.Orange
@@ -80,29 +79,29 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
     var registerName by remember { mutableStateOf("") }
     var registerEmail by remember { mutableStateOf("") }
     var registerPassword by remember { mutableStateOf("") }
-    fun isValidUsername(username: String): Boolean = username.length >= 6
+    var confirmPassword by remember { mutableStateOf("") }
+    fun isValidUsername(username: String): Boolean = Regex("^(?=.{6,}\$)(?!.* {2,})(?!.* \$)[^\\n]+\$").matches(username)
     fun isValidEmail(email: String): Boolean =
         Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$").matches(email)
-
     fun isValidPassword(password: String): Boolean =
-        Regex("^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,}$").matches(
+        Regex("""^(?=.*[A-Z])(?=.*\d).{6,}$""").matches(
             password
         )
-
+    fun isValidConfirmedPassword(): Boolean = registerPassword == confirmPassword
     val isUsernameValid = remember(registerName) { isValidUsername(registerName) }
     val isEmailValid = remember(registerEmail) { isValidEmail(registerEmail) }
     val isPasswordValid = remember(registerPassword) { isValidPassword(registerPassword) }
+    val isConfirmPasswordValid = remember(confirmPassword, registerPassword) { isValidConfirmedPassword() }
     val canConnect by remember {
         derivedStateOf {
             isValidUsername(registerName) && isValidEmail(registerEmail) && isValidPassword(
                 registerPassword
-            )
+            ) && isValidConfirmedPassword()
         }
     }
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     var image by remember { mutableStateOf<Uri?>(null) }
-    Log.d("debug_image", image.toString())
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val launcherGallery =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
@@ -145,10 +144,10 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
             )
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp).verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 24.dp))
+                Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 12.dp))
                 if (image == null) {
                     val scale = remember { Animatable(1f) }
                     LaunchedEffect(Unit) {
@@ -169,7 +168,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                     }
                     Box(
                         Modifier
-                            .size(200.dp)
+                            .size(180.dp)
                             .clip(CircleShape)
                             .background(Orange.copy(alpha = 0.8f))
                             .clickable { showImagePickerDialog = true },
@@ -202,7 +201,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                             .clip(CircleShape)
                     )
                 }
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 RegisterTextField(
                     registerName,
                     { registerName = it },
@@ -211,7 +210,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                     "At least 6 caracters",
                     "UserName"
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 RegisterTextField(
                     registerEmail,
                     { registerEmail = it },
@@ -220,16 +219,25 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                     "Email incorrect",
                     "Email"
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 RegisterPasswordField(
                     registerPassword,
                     { registerPassword = it },
                     isPasswordValid,
-                    "secure password ✅",
-                    "secure password ✅",
+                    "Secure password ✅",
+                    "Invalid password (1 maj, 1 number, 6 characters min)",
                     "Password"
                 )
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                RegisterPasswordField(
+                    confirmPassword,
+                    { confirmPassword = it },
+                    isConfirmPasswordValid,
+                    "Password confirmed successfully",
+                    "Password is not the same",
+                    "Confirm password"
+                )
+                Spacer(modifier = Modifier.height(36.dp))
                 CustomButton(onClick = {
                     viewModel.createUserWithMailAndPassword(
                         username = registerName,
@@ -240,6 +248,7 @@ fun RegisterScreen(onBackClick: () -> Unit, viewModel: LoginViewModel = hiltView
                 },
                     enabled = canConnect,
                     contentText =  R.string.subscribe)
+                Spacer(modifier = Modifier.height(500.dp))
             }
             if (showImagePickerDialog) {
                 AlertDialog(
