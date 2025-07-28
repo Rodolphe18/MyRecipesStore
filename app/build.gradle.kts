@@ -1,7 +1,5 @@
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.ir.backend.js.compile
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -29,14 +27,22 @@ android {
     defaultConfig {
         applicationId = "com.francotte.myrecipesstore"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 3
-        versionName = "1.0.2"
+        targetSdk = 35
+        versionCode = 7
+        versionName = "1.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("release-keystore.jks")
+            storePassword = "Nietzsche@18"
+            keyAlias = "release-key"
+            keyPassword = "Nietzsche@18"
+        }
+    }
 
     buildTypes {
         release {
@@ -45,6 +51,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
         create("benchmark") {
             initWith(buildTypes.getByName("release"))
@@ -105,6 +112,8 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.androidx.dataStore)
     implementation(libs.protobuf.kotlin.lite)
+
+    implementation(libs.startup.runtime)
 
     ksp(libs.hilt.compiler)
 

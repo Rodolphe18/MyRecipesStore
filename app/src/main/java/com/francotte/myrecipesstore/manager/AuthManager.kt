@@ -119,6 +119,8 @@ class AuthManager @Inject constructor(
 
     val loginIsSuccessFull = MutableStateFlow<Boolean>(false)
 
+    val authToken =  credentials.value?.token
+
     suspend fun loginByUserNamePassword(userNameOrMail: String?, password: String) {
         try {
             onAuthResponse(
@@ -163,12 +165,11 @@ class AuthManager @Inject constructor(
         email: String,
         password: String,
         imageUri: Uri?,
-    ) {
+    )  {
         val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
         val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
         val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
         val imagePart = imageUri.toMultiPartBody(context)
-
         val response = api.createUser(
             username = usernamePart,
             email = emailPart,

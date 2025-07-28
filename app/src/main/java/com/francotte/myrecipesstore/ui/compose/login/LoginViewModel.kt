@@ -50,7 +50,7 @@ class LoginViewModel @Inject constructor(
                                       email: String,
                                       password: String,
                                       imageUri: Uri?) {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch {
             authManager.createUser(username,email,password,imageUri)
             if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
         }

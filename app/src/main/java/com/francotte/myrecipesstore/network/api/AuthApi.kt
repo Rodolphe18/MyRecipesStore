@@ -13,6 +13,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -39,6 +40,9 @@ interface AuthApi {
         @Part image: MultipartBody.Part?
     ): Response<AuthResponse>
 
+    @DELETE("users/{userId}")
+    suspend fun deleteUser(@Path("userId") userId: Long)
+
     @POST("users/auth")
     suspend fun authUser(
         @Body request: AuthRequest
@@ -64,8 +68,7 @@ interface AuthApi {
     @POST("users/auth/facebook")
     suspend fun authFacebook(@Body request: FacebookAccessTokenRequest): Response<AuthResponse>
 
-    @DELETE("users/{userId}")
-    suspend fun deleteUser(@Path("userId") userId: Long)
+
 
     @DELETE("users/all")
     suspend fun deleteAllUsers()

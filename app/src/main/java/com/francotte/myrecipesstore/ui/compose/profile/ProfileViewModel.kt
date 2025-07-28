@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.ui.compose.profile
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.myrecipesstore.manager.AuthManager

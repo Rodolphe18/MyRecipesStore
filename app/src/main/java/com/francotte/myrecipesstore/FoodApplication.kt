@@ -7,14 +7,10 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.francotte.myrecipesstore.ads.InterstitialManager
 import com.francotte.myrecipesstore.notifications.DailyNotificationWorkManager
 import com.google.android.gms.ads.MobileAds
-
 import dagger.hilt.android.HiltAndroidApp
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit

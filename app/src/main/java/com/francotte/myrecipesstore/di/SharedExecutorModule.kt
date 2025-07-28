@@ -39,17 +39,6 @@ object SharedExecutorModule {
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(
-        sharedExecutor: ExecutorService
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .dispatcher(
-                Dispatcher(sharedExecutor)
-            )
-            .build()
-    }
 
     @Provides
     @Singleton
