@@ -37,6 +37,7 @@ object JsonModule {
         prettyPrint = false
         encodeDefaults = true
         allowStructuredMapKeys = true
+        coerceInputValues = true
     }
 
 }

@@ -197,7 +197,7 @@ class AuthManager @Inject constructor(
         apiResponse: Response<AuthResponse>,
         isRegistering: Boolean = false,
         isUpdating: Boolean = false
-    ) {
+    ) = withContext(Dispatchers.IO) {
         if (apiResponse.code() == 202 || apiResponse.code() == 200) {
             loginIsSuccessFull.value = true
             apiResponse.body()?.let { response ->

@@ -15,6 +15,7 @@ import com.francotte.myrecipesstore.network.api.RecipeApi
 import com.francotte.myrecipesstore.network.model.NetworkRecipe
 import com.francotte.myrecipesstore.network.model.asExternalModel
 import com.francotte.myrecipesstore.util.FoodAreaSection
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
@@ -59,15 +60,21 @@ class OfflineFirstHomeRepository @Inject constructor(
         val now = System.currentTimeMillis()
         val ttl = 24 * 60 * 60 * 1000 // 24h
         if (lastUpdated == null || now - lastUpdated > ttl) {
-            val networkData = network.getLatestMeals().meals.filterIsInstance<NetworkRecipe>()
-            val entities = networkData.map {
-                it.asEntity().apply {
-                    this.isLatest = true
-                    this.lastUpdated = now
+            try {
+
+                val networkData = network.getLatestMeals().meals.filterIsInstance<NetworkRecipe>()
+                val entities = networkData.map {
+                    it.asEntity().apply {
+                        this.isLatest = true
+                        this.lastUpdated = now
+                    }
                 }
+                fullRecipeDao.deleteOldLatestRecipes()
+                fullRecipeDao.upsertAllFullRecipes(entities)
+            } catch (e: Exception) {
+                Log.e("LatestMeals", "Network error", e)
+                emit(emptyList())
             }
-            fullRecipeDao.deleteOldLatestRecipes()
-            fullRecipeDao.upsertAllFullRecipes(entities)
         }
         emitAll(
             fullRecipeDao.getLatestFullRecipes()
@@ -75,8 +82,7 @@ class OfflineFirstHomeRepository @Inject constructor(
                     list.map { it.asExternalModel() }
                 }
         )
-
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getRecipesListByArea(area: String): Flow<List<LightRecipe>> = flow {
         val lastUpdated = lightRecipeDao.getLastUpdatedForArea(area)
@@ -96,7 +102,7 @@ class OfflineFirstHomeRepository @Inject constructor(
             lightRecipeDao.getLightRecipesByArea(area)
                 .map { list -> list.map { it.asExternalModel() } }
         )
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getRecipesByCategory(category: String): Flow<List<LightRecipe>> = flow {
         val lastUpdated = lightRecipeDao.getLastUpdatedForCategory(category)
@@ -116,7 +122,7 @@ class OfflineFirstHomeRepository @Inject constructor(
             lightRecipeDao.getLightRecipesByCategory(category)
                 .map { list -> list.map { it.asExternalModel() } }
         )
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>> = flow {
         try {
@@ -125,7 +131,7 @@ class OfflineFirstHomeRepository @Inject constructor(
         } catch (e: Exception) {
             emit(emptyList())
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
 
 }

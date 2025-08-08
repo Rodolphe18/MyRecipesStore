@@ -123,37 +123,35 @@ class FavoriteManager @Inject constructor(
         val ingredientsJson = Json.encodeToString(ingredients)
         val ingredientsBody = ingredientsJson.toRequestBody("text/plain".toMediaType())
         val imagePart = image.toMultiPartBody(context)
-        val response = api.updateRecipe(
-            "Bearer ${credentials.value?.token}",
-            recipeId,
-            imagePart,
-            titlePart,
-            instructionsPart,
-            ingredientsBody
-        )
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                customRecipehasBeenUpdatedSuccessfully.value = true
-                snackBarMessage.emit("Your recipe has been updated successfully !")
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                snackBarMessage.emit("An error occurred!")
-            }
+        val response = withContext(Dispatchers.IO) {
+            api.updateRecipe(
+                "Bearer ${credentials.value?.token}",
+                recipeId,
+                imagePart,
+                titlePart,
+                instructionsPart,
+                ingredientsBody
+            )
         }
+        if (response.isSuccessful) {
 
+            customRecipehasBeenUpdatedSuccessfully.value = true
+            snackBarMessage.tryEmit("Your recipe has been updated successfully !")
+        } else {
+            snackBarMessage.tryEmit("An error occurred!")
+        }
     }
 
 
     suspend fun getUserRecipes(): List<CustomRecipe> {
         return if (credentials.value?.token != null) {
-             api.getUserRecipes("Bearer ${credentials.value?.token}")
+            api.getUserRecipes("Bearer ${credentials.value?.token}")
         } else {
             emptyList()
         }
     }
 
-    suspend fun getUserCustomRecipe(customRecipeId:String): CustomRecipe? {
+    suspend fun getUserCustomRecipe(customRecipeId: String): CustomRecipe? {
         return if (credentials.value?.token != null) {
             api.getUserRecipe("Bearer ${credentials.value?.token}", customRecipeId)
         } else {
