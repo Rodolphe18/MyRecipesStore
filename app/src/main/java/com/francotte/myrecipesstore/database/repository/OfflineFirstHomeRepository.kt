@@ -62,7 +62,9 @@ class OfflineFirstHomeRepository @Inject constructor(
         if (lastUpdated == null || now - lastUpdated > ttl) {
             try {
 
-                val networkData = network.getLatestMeals().meals.filterIsInstance<NetworkRecipe>()
+                val networkData = network.getLatestMeals().meals
+                    .filterIsInstance<NetworkRecipe>()
+                    .filter { !it.strMealThumb.isNullOrBlank() }
                 val entities = networkData.map {
                     it.asEntity().apply {
                         this.isLatest = true

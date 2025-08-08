@@ -30,14 +30,14 @@ object RecipePolymorphicSerializer :
 @Serializable(with = RecipePolymorphicSerializer::class)
 sealed class NetworkAbstractRecipe {
     abstract val strMeal: String
-    abstract val strMealThumb: String
+    abstract val strMealThumb: String?
     abstract val idMeal: String
 }
 
 @Serializable
 data class NetworkLightRecipe(
     override val strMeal: String,
-    override val strMealThumb: String,
+    override val strMealThumb: String?,
     override val idMeal: String,
 ) :
     NetworkAbstractRecipe()
@@ -46,57 +46,57 @@ data class NetworkLightRecipe(
 data class NetworkRecipe(
     override val idMeal: String,
     override val strMeal: String,
-    val strMealAlternate: String?,
+    val strMealAlternate: String? = null,
     val strCategory: String,
     val strArea: String,
-    val strInstructions: String?,
-    override val strMealThumb: String,
-    val strTags: String?,
+    val strInstructions: String? = null,
+    override val strMealThumb: String?,
+    val strTags: String? = null,
     val strYoutube: String,
-    val strIngredient1: String?,
-    val strIngredient2: String?,
-    val strIngredient3: String?,
-    val strIngredient4: String?,
-    val strIngredient5: String?,
-    val strIngredient6: String?,
-    val strIngredient7: String?,
-    val strIngredient8: String?,
-    val strIngredient9: String?,
-    val strIngredient10: String?,
-    val strIngredient11: String?,
-    val strIngredient12: String?,
-    val strIngredient13: String?,
-    val strIngredient14: String?,
-    val strIngredient15: String?,
-    val strIngredient16: String?,
-    val strIngredient17: String?,
-    val strIngredient18: String?,
-    val strIngredient19: String?,
-    val strIngredient20: String?,
-    val strMeasure1: String?,
-    val strMeasure2: String?,
-    val strMeasure3: String?,
-    val strMeasure4: String?,
-    val strMeasure5: String?,
-    val strMeasure6: String?,
-    val strMeasure7: String?,
-    val strMeasure8: String?,
-    val strMeasure9: String?,
-    val strMeasure10: String?,
-    val strMeasure11: String?,
-    val strMeasure12: String?,
-    val strMeasure13: String?,
-    val strMeasure14: String?,
-    val strMeasure15: String?,
-    val strMeasure16: String?,
-    val strMeasure17: String?,
-    val strMeasure18: String?,
-    val strMeasure19: String?,
-    val strMeasure20: String?,
-    val strSource: String?,
-    val strImageSource: String?,
-    val strCreativeCommonsConfirmed: String?,
-    val dateModified: String?,
+    val strIngredient1: String? = null,
+    val strIngredient2: String? = null,
+    val strIngredient3: String? = null,
+    val strIngredient4: String? = null,
+    val strIngredient5: String? = null,
+    val strIngredient6: String? = null,
+    val strIngredient7: String? = null,
+    val strIngredient8: String? = null,
+    val strIngredient9: String? = null,
+    val strIngredient10: String? = null,
+    val strIngredient11: String? = null,
+    val strIngredient12: String? = null,
+    val strIngredient13: String? = null,
+    val strIngredient14: String? = null,
+    val strIngredient15: String? = null,
+    val strIngredient16: String? = null,
+    val strIngredient17: String? = null,
+    val strIngredient18: String? = null,
+    val strIngredient19: String? = null,
+    val strIngredient20: String? = null,
+    val strMeasure1: String? = null,
+    val strMeasure2: String? = null,
+    val strMeasure3: String? = null,
+    val strMeasure4: String? = null,
+    val strMeasure5: String? = null,
+    val strMeasure6: String? = null,
+    val strMeasure7: String? = null,
+    val strMeasure8: String? = null,
+    val strMeasure9: String? = null,
+    val strMeasure10: String? = null,
+    val strMeasure11: String? = null,
+    val strMeasure12: String? = null,
+    val strMeasure13: String? = null,
+    val strMeasure14: String? = null,
+    val strMeasure15: String? = null,
+    val strMeasure16: String? = null,
+    val strMeasure17: String? = null,
+    val strMeasure18: String? = null,
+    val strMeasure19: String? = null,
+    val strMeasure20: String? = null,
+    val strSource: String? = null,
+    val strImageSource: String? = null,
+    val strCreativeCommonsConfirmed: String? = null,
+    val dateModified: String? = null,
 ) : NetworkAbstractRecipe()
 
 @Serializable
@@ -106,14 +106,14 @@ fun NetworkLightRecipe.asEntity(): LightRecipeEntity =
     LightRecipeEntity(
         idMeal = idMeal,
         strMeal = strMeal,
-        strMealThumb = strMealThumb
+        strMealThumb = strMealThumb ?: ""
     )
 
 fun NetworkRecipe.asEntity(): FullRecipeEntity =
     FullRecipeEntity(
         idMeal = idMeal,
         strMeal = strMeal,
-        strMealThumb = strMealThumb,
+        strMealThumb = strMealThumb ?: "",
         strMealAlternate = strMealAlternate,
         strCategory = strCategory,
         strArea = strArea,
@@ -169,7 +169,7 @@ fun NetworkRecipe.asEntity(): FullRecipeEntity =
 fun NetworkLightRecipe.asExternalModel() : LightRecipe =
     LightRecipe(
         strMeal = strMeal,
-        strMealThumb = strMealThumb,
+        strMealThumb = strMealThumb ?: "",
         idMeal = idMeal
     )
 
@@ -177,7 +177,7 @@ fun NetworkRecipe.asExternalModel() : Recipe =
     Recipe(
         idMeal = idMeal,
         strMeal = strMeal,
-        strMealThumb = strMealThumb,
+        strMealThumb = strMealThumb ?: "",
         strMealAlternate = strMealAlternate,
         strCategory = strCategory,
         strArea = strArea,
