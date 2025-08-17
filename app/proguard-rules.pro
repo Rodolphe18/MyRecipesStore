@@ -26,13 +26,29 @@
 -keep,allowobfuscation,allowshrinking class **$$serializer { *; }
 # (Active cette règle si tu constates des NoSuchMethodException de serializer)
 
-########## 5) (OPTIONNEL) DATASTORE + PROTOBUF LITE
-# Normalement pas nécessaire. Si tu vois des warnings/problèmes côté proto :
- -dontwarn com.google.protobuf.**
- -keep class com.google.protobuf.** { *; }
+########## Protobuf runtime (safe)
+-keep class com.google.protobuf.** { *; }
+-dontwarn com.google.protobuf.**
+
+########## TES messages générés (ne pas renommer les champs)
+# → évite que R8 obfusque des champs comme favoritesIds_ / bitField0_, etc.
+-keepclassmembers class com.francotte.myrecipesstore.protobuf.** extends com.google.protobuf.GeneratedMessageLite { *; }
+
+########## Qualité des stacktraces / annotations (utile avec Retrofit/Serialization)
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod, SourceFile, LineNumberTable
 
 ########## 6) ANDROID COMPONENTS (par sûreté)
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Service
 -keep public class * extends android.content.BroadcastReceiver
 -keep public class * extends android.content.ContentProvider
+
+# Conserver le nom (FQCN) des classes sérialisables utilisées par Navigation
+-keepnames @kotlinx.serialization.Serializable class com.francotte.myrecipesstore.**
+
+# Garder les serializers générés (utile si tu vois des erreurs de serializer)
+-keep class **$$serializer { *; }
+
+-keepnames class com.francotte.myrecipesstore.ui.compose.section.SectionRoute
+-keepnames class com.francotte.myrecipesstore.ui.compose.detail.DetailRecipeRoute
+-keepnames class com.francotte.myrecipesstore.ui.compose.categories.category.CategoryNavigationRoute

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.francotte.myrecipesstore.ui.compose.composables.AdMobBanner
 import com.francotte.myrecipesstore.ui.compose.composables.whiteYellowVerticalGradient
+import kotlinx.serialization.Serializable
 
 @Composable
 fun SearchModeSelectionScreen(onSearchModeSelected: (SearchMode) -> Unit) {
@@ -71,6 +72,7 @@ fun SearchModeButton(label: String, icon: ImageVector, onClick: () -> Unit) {
     }
 }
 
+@Serializable
 enum class SearchMode(val title:String) { INGREDIENTS("Ingredients"), COUNTRY("Countries") }
 
 
