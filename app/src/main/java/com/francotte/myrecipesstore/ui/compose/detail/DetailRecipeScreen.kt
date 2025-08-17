@@ -321,7 +321,7 @@ private fun DetailRecipeShareRecipeButton(
 }
 
 @Composable
-private fun DetailScreenMainSectionTitle(
+fun DetailScreenMainSectionTitle(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
 ) {

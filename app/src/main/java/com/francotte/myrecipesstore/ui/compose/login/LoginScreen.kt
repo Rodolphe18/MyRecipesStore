@@ -40,8 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -76,7 +78,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(top = 8.dp, bottom = 30.dp, start = 16.dp, end= 16.dp),
+            .padding(top = 8.dp, bottom = 30.dp, start = 16.dp, end = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -128,7 +130,7 @@ fun LoginScreen(
 //                color = MaterialTheme.colorScheme.onSurface,
 //            )
 //        }
- //       Spacer(modifier = Modifier.height(16.dp))
+        //       Spacer(modifier = Modifier.height(16.dp))
         CustomTextField(
             loginUserNameOrMail,
             { loginUserNameOrMail = it },
@@ -147,8 +149,12 @@ fun LoginScreen(
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(modifier = Modifier.height(16.dp))
-        CustomButton(onClick = { viewModel.loginWithMailAndPassword(loginUserNameOrMail, loginPassword) },
-            enabled = canConnect, contentText = R.string.sign_in_connexion_button)
+        CustomButton(
+            onClick = {
+                viewModel.loginWithMailAndPassword(loginUserNameOrMail, loginPassword)
+            },
+            enabled = canConnect, contentText = R.string.sign_in_connexion_button
+        )
         Text(
             text = stringResource(id = R.string.onboarding_account_creation),
             modifier = Modifier

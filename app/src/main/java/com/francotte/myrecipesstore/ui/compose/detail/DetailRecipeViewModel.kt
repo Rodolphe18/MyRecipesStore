@@ -14,6 +14,7 @@ import com.francotte.myrecipesstore.repository.FullRecipeRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -53,22 +54,23 @@ class DetailRecipeViewModel @Inject constructor(
 
     fun getRecipes() {
         viewModelScope.launch {
-            val result = detailRecipeRepository.observeFullRecipe(ids[currentPage]).first()
-            if (result.isSuccess) {
-                _recipe[currentPage] = result.getOrNull() as LikeableRecipe
-                _title.value = _recipe[currentPage]?.recipe?.strMeal ?: ""
+            detailRecipeRepository.observeFullRecipe(ids[currentPage]).collectLatest { result ->
+                if (result.isSuccess) {
+                    _recipe[currentPage] = result.getOrNull() as LikeableRecipe
+                    _title.value = _recipe[currentPage]?.recipe?.strMeal ?: ""
+                }
             }
         }
     }
 
     fun loadRecipeById(id: String) {
         viewModelScope.launch {
-            val result = detailRecipeRepository.observeFullRecipe(id.toLong()).first()
-            if (result.isSuccess) {
-                _deeplinkRecipe.value = result.getOrNull()
-                _title.value = result.getOrNull()?.recipe?.strMeal ?: ""
+            detailRecipeRepository.observeFullRecipe(id.toLong()).collectLatest { result ->
+                if (result.isSuccess) {
+                    _deeplinkRecipe.value = result.getOrNull()
+                    _title.value = result.getOrNull()?.recipe?.strMeal ?: ""
+                }
             }
         }
     }
-
 }
