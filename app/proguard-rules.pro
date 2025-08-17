@@ -1,82 +1,38 @@
-#######################################
-# Navigation Compose
-#######################################
--keep class androidx.navigation.** { *; }
--dontwarn androidx.navigation.**
+########## LOGS LISIBLES EN PROD
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
 
-#######################################
-# Lifecycle ViewModel & Runtime
-#######################################
--keep class androidx.lifecycle.** { *; }
--dontwarn androidx.lifecycle.**
-
-#######################################
-# Coil (Image loading)
-#######################################
--keep class coil.** { *; }
--dontwarn coil.**
-
-#######################################
-# Serialization
-#######################################
--keepattributes Signature, Exceptions, *Annotation*
--keep class retrofit2.** { *; }
--dontwarn retrofit2.**
-
--keep class kotlinx.serialization.** { *; }
--dontwarn kotlinx.serialization.**
--keepclassmembers class kotlinx.serialization.json.** {
-    *** Companion;
+########## 1) TON CAS : RÉFLEXION SUR LES CHAMPS DE Recipe
+-keepclassmembers class com.francotte.myrecipesstore.domain.model.Recipe {
+    *** strIngredient*;
+    *** strMeasure*;
 }
--keepclasseswithmembers class kotlinx.serialization.json.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
+########## 2) WORKMANAGER : NOMS DE WORKERS (PERSISTENCE)
+# Garde le nom des classes Worker pour que les jobs reprennent après MAJ
+-keepnames class ** extends androidx.work.ListenableWorker
 
-#######################################
-# Kotlin Coroutines
-#######################################
--dontwarn kotlinx.coroutines.**
--keep class kotlinx.coroutines.** { *; }
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepclassmembernames class kotlinx.** {
-    volatile <fields>;
-}
-
-
-#######################################
-# SplashScreen API
-#######################################
--keep class androidx.core.splashscreen.** { *; }
--dontwarn androidx.core.splashscreen.**
-
-#######################################
-# Billing
-#######################################
--keep class com.android.billingclient.** { *; }
--dontwarn com.android.billingclient.**
-
-#######################################
-# DataStore / ProtoBuf
-#######################################
--keep class androidx.datastore.** { *; }
--dontwarn androidx.datastore.**
-
--keep class com.google.protobuf.** { *; }
--dontwarn com.google.protobuf.**
-
-#######################################
-# Debug/Test-only dependencies (à ignorer en prod)
-#######################################
--dontwarn io.mockk.**
--dontwarn org.junit.**
--dontwarn androidx.test.**
--dontwarn com.google.testing.**
--dontwarn androidx.benchmark.**
-
-#######################################
-# UIAutomator (test only)
-#######################################
--dontwarn androidx.test.uiautomator.**
-
+########## 3) RETROFIT / OKHTTP / ANNOTATIONS
+# Retrofit repose sur des annotations runtime
+-keepattributes RuntimeVisibleAnnotations, RuntimeInvisibleAnnotations, AnnotationDefault
+# Évite les faux warnings (souvent sans impact)
 -dontwarn javax.annotation.**
+-dontwarn okio.**
+-dontwarn kotlin.Unit
+
+########## 4) KOTLINX SERIALIZATION
+# En général, les libs fournissent leurs consumer-rules.
+# Si tu utilises du polymorphisme ou des serializers récupérés par nom,
+# garde les classes de serializers générés :
+-keep,allowobfuscation,allowshrinking class **$$serializer { *; }
+# (Active cette règle si tu constates des NoSuchMethodException de serializer)
+
+########## 5) (OPTIONNEL) DATASTORE + PROTOBUF LITE
+# Normalement pas nécessaire. Si tu vois des warnings/problèmes côté proto :
+ -dontwarn com.google.protobuf.**
+ -keep class com.google.protobuf.** { *; }
+
+########## 6) ANDROID COMPONENTS (par sûreté)
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
