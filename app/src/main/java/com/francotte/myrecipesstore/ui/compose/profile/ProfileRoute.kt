@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 import com.francotte.myrecipesstore.util.ScreenCounter
 
 
-const val PROFILE_ROUTE = "register_route"
+const val PROFILE_ROUTE = "profile_route"
 
 fun NavController.navigateToProfileScreen(navOptions: NavOptions? = null) {
     this.navigate(PROFILE_ROUTE, navOptions)
