@@ -84,7 +84,7 @@ fun NavHost(
             onOpenCategory = navController::navigateToCategoryScreen,
         )
         categoryScreen(windowSizeClass,navController::popBackStack,navController::navigateToDetailRecipeScreen,onToggleFavorite)
-        addRecipeScreen(isAuthenticated, navController::navigateToLoginScreen, onSubmit)
+        addRecipeScreen(isAuthenticated, { navController.navigateToLoginScreen() }, onSubmit)
         searchModeScreen(
             onItemSelected = navController::navigateToSearchRecipesScreen,
             onBack = navController::popBackStack

@@ -140,7 +140,7 @@ fun FoodApp(
                     actionIcon = Icons.Outlined.Settings,
                     actionIconContentDescription = "settings",
                     onActionClick = { showSettingsDialog = true },
-                    navigationIconEnabled = true,
+                    navigationIconEnabled = isAuthenticated,
                     navigationIcon = Icons.Filled.AccountCircle,
                     onNavigationClick = { appState.navController.navigateToProfileScreen() }
                 )
