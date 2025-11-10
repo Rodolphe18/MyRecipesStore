@@ -9,7 +9,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.francotte.myrecipesstore.notifications.DailyNotificationWorkManager
+import com.francotte.notifications.DailyNotificationWorkManager
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.HiltAndroidApp
 import java.time.LocalDateTime

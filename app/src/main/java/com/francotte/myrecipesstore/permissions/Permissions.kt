@@ -1,6 +1,9 @@
 package com.francotte.myrecipesstore.permissions
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
@@ -11,7 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.francotte.myrecipesstore.ui.compose.video.findActivity
+import com.francotte.common.findActivity
 
 @Composable
 fun NotificationPermissionEffect() {
@@ -44,3 +47,4 @@ fun NotificationPermissionEffect() {
         }
     }
 }
+

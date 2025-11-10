@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_recipe">Update recipe</string>
+    <string name="add_favorites_recipes">Add your favorites \nrecipes</string>
+    <string name="my_recipes">My recipes</string>
+</resources>

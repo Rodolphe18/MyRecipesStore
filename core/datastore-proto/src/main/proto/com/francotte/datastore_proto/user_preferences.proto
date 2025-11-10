@@ -1,0 +1,12 @@
+
+syntax = "proto3";
+
+import "com/francotte/datastore_proto/user_info.proto";
+
+option java_package = "com.francotte.datastore_proto";
+option java_multiple_files = true;
+
+message UserPreferences {
+  map<string, bool> favorites_ids = 2;
+  UserInfo user_info = 3;
+}

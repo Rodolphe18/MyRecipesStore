@@ -2,7 +2,6 @@ package com.francotte.myrecipesstore
 
 import com.francotte.myrecipesstore.domain.model.LightRecipe
 import com.francotte.myrecipesstore.domain.model.LikeableRecipe
-import com.francotte.myrecipesstore.domain.model.Recipe
 import com.francotte.myrecipesstore.repository.LikeableLightRecipesRepository
 import com.francotte.myrecipesstore.ui.compose.home.AmericanRecipes
 import com.francotte.myrecipesstore.ui.compose.home.AreasRecipes

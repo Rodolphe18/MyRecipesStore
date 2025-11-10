@@ -3,7 +3,7 @@
 -keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
 
 ########## 1) TON CAS : RÉFLEXION SUR LES CHAMPS DE Recipe
--keepclassmembers class com.francotte.myrecipesstore.domain.model.Recipe {
+-keepclassmembers class com.francotte.model.Recipe {
     *** strIngredient*;
     *** strMeasure*;
 }
@@ -49,6 +49,6 @@
 # Garder les serializers générés (utile si tu vois des erreurs de serializer)
 -keep class **$$serializer { *; }
 
--keepnames class com.francotte.myrecipesstore.ui.compose.section.SectionRoute
--keepnames class com.francotte.myrecipesstore.ui.compose.detail.DetailRecipeRoute
--keepnames class com.francotte.myrecipesstore.ui.compose.categories.category.CategoryNavigationRoute
+-keepnames class com.francotte.section.SectionRoute
+-keepnames class com.francotte.detail.DetailRecipeRoute
+-keepnames class com.francotte.categories.CategoryNavigationRoute

@@ -1,6 +1,3 @@
-import org.gradle.internal.extensions.stdlib.capitalized
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,7 +9,6 @@ plugins {
     alias(libs.plugins.ads)
     alias(libs.plugins.baselineprofile)
     id("kotlin-parcelize")
-
 }
 
 configurations.all {
@@ -26,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.francotte.myrecipesstore"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 11
         versionName = "1.1.0"
@@ -83,6 +79,33 @@ android {
 
 dependencies {
 
+    implementation(project(":core:model"))
+    implementation(project(":core:network"))
+    implementation(project(":core:database"))
+    implementation(project(":core:data"))
+    implementation(project(":core:datastore"))
+    implementation(project(":core:common"))
+
+    implementation(project(":core:domain"))
+    implementation(project(":core:ui"))
+    implementation(project(":feature:home"))
+    implementation(project(":feature:categories"))
+    implementation(project(":feature:search"))
+    implementation(project(":feature:login"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":feature:detail"))
+    implementation(project(":feature:add_recipe"))
+    implementation(project(":feature:register"))
+    implementation(project(":feature:profile"))
+    implementation(project(":feature:section"))
+    implementation(project(":feature:favorites"))
+    implementation(project(":feature:reset"))
+    implementation(project(":feature:video"))
+    implementation(project(":core:notifications"))
+    implementation(project(":feature:settings"))
+    implementation(project(":core:ads"))
+    implementation(project(":core:premium"))
+
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -103,7 +126,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation (libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -143,12 +166,12 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.50")
     ksp("com.google.dagger:hilt-compiler:2.50")
     implementation("androidx.hilt:hilt-work:1.1.0")
-    ksp("androidx.hilt:hilt-compiler:1.1.0")
+    ksp(libs.androidx.hilt.compiler)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.play.services.ads)
-    implementation (libs.billing.ktx)
+    implementation(libs.billing.ktx)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -162,8 +185,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("com.google.android.material:material:1.11.0")
 
-    androidTestImplementation ("androidx.profileinstaller:profileinstaller:1.3.0")
-    androidTestImplementation ("androidx.benchmark:benchmark-macro-junit4:1.2.0")
+    androidTestImplementation("androidx.profileinstaller:profileinstaller:1.3.0")
+    androidTestImplementation("androidx.benchmark:benchmark-macro-junit4:1.2.0")
 
     androidTestUtil("androidx.test:orchestrator:1.4.2")
     configurations.all {
@@ -176,38 +199,3 @@ dependencies {
     }
 
 }
-
-protobuf {
-    protoc {
-        artifact = libs.protobuf.protoc.get().toString()
-    }
-    generateProtoTasks {
-        all().forEach { task ->
-            task.builtins {
-                register("java") {
-                    option("lite")
-                }
-                register("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-androidComponents {
-    onVariants(selector().all()) { variant ->
-        afterEvaluate {
-            val capName = variant.name.capitalized()
-            tasks.getByName<KotlinCompile>("ksp${capName}Kotlin") {
-                setSource(tasks.getByName("generate${capName}Proto").outputs)
-            }
-        }
-    }
-}
-
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas/")
-
-}
-

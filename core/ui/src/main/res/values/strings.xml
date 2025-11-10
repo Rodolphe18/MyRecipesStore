@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_title">An error occurs while loading</string>
+    <string name="error_subtitle">Try again by clicking the button below</string>
+    <string name="error_button_text">Retry</string>
+</resources>
