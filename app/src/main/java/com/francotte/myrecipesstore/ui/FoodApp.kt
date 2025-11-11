@@ -180,31 +180,6 @@ fun FoodApp(
                     .consumeWindowInsets(padding),
                 windowSizeClass = windowSizeClass,
                 isAuthenticated = isAuthenticated,
-                onSubmit = { recipeTitle, ingredients, instructions, url ->
-                    scope.launch {
-                        appState.favoriteManager.createRecipe(
-                            recipeTitle,
-                            ingredients,
-                            instructions,
-                            url
-                        )
-                    }
-                },
-                onUpdate = { recipeId, recipeTitle, ingredients, instructions, url ->
-                    scope.launch {
-                        try {
-                            appState.favoriteManager.updateRecipe(
-                                recipeId,
-                                recipeTitle,
-                                ingredients,
-                                instructions,
-                                url
-                            )
-                        } catch (e: Exception) {
-                            Log.d("debug_update2", e.message.toString())
-                        }
-                    }
-                },
                 customRecipeHasBeenUpdated = customRecipeHasBeenUpdated,
                 resetPasswordToken = appState.resetPasswordToken
             )

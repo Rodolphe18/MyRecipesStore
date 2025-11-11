@@ -25,8 +25,8 @@ import com.francotte.home.BASE_ROUTE
 import com.francotte.home.homeScreen
 import com.francotte.login.loginScreen
 import com.francotte.login.navigateToLoginScreen
+import com.francotte.model.CustomIngredient
 import com.francotte.model.LikeableRecipe
-import com.francotte.network.model.Ingredient
 import com.francotte.profile.profileScreen
 import com.francotte.register.navigateToRegisterScreen
 import com.francotte.register.registerScreen
@@ -53,8 +53,6 @@ fun NavHost(
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     isAuthenticated: Boolean,
     customRecipeHasBeenUpdated: Boolean,
-    onUpdate: (recipeId: String, title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit,
-    onSubmit: (title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit,
     resetPasswordToken: String? = null
 ) {
 
@@ -84,7 +82,7 @@ fun NavHost(
             onOpenCategory = navController::navigateToCategoryScreen,
         )
         categoryScreen(windowSizeClass,navController::popBackStack,navController::navigateToDetailRecipeScreen,onToggleFavorite)
-        addRecipeScreen(isAuthenticated, { navController.navigateToLoginScreen() }, onSubmit)
+        addRecipeScreen(isAuthenticated, { navController.navigateToLoginScreen() })
         searchModeScreen(
             onItemSelected = navController::navigateToSearchRecipesScreen,
             onBack = navController::popBackStack
@@ -123,7 +121,7 @@ fun NavHost(
             onToggleFavorite = onToggleFavorite
         )
         detailRecipeScreen(onBackClick = navController::popBackStack, onToggleFavorite)
-        customRecipeDetailScreen(navController::popBackStack, onUpdate)
+        customRecipeDetailScreen(navController::popBackStack)
         videoFullScreen()
         profileScreen(navController::popBackStack)
         requestResetPasswordScreen(onBackPressed = navController::popBackStack)

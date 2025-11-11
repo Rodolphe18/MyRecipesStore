@@ -2,7 +2,17 @@ package com.francotte.detail
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import android.view.View
 import android.view.ViewGroup
+import android.webkit.ConsoleMessage
+import android.webkit.CookieManager
+import android.webkit.PermissionRequest
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.StringRes
@@ -210,12 +220,43 @@ fun DetailRecipeScreen(
 @Composable
 private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
     val youtubeUrl = (likeableRecipe.recipe as Recipe).strYoutube
-    val videoId = youtubeUrl.substringAfter("v=").substringBefore("&")
-
-    if (videoId.isNotBlank()) {
-        val embedUrl = remember(videoId) {
-            "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1"
+    val videoId = remember(youtubeUrl) {
+        when {
+            youtubeUrl.contains("watch?v=") ->
+                youtubeUrl.substringAfter("v=").substringBefore("&")
+            youtubeUrl.contains("youtu.be/") ->
+                youtubeUrl.substringAfter("youtu.be/").substringBefore("?").substringBefore("&")
+            youtubeUrl.contains("/shorts/") ->
+                youtubeUrl.substringAfter("/shorts/").substringBefore("?").substringBefore("&")
+            youtubeUrl.contains("/embed/") ->
+                youtubeUrl.substringAfter("/embed/").substringBefore("?").substringBefore("&")
+            else -> ""
         }
+    }
+    if (videoId.isNotBlank()) {
+        val origin = "https://app.local" // n'importe quel https stable, mais garde-le partout
+        val embedUrl = "https://www.youtube.com/embed/$videoId" +
+                "?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&origin=$origin"
+
+        val html = """
+<!doctype html><html>
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>html,body{margin:0;background:#000;height:100%}#wrap{position:fixed;inset:0}</style>
+</head>
+<body>
+  <div id="wrap">
+    <iframe
+      src="$embedUrl"
+      title="YouTube video player"
+      allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
+      allowfullscreen
+      referrerpolicy="origin-when-cross-origin"
+      style="border:0;width:100%;height:100%"></iframe>
+  </div>
+</body>
+</html>
+""".trimIndent()
         var webView by remember { mutableStateOf<WebView?>(null) }
         DisposableEffect(videoId) {
             onDispose {
@@ -233,23 +274,59 @@ private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
         AndroidView(
             factory = { context ->
                 WebView(context).apply {
+
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         220
                     )
-                    webViewClient = WebViewClient()
                     settings.javaScriptEnabled = true
-                    loadUrl(embedUrl)
+                    settings.domStorageEnabled = true
+                    settings.mediaPlaybackRequiresUserGesture = false
+                    settings.javaScriptCanOpenWindowsAutomatically = true
+
+                    // UA : repartir d'un UA Chrome standard + suffixe
+                    settings.userAgentString = WebSettings.getDefaultUserAgent(context) + " YTWebView/1.0"
+
+                    webChromeClient = object : WebChromeClient() {
+                        override fun onPermissionRequest(request: PermissionRequest?) {
+                            // Autoriser audio/vidéo pour l'iFrame
+                            request?.grant(request.resources)
+                        }
+                        override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
+                            Log.d("YTWebView", "${msg?.message()} @${msg?.lineNumber()}")
+                            return super.onConsoleMessage(msg)
+                        }
+                    }
+                    webViewClient = object : WebViewClient() {
+                        override fun onReceivedError(v: WebView, r: WebResourceRequest, e: WebResourceError) {
+                            Log.e("YTWebView", "WebError ${e.errorCode}: ${e.description}")
+                        }
+                        override fun onReceivedHttpError(v: WebView, r: WebResourceRequest, resp: WebResourceResponse) {
+                            Log.e("YTWebView", "HTTP ${resp.statusCode} ${resp.reasonPhrase}")
+                        }
+                    }
+
+                    CookieManager.getInstance().setAcceptCookie(true)
+                    CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+
+                    // Accélération matérielle conseillée
+                    setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+                    loadDataWithBaseURL(origin, html, "text/html", "utf-8", null)
                     webView = this
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp),
-            update = {
-                if (it.url != embedUrl) {
-                    it.loadUrl(embedUrl)
-                }
+            update = { view ->
+                view.loadDataWithBaseURL(
+                    origin,
+                    html,
+                    "text/html",
+                    "utf-8",
+                    null
+                )
             }
         )
     } else {

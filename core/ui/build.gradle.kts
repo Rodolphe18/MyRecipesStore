@@ -34,10 +34,10 @@ android {
 }
 
 dependencies {
-    api(project(":core:network"))
     api(project(":core:model"))
     api(project(":core:common"))
     api(project(":core:designsystem"))
+
     implementation(libs.coil.compose)
     implementation("com.google.android.material:material:1.11.0")
     implementation(libs.kotlinx.metadata.jvm)
@@ -47,31 +47,14 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3.window.size)
     implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.benchmark.macro.junit4)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation (libs.androidx.activity.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
     implementation(libs.androidx.compose.material.iconsExtended)
+    androidTestImplementation(libs.androidx.ui.test.manifest)
 }

@@ -10,10 +10,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.francotte.domain.FavoriteManager
-import com.francotte.network.model.CustomRecipe
-import com.francotte.network.model.Ingredient
+import com.francotte.domain.FavoritesRepository
+import com.francotte.model.CustomIngredient
+import com.francotte.model.CustomRecipe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,7 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CustomRecipeDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val favoriteManager: FavoriteManager
+    private val favoritesRepository: FavoritesRepository, favoriteManager: FavoriteManager
 ) : ViewModel() {
 
     private val detailRoute: CustomRecipeDetailRoute? = runCatching {
@@ -41,9 +43,11 @@ class CustomRecipeDetailViewModel @Inject constructor(
     var currentIngredient by mutableStateOf("")
     var currentQuantity by mutableStateOf("")
     var quantityType by mutableStateOf("")
-    var recipeIngredients = mutableStateListOf<Ingredient>()
+    var recipeIngredients = mutableStateListOf<CustomIngredient>()
 
     val hasBeenUpdated = MutableStateFlow(false)
+
+    val snackBarMessage = favoriteManager.snackBarMessage.asSharedFlow()
 
     fun onRecipeUpdated() {
         imageUri = null
@@ -60,10 +64,21 @@ class CustomRecipeDetailViewModel @Inject constructor(
 
     fun getCustomRecipe() {
         viewModelScope.launch {
-            val result = favoriteManager.getUserCustomRecipe(recipeId!!)
-            result?.let {
-                _recipe.update { result }
+            favoritesRepository.observeUserCustomRecipe(recipeId!!).collect { result ->
+                _recipe.update { result.getOrNull() }
             }
+        }
+    }
+
+    fun onSubmit(
+        recipeId: String,
+        title: String,
+        ingredients: List<CustomIngredient>,
+        instructions: String,
+        image: Uri?
+    ) {
+        viewModelScope.launch {
+            favoritesRepository.updateCustomRecipe(recipeId,title, ingredients, instructions, image)
         }
     }
 

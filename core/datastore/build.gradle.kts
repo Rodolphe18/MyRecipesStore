@@ -45,19 +45,11 @@ dependencies {
     api(project(":core:model"))
     api(project(":core:datastore-proto"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
-    implementation(libs.androidx.dataStore)
-    implementation(libs.protobuf.kotlin.lite)
-
-    implementation(libs.startup.runtime)
-
     ksp(libs.hilt.compiler)
+    implementation(libs.androidx.dataStore)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+
 }

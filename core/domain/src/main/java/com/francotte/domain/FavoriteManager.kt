@@ -4,13 +4,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.net.http.NetworkException
 import android.util.Log
 import androidx.core.graphics.scale
 import com.francotte.datastore.UserDataSource
+import com.francotte.model.CustomIngredient
 import com.francotte.model.LikeableRecipe
 import com.francotte.network.api.FavoriteApi
-import com.francotte.network.model.CustomRecipe
-import com.francotte.network.model.Ingredient
+import com.francotte.network.model.NetworkCustomIngredient
+import com.francotte.network.model.NetworkCustomRecipe
+import com.francotte.network.model.NetworkIngredient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -26,10 +29,14 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.IOException
+import retrofit2.HttpException
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FavoriteManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: FavoriteApi,
@@ -58,9 +65,7 @@ class FavoriteManager @Inject constructor(
         likeableRecipe: LikeableRecipe
     ) {
         val cred = credentials.firstOrNull()
-        Log.d("debug_error_fav_button1", cred.toString())
         if (cred == null || credentials.value?.token.isNullOrEmpty()) {
-            Log.d("debug_error_fav_button2", cred.toString())
             goToLoginScreenEvent.emit(Unit)
         } else {
             val recipeId = likeableRecipe.recipe.idMeal
@@ -91,7 +96,7 @@ class FavoriteManager @Inject constructor(
 
     suspend fun createRecipe(
         title: String,
-        ingredients: List<Ingredient>,
+        ingredients: List<NetworkCustomIngredient>,
         instructions: String,
         image: Uri?
     ) {
@@ -100,15 +105,28 @@ class FavoriteManager @Inject constructor(
         val ingredientsJson = Json.encodeToString(ingredients)
         val ingredientsBody = ingredientsJson.toRequestBody("text/plain".toMediaType())
         val imagePart = image.toMultiPartBody(context)
-        api.addRecipe(
-            "Bearer ${credentials.value?.token}",
-            imagePart,
-            titlePart,
-            instructionsPart,
-            ingredientsBody
-        )
-        withContext(Dispatchers.Main) {
-            snackBarMessage.emit("Your recipe has been created successfully !")
+        try {
+            val response = withContext(Dispatchers.IO) {
+                api.addRecipe(
+                    "Bearer ${credentials.value?.token}",
+                    imagePart,
+                    titlePart,
+                    instructionsPart,
+                    ingredientsBody
+                )
+            }
+
+            if (response.isSuccessful) {
+                snackBarMessage.emit("Your recipe has been created successfully !")
+            } else {
+                snackBarMessage.emit("An error occurred!")
+            }
+        } catch (e: IOException) {
+            snackBarMessage.emit("Network error. Please check your connection.")
+        } catch (e: HttpException) {
+            snackBarMessage.emit("Server error. Please try again later.")
+        } catch (e: Exception) {
+            snackBarMessage.emit("Unexpected error. Please try again.")
         }
     }
 
@@ -116,7 +134,7 @@ class FavoriteManager @Inject constructor(
     suspend fun updateRecipe(
         recipeId: String,
         title: String,
-        ingredients: List<Ingredient>,
+        ingredients: List<NetworkCustomIngredient>,
         instructions: String,
         image: Uri?
     ) {
@@ -125,27 +143,34 @@ class FavoriteManager @Inject constructor(
         val ingredientsJson = Json.encodeToString(ingredients)
         val ingredientsBody = ingredientsJson.toRequestBody("text/plain".toMediaType())
         val imagePart = image.toMultiPartBody(context)
-        val response = withContext(Dispatchers.IO) {
-            api.updateRecipe(
-                "Bearer ${credentials.value?.token}",
-                recipeId,
-                imagePart,
-                titlePart,
-                instructionsPart,
-                ingredientsBody
-            )
-        }
-        if (response.isSuccessful) {
-
-            customRecipeHasBeenUpdatedSuccessfully.value = true
-            snackBarMessage.tryEmit("Your recipe has been updated successfully !")
-        } else {
-            snackBarMessage.tryEmit("An error occurred!")
+        try {
+            val response = withContext(Dispatchers.IO) {
+                api.updateRecipe(
+                    "Bearer ${credentials.value?.token}",
+                    recipeId,
+                    imagePart,
+                    titlePart,
+                    instructionsPart,
+                    ingredientsBody
+                )
+            }
+            if (response.isSuccessful) {
+                customRecipeHasBeenUpdatedSuccessfully.value = true
+                snackBarMessage.tryEmit("Your recipe has been updated successfully !")
+            } else {
+                snackBarMessage.tryEmit("An error occurred!")
+            }
+        } catch (e: IOException) {
+            snackBarMessage.emit("Network error. Please check your connection.")
+        } catch (e: HttpException) {
+            snackBarMessage.emit("Server error. Please try again later.")
+        } catch (e: Exception) {
+            snackBarMessage.emit("Unexpected error. Please try again.")
         }
     }
 
 
-    suspend fun getUserRecipes(): List<CustomRecipe> {
+    suspend fun getUserRecipes(): List<NetworkCustomRecipe> {
         return if (credentials.value?.token != null) {
             api.getUserRecipes("Bearer ${credentials.value?.token}")
         } else {
@@ -153,11 +178,11 @@ class FavoriteManager @Inject constructor(
         }
     }
 
-    suspend fun getUserCustomRecipe(customRecipeId: String): CustomRecipe? {
+    suspend fun getUserCustomRecipe(customRecipeId: String): NetworkCustomRecipe {
         return if (credentials.value?.token != null) {
             api.getUserRecipe("Bearer ${credentials.value?.token}", customRecipeId)
         } else {
-            null
+            throw Exception("ss")
         }
     }
 

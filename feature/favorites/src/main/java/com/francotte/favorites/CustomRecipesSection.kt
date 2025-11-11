@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.francotte.network.model.CustomRecipe
+import com.francotte.model.CustomRecipe
 import com.francotte.ui.CustomRecipeItem
 import com.francotte.ui.SectionTitle
 

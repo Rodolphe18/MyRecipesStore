@@ -20,6 +20,8 @@
         <profileable android:shell="true" tools:targetApi="q" />
         <activity
             android:name=".MainActivity"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
 
             <!-- Deep links -->

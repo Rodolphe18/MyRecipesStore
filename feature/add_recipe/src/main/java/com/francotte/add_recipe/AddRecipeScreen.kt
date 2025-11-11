@@ -1,9 +1,7 @@
 package com.francotte.add_recipe
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.net.Uri
-import android.provider.MediaStore
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -21,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,12 +35,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +60,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
@@ -65,21 +67,22 @@ import coil.request.ImageRequest
 import com.francotte.common.bitmapToUri
 import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.theme.Orange
-import com.francotte.network.model.Ingredient
+import com.francotte.model.CustomIngredient
 import com.francotte.ui.CustomTextField
 import com.francotte.ui.MeasurementUnitDropDownMenu
 
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddRecipeScreen(
     viewModel: AddRecipeViewModel = hiltViewModel<AddRecipeViewModel>(),
     isAuthenticated: Boolean,
-    goToLoginScreen: () -> Unit,
-    onSubmit: (title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit
+    goToLoginScreen: () -> Unit
 ) {
     var showAnimation by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+    val snackBarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         if (isAuthenticated) {
             showAnimation = true
@@ -90,200 +93,211 @@ fun AddRecipeScreen(
             focusManager.clearFocus()
         }
     }
+    LaunchedEffect(Unit) {
+        viewModel.snackBarMessage.collect { msg ->
+            snackBarHostState.showSnackbar(msg)
+        }
+    }
     if (!isAuthenticated) {
         LoginRedirectScreen(goToLoginScreen)
     } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            AnimatedVisibility(
-                visible = showAnimation,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(600)
-                )
+        Scaffold(snackbarHost = { SnackbarHost(snackBarHostState) }) { _ ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
             ) {
-                val context = LocalContext.current
-                val launcherGallery =
-                    rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-                        viewModel.imageUri = it
-                    }
-                val launcherCamera =
-                    rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
-                        it?.let { bitmap ->
-                            val uri = bitmapToUri(context, bitmap)
-                            viewModel.imageUri = uri
-                        }
-                    }
-                Column(
-                    modifier = Modifier.fillMaxSize()
+                AnimatedVisibility(
+                    visible = showAnimation,
+                    enter = slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = tween(600)
+                    )
                 ) {
-                    CustomTextField(
-                        viewModel.recipeTitle,
-                        { viewModel.recipeTitle = it },
-                        label = "Title",
-                        verticalPadding = 12.dp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Images",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .weight(1f),
-                            onClick = {
-                                viewModel.imageUri = null
-                                launcherGallery.launch("image/*")
+                    val context = LocalContext.current
+                    val launcherGallery =
+                        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+                            viewModel.imageUri = it
+                        }
+                    val launcherCamera =
+                        rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
+                            it?.let { bitmap ->
+                                val uri = bitmapToUri(context, bitmap)
+                                viewModel.imageUri = uri
                             }
-                        ) {
-                            Icon(Icons.Default.Photo, contentDescription = null)
-                            Spacer(Modifier.width(6.dp))
-                            Text("Gallery", textAlign = TextAlign.Center, fontSize = 12.sp)
                         }
-                        Button(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .weight(1f),
-                            onClick = {
-                                viewModel.imageUri = null
-                                launcherCamera.launch()
-                            }) {
-                            Icon(Icons.Default.CameraAlt, contentDescription = null)
-                            Spacer(Modifier.width(6.dp))
-                            Text("Take a picture", textAlign = TextAlign.Center, fontSize = 12.sp)
-                        }
-                    }
-                    Spacer(Modifier.height(24.dp))
-                    viewModel.imageUri?.let {
-
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it)
-                                    .crossfade(true)
-                                    .diskCachePolicy(CachePolicy.ENABLED)
-                                    .memoryCachePolicy(CachePolicy.ENABLED)
-                                    .build()
-                            ),
-                            contentDescription = "Photo",
-                            modifier = Modifier
-                                .size(180.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                    // Ingrédients
-                    Text(
-                        text = "Ingredients",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         CustomTextField(
-                            viewModel.currentIngredient,
-                            { viewModel.currentIngredient = it },
-                            label = "Ingredient",
-                            modifier = Modifier.weight(0.6f),
-                            verticalPadding = 12.dp,
-                            maxLines = 3
-                        )
-
-                        CustomTextField(
-                            viewModel.currentQuantity,
-                            { viewModel.currentQuantity = it },
-                            label = "Qty",
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.weight(0.3f),
+                            viewModel.recipeTitle,
+                            { viewModel.recipeTitle = it },
+                            label = "Title",
                             verticalPadding = 12.dp
                         )
-                        MeasurementUnitDropDownMenu(Modifier.weight(0.45f)) {
-                            viewModel.quantityType = it.displayName
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(50.dp)
-                                .weight(0.2f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Orange)
-                                .clickable {
-                                    if (viewModel.currentIngredient.isNotBlank()) {
-                                        viewModel.recipeIngredients.add(
-                                            Ingredient(
-                                                viewModel.currentIngredient,
-                                                viewModel.currentQuantity,
-                                                viewModel.quantityType
-                                            )
-                                        )
-                                        viewModel.currentIngredient = ""
-                                        viewModel.currentQuantity = ""
-                                        viewModel.quantityType = ""
-                                        focusManager.clearFocus()
-                                    }
-                                }) {
-                            Icon(
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Images",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
                                 modifier = Modifier
                                     .height(40.dp)
-                                    .align(Alignment.Center),
-                                imageVector = Icons.Default.Add,
-                                tint = Color.White,
-                                contentDescription = "Add"
-                            )
-                        }
-                    }
-
-                    Column {
-                        if (viewModel.recipeIngredients.isNotEmpty()) {
-                            Spacer(Modifier.height(8.dp))
-                            viewModel.recipeIngredients.forEach { (ingredient, qty, measureType) ->
+                                    .weight(1f),
+                                onClick = {
+                                    viewModel.imageUri = null
+                                    launcherGallery.launch("image/*")
+                                }
+                            ) {
+                                Icon(Icons.Default.Photo, contentDescription = null)
+                                Spacer(Modifier.width(6.dp))
+                                Text("Gallery", textAlign = TextAlign.Center, fontSize = 12.sp)
+                            }
+                            Button(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .weight(1f),
+                                onClick = {
+                                    viewModel.imageUri = null
+                                    launcherCamera.launch()
+                                }) {
+                                Icon(Icons.Default.CameraAlt, contentDescription = null)
+                                Spacer(Modifier.width(6.dp))
                                 Text(
-                                    "• $ingredient: $qty $measureType",
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    "Take a picture",
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 12.sp
                                 )
                             }
                         }
-                    }
+                        Spacer(Modifier.height(24.dp))
+                        viewModel.imageUri?.let {
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Instructions
-                    CustomTextField(
-                        viewModel.recipeInstructions,
-                        { viewModel.recipeInstructions = it },
-                        label = "Instructions",
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
-                        minLines = 5,
-                        maxLines = 50
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CustomButton(
-                        onClick = {
-                            onSubmit(
-                                viewModel.recipeTitle,
-                                viewModel.recipeIngredients,
-                                viewModel.recipeInstructions,
-                                viewModel.imageUri
+                            Image(
+                                painter = rememberAsyncImagePainter(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(it)
+                                        .crossfade(true)
+                                        .diskCachePolicy(CachePolicy.ENABLED)
+                                        .memoryCachePolicy(CachePolicy.ENABLED)
+                                        .build()
+                                ),
+                                contentDescription = "Photo",
+                                modifier = Modifier
+                                    .size(180.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
                             )
-                            viewModel.onRecipeCreated()
-                        },
-                        enabled = viewModel.recipeTitle.isNotBlank() && viewModel.recipeInstructions.isNotBlank() && viewModel.recipeIngredients.isNotEmpty(),
-                        contentText = R.string.add_recipe
-                    )
-                    Spacer(modifier = Modifier.height(500.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        // Ingrédients
+                        Text(
+                            text = "Ingredients",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            CustomTextField(
+                                viewModel.currentIngredient,
+                                { viewModel.currentIngredient = it },
+                                label = "Ingredient",
+                                modifier = Modifier.weight(0.6f),
+                                verticalPadding = 12.dp,
+                                maxLines = 3
+                            )
+
+                            CustomTextField(
+                                viewModel.currentQuantity,
+                                { viewModel.currentQuantity = it },
+                                label = "Qty",
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.weight(0.3f),
+                                verticalPadding = 12.dp
+                            )
+                            MeasurementUnitDropDownMenu(Modifier.weight(0.45f)) {
+                                viewModel.quantityType = it.displayName
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .height(50.dp)
+                                    .weight(0.2f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Orange)
+                                    .clickable {
+                                        if (viewModel.currentIngredient.isNotBlank()) {
+                                            viewModel.recipeIngredients.add(
+                                                CustomIngredient(
+                                                    viewModel.currentIngredient,
+                                                    viewModel.currentQuantity,
+                                                    viewModel.quantityType
+                                                )
+                                            )
+                                            viewModel.currentIngredient = ""
+                                            viewModel.currentQuantity = ""
+                                            viewModel.quantityType = ""
+                                            focusManager.clearFocus()
+                                        }
+                                    }) {
+                                Icon(
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .align(Alignment.Center),
+                                    imageVector = Icons.Default.Add,
+                                    tint = Color.White,
+                                    contentDescription = "Add"
+                                )
+                            }
+                        }
+
+                        Column {
+                            if (viewModel.recipeIngredients.isNotEmpty()) {
+                                Spacer(Modifier.height(8.dp))
+                                viewModel.recipeIngredients.forEach { (ingredient, qty, measureType) ->
+                                    Text(
+                                        "• $ingredient: $qty $measureType",
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Instructions
+                        CustomTextField(
+                            viewModel.recipeInstructions,
+                            { viewModel.recipeInstructions = it },
+                            label = "Instructions",
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
+                            minLines = 5,
+                            maxLines = 50
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        CustomButton(
+                            onClick = {
+                                viewModel.onSubmit(
+                                        viewModel.recipeTitle,
+                                        viewModel.recipeIngredients,
+                                        viewModel.recipeInstructions,
+                                        viewModel.imageUri
+                                    )
+                                viewModel.onRecipeCreated()
+                            },
+                            enabled = viewModel.recipeTitle.isNotBlank() && viewModel.recipeInstructions.isNotBlank() && viewModel.recipeIngredients.isNotEmpty(),
+                            contentText = R.string.add_recipe
+                        )
+                    }
                 }
             }
         }

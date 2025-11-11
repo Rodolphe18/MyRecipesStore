@@ -1,6 +1,6 @@
 package com.francotte.network.api
 
-import com.francotte.network.model.CustomRecipe
+import com.francotte.network.model.NetworkCustomRecipe
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -24,13 +24,13 @@ interface FavoriteApi {
     @GET("users/recipes")
     suspend fun getUserRecipes(
         @Header("Authorization") token: String
-    ): List<CustomRecipe>
+    ): List<NetworkCustomRecipe>
 
     @GET("users/recipes/{recipeId}")
     suspend fun getUserRecipe(
         @Header("Authorization") token: String,
         @Path("recipeId") recipeId: String
-    ): CustomRecipe
+    ): NetworkCustomRecipe
 
     @GET("users/favorites/{recipeId}/status")
     suspend fun getRecipeFavoriteStatus(
@@ -59,7 +59,7 @@ interface FavoriteApi {
         @Part("title") title: RequestBody,
         @Part("instructions") instructions: RequestBody,
         @Part("ingredients") ingredients: RequestBody
-    )
+    ): Response<Unit>
 
     @Multipart
     @PUT("users/recipes/{recipeId}")

@@ -29,8 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.common.imageRequestBuilder
+import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
-import com.francotte.network.model.CustomRecipe
+
 
 @Composable
 fun RecipeItem(

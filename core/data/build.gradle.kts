@@ -42,16 +42,13 @@ dependencies {
     api(project(":core:network"))
     api(project(":core:model"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.kotlinx.serialization.json)
 }

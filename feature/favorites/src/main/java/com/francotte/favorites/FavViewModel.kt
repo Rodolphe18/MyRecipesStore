@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.francotte.domain.FavoritesRepository
 import com.francotte.domain.FavoriteManager
 import com.francotte.model.LikeableRecipe
-import com.francotte.network.model.CustomRecipe
+import com.francotte.model.CustomRecipe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow

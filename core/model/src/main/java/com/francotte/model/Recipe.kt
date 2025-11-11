@@ -1,12 +1,6 @@
 package com.francotte.model
 
 
-data class LightRecipe(
-    override val strMeal: String,
-    override val strMealThumb: String,
-    override val idMeal: String,
-) : AbstractRecipe()
-
 data class Recipe(
     override val idMeal: String,
     override val strMeal: String,
@@ -64,27 +58,3 @@ data class Recipe(
 ) : AbstractRecipe()
 
 
-sealed class AbstractRecipe {
-    abstract val strMeal: String
-    abstract val strMealThumb: String?
-    abstract val idMeal: String
-}
-
-data class LikeableRecipe(
-    val recipe: AbstractRecipe,
-    val isFavorite: Boolean
-) {
-    constructor(recipe: AbstractRecipe, userData: UserData) : this(
-        recipe = recipe,
-        isFavorite = userData.isConnected && recipe.idMeal in userData.favoriteRecipesIds
-    )
-}
-
-fun List<LightRecipe>.mapToLikeableLightRecipes(userData: UserData): List<LikeableRecipe> =
-    mapNotNull { LikeableRecipe(it, userData) }
-
-fun List<Recipe>.mapToLikeableFullRecipes(userData: UserData): List<LikeableRecipe> =
-    mapNotNull { LikeableRecipe(it, userData) }
-
-
-fun Recipe.mapToLikeableFullRecipe(userData: UserData): LikeableRecipe = LikeableRecipe(recipe = this, userData = userData)

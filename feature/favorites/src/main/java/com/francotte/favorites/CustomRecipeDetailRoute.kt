@@ -9,7 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import com.francotte.network.model.Ingredient
+import com.francotte.model.CustomIngredient
 import kotlinx.serialization.Serializable
 
 
@@ -20,17 +20,14 @@ fun NavController.navigateToCustomRecipeDetailScreen(id:String, navOptions: NavO
     this.navigate(CustomRecipeDetailRoute(id), navOptions)
 }
 
-fun NavGraphBuilder.customRecipeDetailScreen(
-    onBackClick:() -> Unit,
-    onSubmit: (recipeId: String, title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit
-) {
+fun NavGraphBuilder.customRecipeDetailScreen(onBackClick:() -> Unit) {
     composable<CustomRecipeDetailRoute> {
-       CustomRecipeDetailRoute(onBackCLick = onBackClick, onSubmit = onSubmit)
+       CustomRecipeDetailRoute(onBackCLick = onBackClick)
     }
 }
 
 @Composable
-internal fun CustomRecipeDetailRoute(viewModel: CustomRecipeDetailViewModel= hiltViewModel(), onBackCLick:() -> Unit, onSubmit: (recipeId: String, title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit) {
+internal fun CustomRecipeDetailRoute(viewModel: CustomRecipeDetailViewModel= hiltViewModel(), onBackCLick:() -> Unit) {
     val customRecipe by viewModel.recipe.collectAsStateWithLifecycle()
-    CustomRecipeDetailScreen(viewModel = viewModel, customRecipe = customRecipe, onBackCLick= onBackCLick, onSubmit= onSubmit)
+    CustomRecipeDetailScreen(viewModel = viewModel, customRecipe = customRecipe, onBackCLick= onBackCLick)
 }

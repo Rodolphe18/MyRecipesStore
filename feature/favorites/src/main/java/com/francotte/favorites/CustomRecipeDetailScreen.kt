@@ -38,6 +38,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -66,8 +67,8 @@ import com.francotte.common.imageRequestBuilder
 import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.theme.Orange
-import com.francotte.network.model.CustomRecipe
-import com.francotte.network.model.Ingredient
+import com.francotte.model.CustomIngredient
+import com.francotte.model.CustomRecipe
 import com.francotte.ui.CustomTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,9 +76,7 @@ import com.francotte.ui.CustomTextField
 fun CustomRecipeDetailScreen(
     viewModel: CustomRecipeDetailViewModel,
     customRecipe: CustomRecipe?,
-    onBackCLick: () -> Unit,
-    onSubmit: (recipeId: String, title: String, ingredients: List<Ingredient>, instructions: String, image: Uri?) -> Unit
-) {
+    onBackCLick: () -> Unit) {
     val context = LocalContext.current
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -95,10 +94,16 @@ fun CustomRecipeDetailScreen(
                 viewModel.imageUri = uri
             }
         }
+    val snackBarHostState = remember { SnackbarHostState() }
     LaunchedEffect(!isUpdating) {
         if (!isUpdating) {
             viewModel.getCustomRecipe()
             viewModel.hasBeenUpdated.value = true
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.snackBarMessage.collect { msg ->
+            snackBarHostState.showSnackbar(msg)
         }
     }
     Scaffold(
@@ -204,7 +209,7 @@ fun CustomRecipeDetailScreen(
                             .clickable {
                                 if (viewModel.currentIngredient.isNotBlank()) {
                                     viewModel.recipeIngredients.add(
-                                        Ingredient(
+                                        CustomIngredient(
                                             viewModel.currentIngredient,
                                             viewModel.currentQuantity,
                                             viewModel.quantityType
@@ -287,7 +292,7 @@ fun CustomRecipeDetailScreen(
             if (isUpdating) {
                 CustomButton(
                     onClick = {
-                        onSubmit(
+                        viewModel.onSubmit(
                             viewModel.recipeId ?: "",
                             viewModel.recipeTitle,
                             viewModel.recipeIngredients,
