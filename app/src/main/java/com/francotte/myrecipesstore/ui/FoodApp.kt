@@ -64,7 +64,7 @@ fun FoodApp(
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     val currentBackStackEntry = appState.navController.currentBackStackEntryAsState().value
     val currentDestination = currentBackStackEntry?.destination?.route
-    val customRecipeHasBeenUpdated by appState.favoriteManager.customRecipehasBeenUpdatedSuccessfully.collectAsStateWithLifecycle()
+    val customRecipeHasBeenUpdated by appState.favoriteManager.customRecipeHasBeenUpdatedSuccessfully.collectAsStateWithLifecycle()
     if (showSettingsDialog) {
         SettingsDialog(
             onDismiss = { showSettingsDialog = false },

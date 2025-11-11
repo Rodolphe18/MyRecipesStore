@@ -168,8 +168,8 @@ class AuthManager @Inject constructor(
                     name = response.user.username!!,
                     userId = response.user.userId,
                     userToken = response.token,
-                    email = response.user.email ?: "",
-                    image = response.user.image ?: ""
+                    userEmail = response.user.email ?: "",
+                    userImage = response.user.image ?: ""
                 )
                 if (isRegistering) {
                     snackBarMessage.tryEmit("Welcome ${response.user.username}! Your account has been created successfully")

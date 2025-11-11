@@ -1,9 +1,6 @@
 package com.francotte.myrecipesstore.permissions
 
 import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast

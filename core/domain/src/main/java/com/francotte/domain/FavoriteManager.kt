@@ -43,7 +43,7 @@ class FavoriteManager @Inject constructor(
 
     val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
-    val customRecipehasBeenUpdatedSuccessfully = MutableStateFlow(false)
+    val customRecipeHasBeenUpdatedSuccessfully = MutableStateFlow(false)
 
     suspend fun initFavorites() {
         try {
@@ -137,7 +137,7 @@ class FavoriteManager @Inject constructor(
         }
         if (response.isSuccessful) {
 
-            customRecipehasBeenUpdatedSuccessfully.value = true
+            customRecipeHasBeenUpdatedSuccessfully.value = true
             snackBarMessage.tryEmit("Your recipe has been updated successfully !")
         } else {
             snackBarMessage.tryEmit("An error occurred!")

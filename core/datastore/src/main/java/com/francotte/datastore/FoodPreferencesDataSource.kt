@@ -79,7 +79,7 @@ class FoodPreferencesDataSource @Inject constructor(
         userId: Long,
         userToken: String,
         userEmail: String,
-        profilPicture: String
+        userImage: String
     ) {
         try {
             userPreferences.updateData {
@@ -90,7 +90,7 @@ class FoodPreferencesDataSource @Inject constructor(
                             userName = name
                             id = userId
                             email = userEmail
-                            image = profilPicture
+                            image = userImage
                         }
                         token = userToken
 

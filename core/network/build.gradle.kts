@@ -1,13 +1,15 @@
+
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.plugin)
-    alias(libs.plugins.ads)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.francotte.ads"
+    namespace = "com.francotte.network"
     compileSdk = 35
 
     defaultConfig {
@@ -37,6 +39,8 @@ android {
 
 dependencies {
 
+    api(project(":core:model"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -46,5 +50,11 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
-    implementation(libs.play.services.ads)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp.logging)
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.kotlin.serialization)
+    implementation(libs.kotlinx.serialization.json.okio)
+    implementation("com.google.dagger:hilt-android:2.50")
+
 }

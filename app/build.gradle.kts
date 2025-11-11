@@ -4,9 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ads)
     alias(libs.plugins.baselineprofile)
     id("kotlin-parcelize")
 }
@@ -63,14 +61,15 @@ android {
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
     baselineProfile {
-
+        automaticGenerationDuringBuild = false
+        dexLayoutOptimization = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -85,14 +84,17 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:datastore"))
     implementation(project(":core:common"))
-
     implementation(project(":core:domain"))
+    implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
+    implementation(project(":core:ads"))
+    implementation(project(":core:premium"))
+    implementation(project(":core:notifications"))
+
     implementation(project(":feature:home"))
     implementation(project(":feature:categories"))
     implementation(project(":feature:search"))
     implementation(project(":feature:login"))
-    implementation(project(":core:designsystem"))
     implementation(project(":feature:detail"))
     implementation(project(":feature:add_recipe"))
     implementation(project(":feature:register"))
@@ -101,10 +103,8 @@ dependencies {
     implementation(project(":feature:favorites"))
     implementation(project(":feature:reset"))
     implementation(project(":feature:video"))
-    implementation(project(":core:notifications"))
     implementation(project(":feature:settings"))
-    implementation(project(":core:ads"))
-    implementation(project(":core:premium"))
+
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
