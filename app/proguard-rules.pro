@@ -52,3 +52,6 @@
 -keepnames class com.francotte.section.SectionRoute
 -keepnames class com.francotte.detail.DetailRecipeRoute
 -keepnames class com.francotte.categories.CategoryNavigationRoute
+
+-keepnames class com.francotte.search.SearchMode
+-keepnames class com.francotte.search.**
