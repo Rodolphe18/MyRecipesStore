@@ -117,7 +117,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.benchmark.macro.junit4)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -197,5 +196,14 @@ dependencies {
             }
         }
     }
+}
 
+configurations.matching { cfg ->
+    cfg.name.contains("release", ignoreCase = true) &&
+            cfg.name.endsWith("RuntimeClasspath")
+}.all {
+    exclude(group = "androidx.benchmark")
+    exclude(group = "androidx.tracing", module = "tracing-perfetto-binary")
+    exclude(group = "androidx.tracing", module = "tracing-perfetto")
+    exclude(group = "androidx.tracing", module = "tracing-perfetto-handshake")
 }
