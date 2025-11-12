@@ -57,7 +57,7 @@ object ApiModule {
 
     private inline fun <reified A> providesUserApi(client: OkHttpClient, jsonConverterFactory: JsonConverterFactory): A {
         return Retrofit.Builder()
-            .baseUrl("https://www.myrecipesstore18.com")
+            .baseUrl("https://app.myrecipesstore18.com")
             .client(client)
             .addConverterFactory(jsonConverterFactory)
             .build()
@@ -74,31 +74,7 @@ object ApiModule {
     ): OkHttpClient {
         val cacheSize = 10 * 1024 * 1024L // 10 MB cache
         val cache = Cache(File(context.cacheDir, "http_cache"), cacheSize)
-        val gzipInterceptor = Interceptor { chain ->
-            val originalResponse = chain.proceed(chain.request())
-            val contentEncoding = originalResponse.header("Content-Encoding")
 
-            if (contentEncoding != null && contentEncoding.equals("gzip", ignoreCase = true)) {
-                val responseBody = originalResponse.body ?: return@Interceptor originalResponse
-                try {
-                    val gzipSource = GzipSource(responseBody.source())
-                    val decompressedSource = gzipSource.buffer()
-                    val newResponseBody = object : ResponseBody() {
-                        override fun contentType() = responseBody.contentType()
-                        override fun contentLength() = -1L
-                        override fun source() = decompressedSource
-                    }
-                    return@Interceptor originalResponse.newBuilder()
-                        .removeHeader("Content-Encoding")
-                        .body(newResponseBody)
-                        .build()
-                } catch (e: IOException) {
-                    Log.e("GzipInterceptor", "Erreur de décompression: ${e.message}")
-                    return@Interceptor originalResponse
-                }
-            }
-            originalResponse
-        }
         val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -106,7 +82,6 @@ object ApiModule {
             .dns(dns)
             .cache(cache)
             .dispatcher(Dispatcher(sharedExecutor))
-            .addInterceptor(gzipInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .connectionPool(ConnectionPool(10, 5, TimeUnit.MINUTES))
             .connectTimeout(15, TimeUnit.SECONDS)
