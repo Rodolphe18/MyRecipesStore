@@ -39,77 +39,10 @@ fun NavController.navigateToVideoFullScreen(
 fun NavGraphBuilder.videoFullScreen() {
     composable<VideoRoute> {
         val youTubeId = it.toRoute<VideoRoute>().youTubeUrl
-        VideoFullScreen(youTubeUrl = youTubeId)
+        VideoFullScreen(youtubeUrl = youTubeId)
     }
 }
 
-@Composable
-fun VideoFullScreen(
-    youTubeUrl: String
-) {
-    val context = LocalContext.current
-    val activity = context.findActivity()
-    val videoId = youTubeUrl.substringAfter("v=").substringBefore("&")
-    val viewGroup = remember { mutableStateOf<ViewGroup?>(null) }
 
-    if (videoId.isBlank()) return
-
-    val embedUrl = "https://www.youtube.com/embed/$videoId?autoplay=1&enablejsapi=1"
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = {
-                WebView(it).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-
-                    settings.apply {
-                        javaScriptEnabled = true
-                        loadWithOverviewMode = true
-                        useWideViewPort = true
-                        domStorageEnabled = true
-                        mediaPlaybackRequiresUserGesture = false
-                    }
-
-                    webViewClient = WebViewClient()
-
-                    webChromeClient = object : WebChromeClient() {
-                        private var customView: View? = null
-                        private var customViewCallback: CustomViewCallback? = null
-
-                        override fun onShowCustomView(view: View, callback: CustomViewCallback) {
-                            customView = view
-                            customViewCallback = callback
-                            viewGroup.value = activity?.window?.decorView as? ViewGroup
-                            viewGroup.value?.apply {
-                                addView(
-                                    view,
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                )
-                            }
-                        }
-
-                        override fun onHideCustomView() {
-                            viewGroup.value?.apply {
-                                customView?.let { removeView(it) }
-                            }
-                            customView = null
-                            customViewCallback?.onCustomViewHidden()
-                        }
-                    }
-
-                    loadUrl(embedUrl)
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-    LaunchedEffect(Unit) {
-        ScreenCounter.increment()
-    }
-}
 
 
