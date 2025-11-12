@@ -127,7 +127,7 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 20.dp))
-                if (updatedImage == null && currentImage == "https://www.myrecipesstore18.com/null") {
+                if (updatedImage == null && currentImage == "https://app.myrecipesstore18.com/null") {
                     val scale = remember { Animatable(1f) }
                     LaunchedEffect(Unit) {
                         scale.animateTo(
@@ -244,7 +244,6 @@ fun ProfileScreen(
                 ) {
                     Text(text = "Update", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 }
-                Spacer(modifier = Modifier.height(500.dp))
             }
             if (showImagePickerDialog) {
                 AlertDialog(

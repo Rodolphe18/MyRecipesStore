@@ -76,7 +76,7 @@ fun TopAppBar(
         },
         navigationIcon = {
             if (navigationIconEnabled) {
-                if (profileImage != null && profileImage != "https://www.myrecipesstore18.com/null") {
+                if (profileImage != null && profileImage != "https://app.myrecipesstore18.com/null") {
                     Image(
                         painter = rememberAsyncImagePainter(
                             model = profileImage

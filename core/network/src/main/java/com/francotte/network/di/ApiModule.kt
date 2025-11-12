@@ -38,7 +38,7 @@ object ApiModule {
     @Singleton
     fun provideCustomDns(): Dns = object :Dns {
         override fun lookup(hostname: String): List<InetAddress> {
-            return if (hostname == "www.myrecipesstore18.com" || hostname == "myrecipesstore18.com") {
+            return if (hostname == "app.myrecipesstore18.com" || hostname == "myrecipesstore18.com") {
                 listOf(InetAddress.getByName("46.202.170.205"))
             } else {
                 Dns.SYSTEM.lookup(hostname)
