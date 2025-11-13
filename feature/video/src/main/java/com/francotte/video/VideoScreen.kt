@@ -3,6 +3,7 @@ package com.francotte.video
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.webkit.ConsoleMessage
 import android.webkit.CookieManager
 import android.webkit.PermissionRequest
@@ -30,7 +31,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.francotte.common.ScreenCounter
 
 @Composable
-fun VideoFullScreen(youtubeUrl: String) {
+fun VideoFullScreen(youtubeUrl: String,window: Window) {
+    HideNavigationBar(window = window)
     val videoId = remember(youtubeUrl) {
         when {
             youtubeUrl.contains("watch?v=") ->
@@ -94,30 +96,20 @@ fun VideoFullScreen(youtubeUrl: String) {
                     settings.domStorageEnabled = true
                     settings.mediaPlaybackRequiresUserGesture = false
                     settings.javaScriptCanOpenWindowsAutomatically = true
-
-                    // UA : repartir d'un UA Chrome standard + suffixe
-                    settings.userAgentString =
-                        WebSettings.getDefaultUserAgent(context) + " YTWebView/1.0"
-
+                    settings.userAgentString = WebSettings.getDefaultUserAgent(context) + " YTWebView/1.0"
                     webChromeClient = object : WebChromeClient() {
                         override fun onPermissionRequest(request: PermissionRequest?) {
-                            // Autoriser audio/vidéo pour l'iFrame
                             request?.grant(request.resources)
                         }
-
                         override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
                             Log.d("YTWebView", "${msg?.message()} @${msg?.lineNumber()}")
                             return super.onConsoleMessage(msg)
                         }
                     }
                     webViewClient = WebViewClient()
-
                     CookieManager.getInstance().setAcceptCookie(true)
                     CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-
-                    // Accélération matérielle conseillée
                     setLayerType(View.LAYER_TYPE_HARDWARE, null)
-
                     loadDataWithBaseURL(origin, html, "text/html", "utf-8", null)
                     webView = this
                 }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.view.Window
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -44,6 +45,7 @@ import com.francotte.myrecipesstore.navigation.BottomBar
 import com.francotte.myrecipesstore.navigation.NavHost
 import com.francotte.profile.navigateToProfileScreen
 import com.francotte.settings.SettingsDialog
+import com.francotte.video.isFullscreen
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 
@@ -56,7 +58,8 @@ import kotlinx.coroutines.launch
 fun FoodApp(
     @ApplicationContext context: Context,
     appState: AppState,
-    windowSizeClass: WindowSizeClass
+    windowSizeClass: WindowSizeClass,
+    window: Window
 ) {
     val isAuthenticated by appState.authManager.isAuthenticated.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -65,6 +68,8 @@ fun FoodApp(
     val currentBackStackEntry = appState.navController.currentBackStackEntryAsState().value
     val currentDestination = currentBackStackEntry?.destination?.route
     val customRecipeHasBeenUpdated by appState.favoriteManager.customRecipeHasBeenUpdatedSuccessfully.collectAsStateWithLifecycle()
+    val backStackEntry by appState.navController.currentBackStackEntryAsState()
+    val isFullscreen = backStackEntry?.destination.isFullscreen()
     if (showSettingsDialog) {
         SettingsDialog(
             onDismiss = { showSettingsDialog = false },
@@ -146,25 +151,26 @@ fun FoodApp(
             }
         },
         bottomBar = {
-            BottomBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 2.dp),
-                destinations = appState.topLevelDestinations,
-                onNavigateToDestination = appState::navigateToTopLevelDestination,
-                currentDestination = appState.currentDestination,
-                isAuthenticated = isAuthenticated
-            )
+            if (!isFullscreen) {
+                BottomBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp),
+                    destinations = appState.topLevelDestinations,
+                    onNavigateToDestination = appState::navigateToTopLevelDestination,
+                    currentDestination = appState.currentDestination,
+                    isAuthenticated = isAuthenticated
+                )
+            }
         }
     ) { padding ->
         Box(
             Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(
-                        WindowInsetsSides.Horizontal
-                    )
-                )
+                .let {
+                    if (isFullscreen) it
+                    else it.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                }
         ) {
             NavHost(
                 onToggleFavorite = { recipe, _ ->
@@ -175,9 +181,11 @@ fun FoodApp(
                     }
                 },
                 navController = appState.navController,
-                modifier = Modifier
-                    .padding(padding)
-                    .consumeWindowInsets(padding),
+                modifier = Modifier.let {
+                    if (isFullscreen) it
+                    else it.padding(padding).consumeWindowInsets(padding)
+                },
+                window = window,
                 windowSizeClass = windowSizeClass,
                 isAuthenticated = isAuthenticated,
                 customRecipeHasBeenUpdated = customRecipeHasBeenUpdated,

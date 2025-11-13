@@ -84,7 +84,8 @@ class MainActivity : ComponentActivity() {
                 FoodApp(
                     context = this,
                     appState = state,
-                    windowSizeClass = calculateWindowSizeClass(activity = this)
+                    windowSizeClass = calculateWindowSizeClass(activity = this),
+                    window = this.window
                 )
                 NotificationPermissionEffect()
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && uiState.shouldKeepSplashScreen()) {

@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore.navigation
 
 
 import android.net.Uri
+import android.view.Window
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,7 +26,6 @@ import com.francotte.home.BASE_ROUTE
 import com.francotte.home.homeScreen
 import com.francotte.login.loginScreen
 import com.francotte.login.navigateToLoginScreen
-import com.francotte.model.CustomIngredient
 import com.francotte.model.LikeableRecipe
 import com.francotte.profile.profileScreen
 import com.francotte.register.navigateToRegisterScreen
@@ -49,6 +49,7 @@ fun NavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     windowSizeClass: WindowSizeClass,
+    window: Window,
     startDestination: String = BASE_ROUTE,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     isAuthenticated: Boolean,
@@ -122,7 +123,7 @@ fun NavHost(
         )
         detailRecipeScreen(onBackClick = navController::popBackStack, onToggleFavorite)
         customRecipeDetailScreen(navController::popBackStack)
-        videoFullScreen()
+        videoFullScreen(window)
         profileScreen(navController::popBackStack)
         requestResetPasswordScreen(onBackPressed = navController::popBackStack)
         resetPasswordScreen()

@@ -2,6 +2,7 @@ package com.francotte.video
 
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -15,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
@@ -36,12 +39,15 @@ fun NavController.navigateToVideoFullScreen(
 }
 
 
-fun NavGraphBuilder.videoFullScreen() {
+fun NavGraphBuilder.videoFullScreen(window: Window) {
     composable<VideoRoute> {
         val youTubeId = it.toRoute<VideoRoute>().youTubeUrl
-        VideoFullScreen(youtubeUrl = youTubeId)
+        VideoFullScreen(youtubeUrl = youTubeId, window = window)
     }
 }
+
+fun NavDestination?.isFullscreen(): Boolean =
+    this?.hasRoute<VideoRoute>() == true
 
 
 
