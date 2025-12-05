@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -71,46 +73,41 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         )
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        ButtonGoogle(
-//            onClick = doGoogleLogin,
-//            modifier = Modifier.fillMaxWidth(),
-//            text = stringResource(id = R.string.continue_with_google)
-//        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonGoogle(
+            onClick = doGoogleLogin,
+            modifier = Modifier.fillMaxWidth(),
+            text = "Google"
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
-//        Button(
-//            onClick = { viewModel.deleteAllUsers() },
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp),
-//        ) {
-//            Text("Delete All Users")
-//        }
-//
-//        Spacer(modifier = Modifier.height(16.dp))
 
-//
-//        Row(
-//            verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.Center
-//        ) {
-//            HorizontalDivider(
-//                modifier = Modifier.weight(1f),
-//                color = MaterialTheme.colorScheme.onSurface
-//            )
-//            Text(
-//                text = "or",
-//                modifier = Modifier.padding(horizontal = 8.dp),
-//                color = MaterialTheme.colorScheme.onSurface
-//            )
-//            HorizontalDivider(
-//                modifier = Modifier.weight(1f),
-//                color = MaterialTheme.colorScheme.onSurface,
-//            )
-//        }
-        //       Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = Color(0xFFE0E0E0),
+                thickness = 1.dp
+            )
+            Text(
+                text = "or",
+                modifier = Modifier.padding(horizontal = 12.dp),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF888888)
+                )
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = Color(0xFFE0E0E0),
+                thickness = 1.dp
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         CustomTextField(
             loginUserNameOrMail,
             { loginUserNameOrMail = it },
