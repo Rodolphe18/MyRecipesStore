@@ -15,17 +15,12 @@ configurations.all {
     exclude(group = "com.intellij", module = "annotations")
 }
 
-val keystoreProps = Properties().apply {
+val keystoreProperties = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) {
         load(f.inputStream())
     }
 }
-
-fun propOrEnv(propName: String, envName: String): String? {
-    return keystoreProps.getProperty(propName) ?: System.getenv(envName)
-}
-
 
 android {
     namespace = "com.francotte.myrecipesstore"
@@ -44,10 +39,18 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(propOrEnv("storeFile", "ANDROID_KEYSTORE_PATH") ?: "release-keystore.jks")
-            storePassword = propOrEnv("storePassword", "ANDROID_KEYSTORE_PASSWORD")
-            keyAlias = propOrEnv("keyAlias", "ANDROID_KEY_ALIAS")
-            keyPassword = propOrEnv("keyPassword", "ANDROID_KEY_PASSWORD")
+            // Nom du fichier keystore relatif AU MODULE app
+            val storeFileName = keystoreProperties.getProperty("storeFile") ?: "release-keystore.jks"
+            storeFile = file(storeFileName)
+
+            // En local : pris dans keystore.properties
+            // En CI : pris dans les variables d’environnement
+            storePassword = keystoreProperties.getProperty("storePassword")
+                ?: System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+                ?: System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+                ?: System.getenv("ANDROID_KEY_PASSWORD")
         }
     }
 
