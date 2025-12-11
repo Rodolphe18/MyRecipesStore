@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
@@ -41,6 +42,7 @@ import androidx.compose.ui.window.DialogProperties
 fun SettingsDialog(
     onDismiss: () -> Unit,
     onLogout: () -> Unit,
+    onPremiumClick:()->Unit,
     onShareApp: () -> Unit,
     onDeleteAccount:()->Unit
 ) {
@@ -69,6 +71,14 @@ fun SettingsDialog(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
+
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.1f), thickness = 1.dp)
+
+                SettingsActionItem(
+                    icon = Icons.Default.Money,
+                    text = "PREMIUM",
+                    onClick = { onPremiumClick() }
+                )
                 HorizontalDivider(color = Color.Black.copy(alpha = 0.1f), thickness = 1.dp)
 
                 SettingsActionItem(

@@ -45,6 +45,7 @@ import com.francotte.myrecipesstore.navigation.BottomBar
 import com.francotte.myrecipesstore.navigation.NavHost
 import com.francotte.profile.navigateToProfileScreen
 import com.francotte.settings.SettingsDialog
+import com.francotte.settings.navigateToPremiumScreen
 import com.francotte.video.isFullscreen
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
@@ -92,6 +93,7 @@ fun FoodApp(
                     showSettingsDialog = false
                 }
             },
+            onPremiumClick = { appState.navController.navigateToPremiumScreen() },
             onShareApp = {
                 val sendIntent = Intent().apply {
                     setAction(Intent.ACTION_SEND)

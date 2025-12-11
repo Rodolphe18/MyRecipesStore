@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -41,6 +42,7 @@ dependencies {
     api(project(":core:designsystem"))
     api(project(":feature:login"))
     api(project(":core:common"))
+    api(project(":core:billing"))
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
@@ -73,4 +75,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
 }

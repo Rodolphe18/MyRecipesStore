@@ -106,6 +106,7 @@ dependencies {
     implementation(project(":core:ads"))
     implementation(project(":core:premium"))
     implementation(project(":core:notifications"))
+    implementation(project(":core:premium"))
 
     implementation(project(":feature:home"))
     implementation(project(":feature:categories"))

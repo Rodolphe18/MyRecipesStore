@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="core_billing_subs_enable">true</bool>
+    <bool name="core_billing_inapp_enable">false</bool>
+    <string-array name="core_billing_subs_skus" />
+    <string-array name="core_billing_inapp_skus" />
+    <string-array name="core_billing_consumable_skus" />
+    <bool name="core_billing_show_debug_info">true</bool>
+</resources>

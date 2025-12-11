@@ -1,7 +1,6 @@
 package com.francotte.myrecipesstore.navigation
 
 
-import android.net.Uri
 import android.view.Window
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ import com.francotte.search.result_recipe.searchRecipesScreen
 import com.francotte.search.searchScreen
 import com.francotte.section.navigateToSection
 import com.francotte.section.sectionScreen
+import com.francotte.settings.premiumScreen
 import com.francotte.video.navigateToVideoFullScreen
 import com.francotte.video.videoFullScreen
 
@@ -127,6 +127,7 @@ fun NavHost(
         profileScreen(navController::popBackStack)
         requestResetPasswordScreen(onBackPressed = navController::popBackStack)
         resetPasswordScreen()
+        premiumScreen()
     }
 }
 
