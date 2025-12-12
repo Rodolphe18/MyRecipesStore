@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-
+    alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.ksp)
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -75,5 +76,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
+    implementation(libs.billing)
+    implementation(libs.billing.ktx)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.core)
 }

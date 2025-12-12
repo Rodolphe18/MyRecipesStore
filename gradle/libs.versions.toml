@@ -1,6 +1,7 @@
 [versions]
 agp = "8.7.2"
-billingKtx = "7.1.1"
+billing = "8.0.0"
+billingKtxVersion = "8.0.0"
 coilCompose = "2.5.0"
 hiltCompilerVersion = "1.1.0"
 hiltWork = "1.2.0"
@@ -57,7 +58,8 @@ androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWo
 androidx-material3-window-size = { module = "androidx.compose.material3:material3-window-size-class" }
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 androidx-profileinstaller-no-op = { module = "androidx.profileinstaller:profileinstaller-no-op", version.ref = "profileinstaller" }
-billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtx" }
+billing = { module = "com.android.billingclient:billing", version.ref = "billing" }
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 kotlinx-metadata-jvm = { module = "org.jetbrains.kotlinx:kotlinx-metadata-jvm", version.ref = "kotlinxMetadataJvm" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }

@@ -1,12 +1,15 @@
-package com.francotte.billing
+package com.francotte.settings
 
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
+import com.francotte.billing.BillingManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
@@ -21,9 +24,9 @@ enum class PremiumPlan(val basePlanId: String) {
 
 data class PremiumOfferUi(
     val plan: PremiumPlan,
-    val title: String,          // ex. "1,99 € par mois"
-    val formattedPrice: String, // prix renvoyé par Play
-    val offerToken: String?     // pour lancer l’achat
+    val title: String,
+    val formattedPrice: String,
+    val offerToken: String?
 )
 
 data class PremiumUiState(
@@ -33,31 +36,65 @@ data class PremiumUiState(
     val message: String? = null
 )
 
+sealed interface PremiumEffect {
+    data class LaunchPurchase(val productDetails: ProductDetails, val offerToken: String) : PremiumEffect
+}
+
 @HiltViewModel
 class PremiumViewModel @Inject constructor(
-    private val premiumManager: PremiumManager
+    private val billingManager: BillingManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PremiumUiState())
     val uiState: StateFlow<PremiumUiState> = _uiState.asStateFlow()
 
+    private val _effects = MutableSharedFlow<PremiumEffect>(extraBufferCapacity = 1)
+    val effects = _effects.asSharedFlow()
+
     init {
-        premiumManager.startConnection()
+        billingManager.startConnection()
 
         viewModelScope.launch {
             combine(
-                premiumManager.productDetails,
-                premiumManager.isPremium
+                billingManager.productDetails,
+                billingManager.isPremium
             ) { productDetails, isPremium ->
                 buildUiState(productDetails, isPremium)
             }.collect { _uiState.value = it }
         }
 
         viewModelScope.launch {
-            premiumManager.events.collect { msg ->
+            billingManager.events.collect { msg ->
                 _uiState.update { it.copy(message = msg) }
             }
         }
+    }
+
+    fun onOfferClicked(plan: PremiumPlan) {
+        val productDetails = billingManager.productDetails.value ?: run {
+            _uiState.update { it.copy(message = "Produit non chargé") }
+            return
+        }
+
+        val offerDetail = productDetails.subscriptionOfferDetails
+            ?.firstOrNull { it.basePlanId == plan.basePlanId }
+
+        val token = offerDetail?.offerToken ?: run {
+            _uiState.update { it.copy(message = "Offre indisponible pour ce plan") }
+            return
+        }
+
+        _effects.tryEmit(PremiumEffect.LaunchPurchase(productDetails, token))
+    }
+
+    fun clearMessage() {
+        _uiState.update { it.copy(message = null) }
+    }
+
+    // ❌ Je te conseille de ne PAS fermer ici
+    override fun onCleared() {
+        super.onCleared()
+        // billingManager.endConnection()
     }
 
     private fun buildUiState(
@@ -83,15 +120,15 @@ class PremiumViewModel @Inject constructor(
                 ?.formattedPrice
 
             val label = when (plan) {
-                PremiumPlan.Monthly   -> "${price ?: "1,99 €"} par mois"
-                PremiumPlan.Quarterly -> "${price ?: "4,99 €"} par trimestre"
-                PremiumPlan.Yearly    -> "${price ?: "9,99 €"} par an. Économiser 58 %"
+                PremiumPlan.Monthly   -> "${price ?: "—"} par mois"
+                PremiumPlan.Quarterly -> "${price ?: "—"} par trimestre"
+                PremiumPlan.Yearly    -> "${price ?: "—"} par an"
             }
 
             PremiumOfferUi(
                 plan = plan,
                 title = label,
-                formattedPrice = price ?: label,
+                formattedPrice = price ?: "—",
                 offerToken = offerDetail?.offerToken
             )
         }
@@ -101,33 +138,5 @@ class PremiumViewModel @Inject constructor(
             isPremium = isPremium,
             offers = offers
         )
-    }
-
-    fun onOfferClicked(activity: Activity, plan: PremiumPlan) {
-        val productDetails = premiumManager.productDetails.value
-        if (productDetails == null) {
-            _uiState.update { it.copy(message = "Produit non chargé") }
-            return
-        }
-
-        val offerDetail = productDetails.subscriptionOfferDetails
-            ?.firstOrNull { it.basePlanId == plan.basePlanId }
-
-        val token = offerDetail?.offerToken
-        if (token == null) {
-            _uiState.update { it.copy(message = "Offre indisponible pour ce plan") }
-            return
-        }
-
-        premiumManager.launchBillingFlow(activity, productDetails, token)
-    }
-
-    fun clearMessage() {
-        _uiState.update { it.copy(message = null) }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        premiumManager.endConnection()
     }
 }

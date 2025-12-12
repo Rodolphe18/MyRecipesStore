@@ -14,17 +14,27 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PremiumManager @Inject constructor(@ApplicationContext context: Context): PurchasesUpdatedListener {
+class BillingManager @Inject constructor(@ApplicationContext context: Context) :
+    PurchasesUpdatedListener {
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val billingClient: BillingClient = BillingClient
         .newBuilder(context)
         .setListener(this)
@@ -44,49 +54,73 @@ class PremiumManager @Inject constructor(@ApplicationContext context: Context): 
     )
     val events: SharedFlow<String> = _events
 
+    private val productQueryLock = Mutex()
+    private val purchasesQueryLock = Mutex()
+
+    private val handlePurchaseLock = Mutex()
+
+    private var loadJob: Job? = null
+
+    private val isConnecting = AtomicBoolean(false)
+
+
     fun startConnection() {
         if (billingClient.isReady) {
-            queryProducts()
-            queryExistingPurchases()
-            return
+            loadBillingData(); return
         }
+
+        if (!isConnecting.compareAndSet(false, true)) return
 
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
-                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                    queryProducts()
-                    queryExistingPurchases()
-                } else {
-                    _events.tryEmit("Erreur Billing setup : ${result.debugMessage}")
-                }
+                isConnecting.set(false)
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) loadBillingData()
+                else _events.tryEmit("Erreur Billing setup : ${result.debugMessage}")
             }
 
             override fun onBillingServiceDisconnected() {
-                // Tu peux relancer startConnection() plus tard si besoin.
+                isConnecting.set(false)
             }
         })
     }
 
     fun endConnection() {
+        loadJob?.cancel()
+        loadJob = null
         billingClient.endConnection()
     }
 
-    private fun queryProducts() {
-        val params = QueryProductDetailsParams.newBuilder()
-            .setProductList(
-                listOf(
-                    QueryProductDetailsParams.Product.newBuilder()
-                        .setProductId("premium_id")
-                        .setProductType(BillingClient.ProductType.SUBS)
-                        .build()
-                )
-            )
-            .build()
+    private fun loadBillingData() {
+        if (loadJob?.isActive == true) return
 
-        billingClient.queryProductDetailsAsync(params) { result, list ->
+        loadJob = scope.launch {
+            queryProducts()
+            queryExistingPurchases()
+        }
+    }
+
+
+    private suspend fun queryProducts() {
+        productQueryLock.withLock {
+
+            if (_productDetails.value != null) return
+
+            val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    listOf(
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId("premium_id")
+                            .setProductType(BillingClient.ProductType.SUBS)
+                            .build()
+                    )
+                )
+                .build()
+
+            val (result, details) = billingClient.queryProductDetailsAwait(params)
+
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                _productDetails.value = list.productDetailsList.firstOrNull()
-                if (list.productDetailsList.isEmpty()) {
+                _productDetails.value = details.firstOrNull()
+                if (details.isEmpty()) {
                     _events.tryEmit("Aucun abonnement trouvé (premium_id).")
                 }
             } else {
@@ -95,14 +129,18 @@ class PremiumManager @Inject constructor(@ApplicationContext context: Context): 
         }
     }
 
-    private fun queryExistingPurchases() {
-        billingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder()
+    private suspend fun queryExistingPurchases() {
+        purchasesQueryLock.withLock {
+            val params = QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build()
-        ) { result, purchases ->
+
+            val (result, purchases) = billingClient.queryPurchasesAwait(params)
+
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 handlePurchases(purchases)
+            } else {
+                _events.tryEmit("Erreur query purchases : ${result.debugMessage}")
             }
         }
     }
@@ -128,45 +166,50 @@ class PremiumManager @Inject constructor(@ApplicationContext context: Context): 
     }
 
 
-
     override fun onPurchasesUpdated(
         billingResult: BillingResult,
         purchases: List<Purchase?>?
     ) {
         when (billingResult.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
-                purchases?.filterNotNull().let { purchasesList -> purchasesList?.let { handlePurchases(it)} }
+                scope.launch {
+                    handlePurchases(purchases.orEmpty().filterNotNull())
+                }
             }
+
             BillingClient.BillingResponseCode.USER_CANCELED -> {
                 _events.tryEmit("Achat annulé")
             }
+
             else -> {
                 _events.tryEmit("Erreur achat : ${billingResult.debugMessage}")
             }
         }
     }
 
-    private fun handlePurchases(purchases: List<Purchase>) {
-        var premium = false
+    private suspend fun handlePurchases(purchases: List<Purchase>) {
+        // Phase 1 : section critique courte
+        val toAcknowledge: List<String> = handlePurchaseLock.withLock {
+            val premium = purchases.any { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+            _isPremium.value = premium
 
-        purchases.forEach { purchase ->
-            if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                premium = true
-
-                if (!purchase.isAcknowledged) {
-                    val params = AcknowledgePurchaseParams.newBuilder()
-                        .setPurchaseToken(purchase.purchaseToken)
-                        .build()
-
-                    billingClient.acknowledgePurchase(params) { result ->
-                        if (result.responseCode != BillingClient.BillingResponseCode.OK) {
-                            _events.tryEmit("Erreur acknowledgment : ${result.debugMessage}")
-                        }
-                    }
-                }
-            }
+            purchases.asSequence()
+                .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED && !it.isAcknowledged }
+                .map { it.purchaseToken }
+                .toList()
         }
 
-        _isPremium.value = premium
+        // Phase 2 : appels réseau hors lock
+        for (token in toAcknowledge) {
+            val params = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(token)
+                .build()
+
+            val result = billingClient.acknowledgePurchaseAwait(params)
+            if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                _events.tryEmit("Erreur acknowledgment : ${result.debugMessage}")
+            }
+        }
     }
+
 }

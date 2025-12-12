@@ -127,7 +127,7 @@ fun NavHost(
         profileScreen(navController::popBackStack)
         requestResetPasswordScreen(onBackPressed = navController::popBackStack)
         resetPasswordScreen()
-        premiumScreen()
+        premiumScreen(navController::popBackStack)
     }
 }
 

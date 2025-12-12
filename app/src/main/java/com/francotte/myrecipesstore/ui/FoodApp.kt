@@ -3,7 +3,6 @@ package com.francotte.myrecipesstore.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.Window
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -44,7 +43,7 @@ import com.francotte.myrecipesstore.R
 import com.francotte.myrecipesstore.navigation.BottomBar
 import com.francotte.myrecipesstore.navigation.NavHost
 import com.francotte.profile.navigateToProfileScreen
-import com.francotte.settings.SettingsDialog
+import com.francotte.settings.SettingsBottomSheet
 import com.francotte.settings.navigateToPremiumScreen
 import com.francotte.video.isFullscreen
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -72,7 +71,7 @@ fun FoodApp(
     val backStackEntry by appState.navController.currentBackStackEntryAsState()
     val isFullscreen = backStackEntry?.destination.isFullscreen()
     if (showSettingsDialog) {
-        SettingsDialog(
+        SettingsBottomSheet(
             onDismiss = { showSettingsDialog = false },
             onLogout = {
                 scope.launch {
@@ -106,7 +105,7 @@ fun FoodApp(
                 context.startActivity(shareIntent)
                 showSettingsDialog = false
             },
-            onDeleteAccount = {
+            onDeleteClick = {
                 scope.launch {
                     appState.authManager.deleteUser()
                     currentDestination?.let { route ->
