@@ -1,6 +1,5 @@
 package com.francotte.settings
 
-import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
@@ -87,14 +86,10 @@ class PremiumViewModel @Inject constructor(
         _effects.tryEmit(PremiumEffect.LaunchPurchase(productDetails, token))
     }
 
-    fun clearMessage() {
-        _uiState.update { it.copy(message = null) }
-    }
 
-    // ❌ Je te conseille de ne PAS fermer ici
     override fun onCleared() {
         super.onCleared()
-        // billingManager.endConnection()
+         billingManager.endConnection()
     }
 
     private fun buildUiState(

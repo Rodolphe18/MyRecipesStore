@@ -102,9 +102,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) :
 
     private suspend fun queryProducts() {
         productQueryLock.withLock {
-
             if (_productDetails.value != null) return
-
             val params = QueryProductDetailsParams.newBuilder()
                 .setProductList(
                     listOf(
@@ -115,9 +113,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) :
                     )
                 )
                 .build()
-
             val (result, details) = billingClient.queryProductDetailsAwait(params)
-
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 _productDetails.value = details.firstOrNull()
                 if (details.isEmpty()) {

@@ -92,7 +92,9 @@ fun FoodApp(
                     showSettingsDialog = false
                 }
             },
-            onPremiumClick = { appState.navController.navigateToPremiumScreen() },
+            onPremiumClick = {
+                showSettingsDialog = false
+                appState.navController.navigateToPremiumScreen() },
             onShareApp = {
                 val sendIntent = Intent().apply {
                     setAction(Intent.ACTION_SEND)
