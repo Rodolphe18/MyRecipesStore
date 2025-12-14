@@ -65,6 +65,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.common.imageRequestBuilder
+import com.francotte.designsystem.component.AdMobBanner
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
@@ -139,9 +140,11 @@ fun DetailRecipeScreen(
                     Column(Modifier.padding(horizontal = 12.dp)) {
                         DetailScreenMainSectionTitle(link, onToggleFavorite)
                         DetailScreenSectionTitle(R.string.ingredients)
+                        AdMobBanner(height = 100.dp)
                         IngredientRow(ingredients)
                         DetailRecipeShareRecipeButton(link, ingredients, context)
                         Spacer(modifier = Modifier.height(24.dp))
+                        AdMobBanner(height = 100.dp)
                         DetailScreenSectionTitle(R.string.instructions)
                         Text(
                             text = (link.recipe as Recipe).strInstructions.orEmpty(),

@@ -37,6 +37,8 @@ android {
 
 dependencies {
 
+    implementation(project(":core:billing"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

@@ -1,6 +1,7 @@
 package com.francotte.search
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,30 +28,36 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.francotte.designsystem.component.AdMobBanner
 import kotlinx.serialization.Serializable
 
 @Composable
 fun SearchModeSelectionScreen(onSearchModeSelected: (SearchMode) -> Unit) {
 
     val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("How would you like to \n search recipes ?", textAlign = TextAlign.Center, style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onSurface)
+    Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp,vertical = 8.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "How would you like to \n search recipes ?",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
 
-        SearchModeButton("By ingredients", Icons.Default.ThumbUp) {
-            onSearchModeSelected(SearchMode.INGREDIENTS)
+            SearchModeButton("By ingredients", Icons.Default.ThumbUp) {
+                onSearchModeSelected(SearchMode.INGREDIENTS)
+            }
+            SearchModeButton("By country", Icons.Default.Notifications) {
+                onSearchModeSelected(SearchMode.COUNTRY)
+            }
         }
-        SearchModeButton("By country", Icons.Default.Notifications) {
-            onSearchModeSelected(SearchMode.COUNTRY)
-        }
-    //    AdMobBanner(height = 100.dp)
-
+        AdMobBanner(modifier = Modifier.align(Alignment.BottomCenter),height = 100.dp)
     }
 }
 

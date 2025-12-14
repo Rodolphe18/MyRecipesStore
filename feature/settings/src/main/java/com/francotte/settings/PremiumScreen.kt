@@ -2,10 +2,8 @@ package com.francotte.settings
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +37,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.francotte.designsystem.component.LocalBillingController
 import com.francotte.designsystem.component.TopAppBar
 
 
@@ -64,7 +61,7 @@ fun PremiumRoute(
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val billingManager = rememberBillingManager()
+    val billingController = LocalBillingController.current
 
     val currentActivity by rememberUpdatedState(LocalActivity.current)
 
@@ -76,9 +73,8 @@ fun PremiumRoute(
                     if (safeActivity == null) {
                         return@collect
                     }
-                    billingManager.launchBillingFlow(
+                    billingController.launchPurchase(
                         activity = safeActivity,
-                        productDetails = effect.productDetails,
                         offerToken = effect.offerToken
                     )
                 }

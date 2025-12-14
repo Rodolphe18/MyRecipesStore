@@ -22,6 +22,8 @@ class MainActivityViewModel @Inject constructor(
         keep, timedOut -> if (keep) MainActivityUiState.Loading else MainActivityUiState.Success(timedOut) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MainActivityUiState.Loading)
 
+    val isAdShowing = interstitialManager.isAdShowing
+
     fun loadInterstitial(activity: Activity) {
         viewModelScope.launch {
             interstitialManager.loadAndShowAd(activity)

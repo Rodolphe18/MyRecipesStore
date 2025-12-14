@@ -36,7 +36,7 @@ data class PremiumUiState(
 )
 
 sealed interface PremiumEffect {
-    data class LaunchPurchase(val productDetails: ProductDetails, val offerToken: String) : PremiumEffect
+    data class LaunchPurchase(val offerToken: String) : PremiumEffect
 }
 
 @HiltViewModel
@@ -51,7 +51,6 @@ class PremiumViewModel @Inject constructor(
     val effects = _effects.asSharedFlow()
 
     init {
-        billingManager.startConnection()
 
         viewModelScope.launch {
             combine(
@@ -83,13 +82,7 @@ class PremiumViewModel @Inject constructor(
             return
         }
 
-        _effects.tryEmit(PremiumEffect.LaunchPurchase(productDetails, token))
-    }
-
-
-    override fun onCleared() {
-        super.onCleared()
-         billingManager.endConnection()
+        _effects.tryEmit(PremiumEffect.LaunchPurchase(token))
     }
 
     private fun buildUiState(

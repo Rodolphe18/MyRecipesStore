@@ -20,7 +20,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.francotte.designsystem.component.AdMobBanner
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
+import com.francotte.designsystem.component.LazyGridWithBanners
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.component.nbSectionColumns
 import com.francotte.model.LikeableRecipe
@@ -56,11 +58,15 @@ fun SectionScreen(
             SectionUiState.Loading -> CustomCircularProgressIndicator()
             SectionUiState.Error -> ErrorScreen { onReload() }
             is SectionUiState.Success -> {
-                LazyVerticalGrid(
-                    modifier = Modifier.testTag("full_section_screen").semantics { contentDescription = "full_section_screen" },
-                    state = rememberLazyGridState(),
-                    columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbSectionColumns),
-                    reverseLayout = false,
+                val gridState = rememberLazyGridState()
+                val likeableRecipes = sectionUiState.recipes
+                LazyGridWithBanners(
+                    modifier = Modifier
+                        .testTag("full_section_screen")
+                        .semantics { contentDescription = "full_section_screen" },
+                    totalItemCount = likeableRecipes.size,
+                    columns = windowSizeClass.widthSizeClass.nbSectionColumns,
+                    state = gridState,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     flingBehavior = ScrollableDefaults.flingBehavior(),
@@ -69,20 +75,27 @@ fun SectionScreen(
                         bottom = 16.dp,
                         start = 16.dp,
                         end = 16.dp
+                    ),
+                    bannerContent = {
+                        AdMobBanner(height = 100.dp)
+                    },
+                    itemKey = { index -> likeableRecipes[index].recipe.idMeal },
+                    itemContentType = { "recipe" },
+                    bannerKey = { bannerIndex -> "section-banner-$bannerIndex" },
+                    bannerContentType = "ad",
+                ) { index ->
+                    val likeableRecipe = likeableRecipes[index]
+                    RecipeItem(
+                        likeableRecipe = likeableRecipe,
+                        onToggleFavorite = onToggleFavorite,
+                        onOpenRecipe = {
+                            onOpenRecipe(
+                                likeableRecipes.map { it.recipe.idMeal },
+                                index,
+                                likeableRecipe.recipe.strMeal
+                            )
+                        }
                     )
-                ) {
-                    val likeableRecipes = sectionUiState.recipes
-                    itemsIndexed(
-                        items = likeableRecipes,
-                        key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal + index }
-                    ) { index, likeableRecipe ->
-                        RecipeItem(
-                            likeableRecipe = likeableRecipe,
-                            onToggleFavorite = onToggleFavorite,
-                            onOpenRecipe = {
-                                onOpenRecipe(likeableRecipes.map { it.recipe.idMeal}, index, likeableRecipe.recipe.strMeal)
-                            })
-                    }
                 }
             }
 

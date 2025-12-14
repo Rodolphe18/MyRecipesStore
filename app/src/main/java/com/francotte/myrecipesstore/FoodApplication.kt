@@ -6,9 +6,11 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.francotte.billing.BillingAppLifecycleObserver
 import com.francotte.notifications.DailyNotificationWorkManager
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.HiltAndroidApp
@@ -24,18 +26,21 @@ class FoodApplication:Application(), Configuration.Provider {
     override lateinit var workManagerConfiguration: Configuration
 
     @Inject
+    lateinit var billingObserver: BillingAppLifecycleObserver
+
+    @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onCreate() {
         super.onCreate()
         MobileAds.initialize(this) {}
         scheduleDailyRecipeNotification(this)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(billingObserver)
     }
 
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun scheduleDailyRecipeNotification(context: Context) {
     val dailyRequest = OneTimeWorkRequestBuilder<DailyNotificationWorkManager>()
         .setInitialDelay(2, TimeUnit.SECONDS) // petite attente pour test

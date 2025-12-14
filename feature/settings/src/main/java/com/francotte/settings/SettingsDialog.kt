@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,10 +25,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Diamond
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -46,9 +42,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +87,7 @@ fun SettingsBottomSheet(
 
             Spacer(Modifier.height(16.dp))
 
-            SettingsButton(text = "Premium", imageVector = Icons.Outlined.Diamond, backgroundColor = MaterialTheme.colorScheme.primary, contentColor = Color.White, onClick = onPremiumClick)
+            SettingsButton(text = "Premium", imageVector = Icons.Outlined.Diamond, backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f), contentColor = Color.White, onClick = onPremiumClick)
 
             Spacer(Modifier.height(12.dp))
 
@@ -132,7 +128,7 @@ fun SettingsBottomSheet(
             )
 
             Spacer(Modifier.height(8.dp))
-            SettingsButton(text = "Delete my account", imageVector = Icons.Default.Delete, contentColor = Color.Red,borderColor = Color.Red, backgroundColor = Color.White, onClick = onDeleteClick)
+            SettingsButton(text = "Delete my account", height = 52.dp, imageVector = Icons.Default.Delete, contentColor = Color.Red.copy(alpha = 0.7f),borderColor = Color.Red.copy(alpha = 0.7f), backgroundColor = Color.White, onClick = onDeleteClick)
 
 
             Spacer(Modifier.height(8.dp))
@@ -176,6 +172,7 @@ private fun SettingsActionItem(
 @Composable
 fun SettingsButton(
     text: String,
+    height: Dp =56.dp,
     imageVector: ImageVector,
     borderColor: Color=Color.Transparent,
     backgroundColor:Color,
@@ -186,7 +183,7 @@ fun SettingsButton(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(height)
             .clip(shape)
             .border(BorderStroke(1.dp,borderColor),shape)
             .clickable(onClick = onClick),
@@ -196,7 +193,7 @@ fun SettingsButton(
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 14.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {

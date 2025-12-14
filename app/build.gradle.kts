@@ -106,7 +106,6 @@ dependencies {
     implementation(project(":core:ads"))
     implementation(project(":core:premium"))
     implementation(project(":core:notifications"))
-    implementation(project(":core:premium"))
 
     implementation(project(":feature:home"))
     implementation(project(":feature:categories"))
@@ -184,6 +183,7 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.1.0")
     ksp(libs.androidx.hilt.compiler)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.4")
 
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.play.services.ads)

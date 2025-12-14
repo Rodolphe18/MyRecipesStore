@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.francotte.common.ScreenCounter
+import com.francotte.designsystem.component.HideNavigationBar
 
 @Composable
 fun VideoFullScreen(youtubeUrl: String,window: Window) {

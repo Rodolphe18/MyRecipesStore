@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.francotte.designsystem.component.AdMobBanner
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.nbHomeColumns
 import com.francotte.model.LikeableRecipe
@@ -94,8 +96,7 @@ fun HomeScreen(
                 contentPadding = PaddingValues(bottom = 16.dp),
                 columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbHomeColumns)
             ) {
-                item(span = { spanSize }) {
-                    // Latest Recipes Section
+                item(key = "latest_section", contentType = "section", span = { spanSize }) {
                     Column {
                         SectionTitle(
                             title = stringResource(R.string.latest_recipes_title),
@@ -149,9 +150,15 @@ fun HomeScreen(
                     }
                 }
 
-                //   item(span = { spanSize }) { Spacer(Modifier.height(32.dp)) }
-                //   item(span = { spanSize }) { AdMobBanner(height = 50.dp) }
-                item(span = { spanSize }) {
+                item(span = { spanSize }) { Spacer(Modifier.height(32.dp)) }
+                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+                    AdMobBanner(
+                        height = 50.dp
+                    )
+                }
+                item(
+                    key = "american_section",
+                    contentType = "section", span = { spanSize }) {
                     when (americanRecipes) {
                         AmericanRecipes.Error -> ErrorScreen { }
                         AmericanRecipes.Loading -> {}
@@ -172,7 +179,9 @@ fun HomeScreen(
                     AreasRecipes.Loading -> item { }
                     is AreasRecipes.Success -> {
                         areasRecipes.areasRecipes.forEach { (key, list) ->
-                            item(span = { spanSize }) {
+                            item(
+                                key = "area_section_$key",
+                                contentType = "section", span = { spanSize }) {
                                 HorizontalRecipesList(
                                     key,
                                     list,
@@ -184,7 +193,10 @@ fun HomeScreen(
                         }
                     }
                 }
-
+                item(span = { spanSize }) { Spacer(Modifier.height(32.dp)) }
+                item(
+                    key = "banner_mid",
+                    contentType = "ad", span = { spanSize }) { AdMobBanner(height = 50.dp) }
                 item(span = { spanSize }) {
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         Spacer(Modifier.height(12.dp))
@@ -202,15 +214,18 @@ fun HomeScreen(
                     EnglishRecipes.Error -> item { ErrorScreen { } }
                     EnglishRecipes.Loading -> item { }
                     is EnglishRecipes.Success -> {
-                        items(englishRecipes.englishRecipes.size) { index ->
-                            val recipe = englishRecipes.englishRecipes[index]
+                        items(
+                            items = englishRecipes.englishRecipes,
+                            key = { it.recipe.idMeal },
+                            contentType = { "recipe_big" }
+                        ) { recipe ->
                             BigRecipeItem(
                                 recipe,
                                 onToggleFavorite = onToggleFavorite,
                                 onOpenRecipe = {
                                     onOpenRecipe(
                                         englishRecipes.englishRecipes.map { it.recipe.idMeal },
-                                        index,
+                                        englishRecipes.englishRecipes.indexOf(recipe),
                                         recipe.recipe.strMeal
                                     )
                                 }
