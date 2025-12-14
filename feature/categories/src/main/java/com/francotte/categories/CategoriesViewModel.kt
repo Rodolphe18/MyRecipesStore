@@ -2,7 +2,6 @@ package com.francotte.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.common.restartableWhileSubscribed
 import com.francotte.data.repository.CategoriesRepository
 import com.francotte.model.AbstractCategory
 import com.francotte.model.Category

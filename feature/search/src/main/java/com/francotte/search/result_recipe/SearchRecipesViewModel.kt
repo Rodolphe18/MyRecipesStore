@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.francotte.common.restartableWhileSubscribed
 import com.francotte.data.repository.SearchRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.search.SearchMode
