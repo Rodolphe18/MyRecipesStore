@@ -1,20 +1,17 @@
 package com.francotte.billing
 
-import android.content.Context
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+
 
 @Module
 @InstallIn(SingletonComponent::class)
-object BillingModule {
+abstract class PremiumStatusModule {
 
-    @Provides
-    @Singleton
-    fun provideBillingManager(
-        @ApplicationContext context: Context
-    ): BillingManager = BillingManager(context)
+    @Binds
+    abstract fun bindPremiumStatusProvider(
+        billingManager: BillingManager
+    ): PremiumStatusProvider
 }

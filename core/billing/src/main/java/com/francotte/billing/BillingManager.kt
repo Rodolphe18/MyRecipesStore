@@ -30,9 +30,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
+const val PREMIUM_PRODUCT_ID = "premium_id"
+
 @Singleton
 class BillingManager @Inject constructor(@ApplicationContext context: Context) :
-    PurchasesUpdatedListener {
+    PurchasesUpdatedListener, PremiumStatusProvider {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val billingClient: BillingClient = BillingClient
@@ -45,7 +47,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) :
     val productDetails: StateFlow<ProductDetails?> = _productDetails
 
     private val _isPremium = MutableStateFlow(false)
-    val isPremium: StateFlow<Boolean> = _isPremium
+    override val isPremium: StateFlow<Boolean> = _isPremium
 
     private val _events = MutableSharedFlow<String>(
         replay = 0,
@@ -107,7 +109,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) :
                 .setProductList(
                     listOf(
                         QueryProductDetailsParams.Product.newBuilder()
-                            .setProductId("premium_id")
+                            .setProductId(PREMIUM_PRODUCT_ID)
                             .setProductType(BillingClient.ProductType.SUBS)
                             .build()
                     )
@@ -186,7 +188,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) :
     private suspend fun handlePurchases(purchases: List<Purchase>) {
         // Phase 1 : section critique courte
         val toAcknowledge: List<String> = handlePurchaseLock.withLock {
-            val premium = purchases.any { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+            val premium = purchases.any { it.purchaseState == Purchase.PurchaseState.PURCHASED && it.products.contains(PREMIUM_PRODUCT_ID)}
             _isPremium.value = premium
 
             purchases.asSequence()
@@ -208,4 +210,8 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) :
         }
     }
 
+}
+
+interface PremiumStatusProvider {
+    val isPremium: StateFlow<Boolean>
 }
