@@ -66,7 +66,7 @@ fun SettingsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -81,13 +81,13 @@ fun SettingsBottomSheet(
                 textAlign = TextAlign.Center,
                 fontSize = 24.sp,
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.Black,
+                color =  MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
 
             Spacer(Modifier.height(16.dp))
 
-            SettingsButton(text = "Premium", imageVector = Icons.Outlined.Diamond, backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f), contentColor = Color.White, onClick = onPremiumClick)
+            SettingsButton(text = "Premium", imageVector = Icons.Outlined.Diamond, backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f), contentColor =  MaterialTheme.colorScheme.onSurface, onClick = onPremiumClick)
 
             Spacer(Modifier.height(12.dp))
 
@@ -128,7 +128,7 @@ fun SettingsBottomSheet(
             )
 
             Spacer(Modifier.height(8.dp))
-            SettingsButton(text = "Delete my account", height = 52.dp, imageVector = Icons.Default.Delete, contentColor = Color.Red.copy(alpha = 0.7f),borderColor = Color.Red.copy(alpha = 0.7f), backgroundColor = Color.White, onClick = onDeleteClick)
+            SettingsButton(text = "Delete my account", height = 52.dp, imageVector = Icons.Default.Delete, contentColor = Color.Red.copy(alpha = 0.7f),borderColor = Color.Red.copy(alpha = 0.7f), backgroundColor =  MaterialTheme.colorScheme.background, onClick = onDeleteClick)
 
 
             Spacer(Modifier.height(8.dp))
@@ -142,7 +142,6 @@ private fun SettingsActionItem(
     icon: ImageVector,
     text: String,
     onClick: () -> Unit,
-    tint: Color = Color.Black,
     fontWeight: FontWeight= FontWeight.Normal
 ) {
     Row(
@@ -155,7 +154,7 @@ private fun SettingsActionItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = tint,
+            tint =  MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -164,7 +163,7 @@ private fun SettingsActionItem(
             fontSize = 18.sp,
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            color = tint
+            color =  MaterialTheme.colorScheme.onSurface
         )
     }
 }
