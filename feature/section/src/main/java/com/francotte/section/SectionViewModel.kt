@@ -4,11 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.francotte.common.restartableWhileSubscribed
 import com.francotte.data.repository.HomeRepository
 import com.francotte.model.LikeableRecipe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -33,7 +33,7 @@ class SectionViewModel @Inject constructor(
                 SectionUiState.Error
             }
         }
-        .stateIn(viewModelScope, restartableWhileSubscribed, SectionUiState.Loading)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SectionUiState.Loading)
 
 }
 

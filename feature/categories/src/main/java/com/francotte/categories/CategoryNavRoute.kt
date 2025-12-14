@@ -35,7 +35,7 @@ fun CategoryRoute(viewModel: CategoryViewModel = hiltViewModel(),windowSizeClass
     val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
     val title = viewModel.category
 
-    CategoryScreen(categoryUiState = uiState,windowSizeClass = windowSizeClass, title = title, onReload =  { viewModel.reload() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack)
+    CategoryScreen(categoryUiState = uiState,windowSizeClass = windowSizeClass, title = title, onReload =  { viewModel.refresh() }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack)
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

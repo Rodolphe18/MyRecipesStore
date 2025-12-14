@@ -30,7 +30,7 @@ fun NavGraphBuilder.categoriesScreen(windowSizeClass: WindowSizeClass,onOpenCate
 @Composable
 fun CategoriesRoute(viewModel: CategoriesViewModel = hiltViewModel(), windowSizeClass: WindowSizeClass, onOpenCategory: (AbstractCategory) -> Unit) {
     val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
-    CategoriesScreen(categoryUiState = homeUiState, windowSizeClass = windowSizeClass, onOpenCategory = onOpenCategory, onReload =  { viewModel.reload() })
+    CategoriesScreen(categoryUiState = homeUiState, windowSizeClass = windowSizeClass, onOpenCategory = onOpenCategory, onReload =  { viewModel.refresh() })
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

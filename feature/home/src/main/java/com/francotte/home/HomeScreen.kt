@@ -72,7 +72,7 @@ fun HomeScreen(
         (areasRecipes as? AreasRecipes.Success)
             ?.areasRecipes
             ?.toList()
-            ?.sortedBy { it.first } // ordre stable
+            ?.sortedBy { it.first }
             ?: emptyList()
     }
     PullToRefreshBox(

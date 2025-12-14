@@ -7,6 +7,10 @@ import com.francotte.data.repository.CategoriesRepository
 import com.francotte.model.AbstractCategory
 import com.francotte.model.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -15,10 +19,13 @@ import javax.inject.Inject
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(repository: CategoriesRepository) : ViewModel() {
 
-    val categories = repository
-        .observeAllMealCategories()
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val categories = refreshTrigger
+        .flatMapLatest { repository.observeAllMealCategories() }
         .map(::mapToUiState)
-        .stateIn(viewModelScope, restartableWhileSubscribed, CategoriesUiState.Loading)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoriesUiState.Loading)
 
     private fun mapToUiState(result: Result<List<Category>>): CategoriesUiState {
         return if (result.isSuccess) {
@@ -28,11 +35,16 @@ class CategoriesViewModel @Inject constructor(repository: CategoriesRepository) 
         }
     }
 
-    fun reload() {
+    init {
+        refresh()
+    }
+
+    fun refresh() {
         viewModelScope.launch {
-            restartableWhileSubscribed.restart()
+            refreshTrigger.emit(Unit)
         }
     }
+
 }
 
 

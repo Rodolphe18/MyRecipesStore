@@ -9,8 +9,13 @@ import com.francotte.data.repository.SearchRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.search.SearchMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,13 +24,16 @@ class SearchRecipesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
+
     val item = savedStateHandle.toRoute<SearchRecipesNavRoute>().item
 
     private val mode = savedStateHandle.toRoute<SearchRecipesNavRoute>().mode
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val searchRecipesUiState = when (mode) {
-        SearchMode.COUNTRY -> repository
-            .observeRecipesByArea(item)
+        SearchMode.COUNTRY -> refreshTrigger
+            .flatMapLatest { repository.observeRecipesByArea(item) }
             .map { result ->
                 if (result.isSuccess) {
                     SearchRecipesUiState.Success(result.getOrDefault(emptyList()))
@@ -34,8 +42,8 @@ class SearchRecipesViewModel @Inject constructor(
                 }
             }
 
-        SearchMode.INGREDIENTS -> repository
-            .observeRecipesByIngredients(listOf(item))
+        SearchMode.INGREDIENTS -> refreshTrigger
+            .flatMapLatest { repository.observeRecipesByIngredients(listOf(item)) }
             .map { result ->
                 if (result.isSuccess) {
                     SearchRecipesUiState.Success(result.getOrDefault(emptyList()))
@@ -43,8 +51,18 @@ class SearchRecipesViewModel @Inject constructor(
                     SearchRecipesUiState.Error
                 }
             }
-    }.stateIn(viewModelScope, restartableWhileSubscribed, SearchRecipesUiState.Loading)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SearchRecipesUiState.Loading)
 
+
+    init {
+        refresh()
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            refreshTrigger.emit(Unit)
+        }
+    }
 
 }
 
