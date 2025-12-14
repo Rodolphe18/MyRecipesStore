@@ -143,7 +143,6 @@ fun DetailRecipeScreen(
                         AdMobBanner(height = 100.dp)
                         IngredientRow(ingredients)
                         DetailRecipeShareRecipeButton(link, ingredients, context)
-                        Spacer(modifier = Modifier.height(24.dp))
                         AdMobBanner(height = 100.dp)
                         DetailScreenSectionTitle(R.string.instructions)
                         Text(

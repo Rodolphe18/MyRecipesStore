@@ -22,6 +22,7 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -67,6 +68,13 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
     val isDataReady =
         latestRecipes is LatestRecipes.Success && americanRecipes is AmericanRecipes.Success
+    val areaSections = remember(areasRecipes) {
+        (areasRecipes as? AreasRecipes.Success)
+            ?.areasRecipes
+            ?.toList()
+            ?.sortedBy { it.first } // ordre stable
+            ?: emptyList()
+    }
     PullToRefreshBox(
         modifier = Modifier
             .fillMaxSize()
@@ -150,7 +158,6 @@ fun HomeScreen(
                     }
                 }
 
-                item(span = { spanSize }) { Spacer(Modifier.height(32.dp)) }
                 item(key = "banner_top", contentType = "ad", span = { spanSize }) {
                     AdMobBanner(
                         height = 50.dp
@@ -178,7 +185,7 @@ fun HomeScreen(
                     AreasRecipes.Error -> item { ErrorScreen { } }
                     AreasRecipes.Loading -> item { }
                     is AreasRecipes.Success -> {
-                        areasRecipes.areasRecipes.forEach { (key, list) ->
+                        areaSections.forEach { (key, list) ->
                             item(
                                 key = "area_section_$key",
                                 contentType = "section", span = { spanSize }) {
@@ -193,7 +200,6 @@ fun HomeScreen(
                         }
                     }
                 }
-                item(span = { spanSize }) { Spacer(Modifier.height(32.dp)) }
                 item(
                     key = "banner_mid",
                     contentType = "ad", span = { spanSize }) { AdMobBanner(height = 50.dp) }

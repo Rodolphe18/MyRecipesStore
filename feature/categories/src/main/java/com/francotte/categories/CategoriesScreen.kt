@@ -59,14 +59,13 @@ fun CategoriesScreen(
                     columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbCategoriesColumns),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(20.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     item(key = "banner_top", contentType = "ad", span = { GridItemSpan(2) }) {
                         AdMobBanner(
                             height = 50.dp
                         )
                     }
-                    item(span = { GridItemSpan(2) }) { Spacer(Modifier.height(4.dp)) }
                     items(
                         key = { it.strCategory },
                         contentType = { "categories" },

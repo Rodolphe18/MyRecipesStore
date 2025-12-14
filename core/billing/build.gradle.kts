@@ -49,7 +49,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
-    implementation("com.android.billingclient:billing:8.0.0")
-    implementation("com.android.billingclient:billing-ktx:8.0.0")
+    implementation(libs.billing)
+    implementation(libs.billing.ktx)
 
 }

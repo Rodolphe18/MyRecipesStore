@@ -3,7 +3,9 @@ package com.francotte.designsystem.component
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,8 +27,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.francotte.billing.BillingManager
-import com.francotte.billing.PremiumStatusProvider
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -40,7 +40,11 @@ fun AdMobBanner(
     val localBilling = LocalBillingController.current
     val isPremium by localBilling.isPremium.collectAsStateWithLifecycle()
     if (isPremium) return
-    BaseAdMobBanner(modifier = modifier, height = height)
+    Column {
+        Spacer(Modifier.height(16.dp))
+        BaseAdMobBanner(modifier = modifier, height = height)
+    }
+
 }
 
 
@@ -141,10 +145,10 @@ fun LazyGridWithBanners(
     flingBehavior: FlingBehavior,
     contentPadding: PaddingValues,
     bannerContent: @Composable () -> Unit,
-    itemKey: (index: Int) -> Any,                 // <-- NEW
-    itemContentType: (index: Int) -> Any = { "item" }, // <-- NEW
-    bannerKey: (bannerIndex: Int) -> Any = { i -> "banner-$i" }, // <-- NEW
-    bannerContentType: Any = "banner",            // <-- NEW
+    itemKey: (index: Int) -> Any,
+    itemContentType: (index: Int) -> Any = { "item" },
+    bannerKey: (bannerIndex: Int) -> Any = { i -> "banner-$i" },
+    bannerContentType: Any = "banner",
     itemContent: @Composable LazyGridItemScope.(index: Int) -> Unit,
 ) {
     val bannerStep = bannerInterval + 1

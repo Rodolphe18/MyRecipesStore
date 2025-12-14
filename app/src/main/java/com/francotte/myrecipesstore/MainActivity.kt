@@ -24,10 +24,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.francotte.billing.BillingController
-import com.francotte.billing.PremiumStatusProvider
 import com.francotte.common.LaunchCounterManager
 import com.francotte.designsystem.component.LocalBillingController
-import com.francotte.designsystem.component.LocalPremiumStatusProvider
 import com.francotte.designsystem.theme.FoodTheme
 import com.francotte.domain.AuthManager
 import com.francotte.domain.FavoriteManager
