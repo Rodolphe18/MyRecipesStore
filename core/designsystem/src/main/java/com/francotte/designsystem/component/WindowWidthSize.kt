@@ -12,7 +12,7 @@ val WindowWidthSizeClass.nbHomeColumns: Int
 
 val WindowWidthSizeClass.nbCategoriesColumns: Int
     get() = when (this) {
-        WindowWidthSizeClass.Compact -> 3
+        WindowWidthSizeClass.Compact -> 2
         WindowWidthSizeClass.Medium -> 4
         else -> 4
     }
