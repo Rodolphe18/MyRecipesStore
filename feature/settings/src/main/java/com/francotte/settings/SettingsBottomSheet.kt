@@ -1,5 +1,14 @@
 package com.francotte.settings
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,12 +48,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +65,8 @@ fun SettingsBottomSheet(
     onLogout: () -> Unit,
     onPremiumClick: () -> Unit,
     onShareApp: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onOpenPrivacyPolicy:()->Unit
 ) {
     val configuration = LocalConfiguration.current
     val sheetHeight = (configuration.screenHeightDp.dp * (3f / 4f))
@@ -74,7 +86,7 @@ fun SettingsBottomSheet(
                 .fillMaxWidth()
                 .heightIn(max = sheetHeight)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 6.dp)
+                .padding(horizontal = 18.dp, vertical = 6.dp)
         ) {
             Text(
                 text = stringResource(R.string.feature_settings_title),
@@ -87,14 +99,14 @@ fun SettingsBottomSheet(
 
             Spacer(Modifier.height(16.dp))
 
-            SettingsButton(text = "Premium", imageVector = Icons.Outlined.Diamond, backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f), contentColor =  MaterialTheme.colorScheme.onSurface, onClick = onPremiumClick)
+            SettingsButton(text = "Premium", imageVector = Icons.Outlined.Diamond, backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f), contentColor =  Color.White, onClick = onPremiumClick)
 
             Spacer(Modifier.height(12.dp))
 
             SettingsActionItem(
                 icon = Icons.Default.Lock,
                 text = stringResource(R.string.feature_settings_privacy_policy),
-                onClick = { /* TODO */ }
+                onClick = onOpenPrivacyPolicy
             )
 
             SettingsActionItem(
@@ -184,7 +196,7 @@ fun SettingsButton(
             .fillMaxWidth()
             .height(height)
             .clip(shape)
-            .border(BorderStroke(1.dp,borderColor),shape)
+            .border(BorderStroke(1.dp, borderColor), shape)
             .clickable(onClick = onClick),
         color = backgroundColor,
         contentColor = contentColor,
@@ -208,4 +220,74 @@ fun SettingsButton(
             )
         }
     }
+}
+
+private const val TAG = "OpenUrl"
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+fun openUrlRobust(context: Context, url: String) {
+    val uri = Uri.parse(url)
+    val activity = context.findActivity()
+
+    val customTabsIntent = CustomTabsIntent.Builder()
+        .setShowTitle(true)
+        .build()
+
+    // Mets la data explicitement sur l’intent (plus fiable que launchUrl seul)
+    val intent = customTabsIntent.intent.apply {
+        data = uri
+
+        // Si on n’a pas d’Activity, on doit lancer dans une nouvelle task
+        if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        // (optionnel) forcer Chrome si tu veux, sinon commente cette ligne
+        // `package` = "com.android.chrome"
+    }
+
+    val canHandle = intent.resolveActivity(context.packageManager) != null
+    Log.d(TAG, "activity=${activity != null} canHandle=$canHandle intent=$intent")
+
+    if (canHandle) {
+        // Lancer via Activity si possible
+        (activity ?: context).startActivity(intent)
+    } else {
+        // Fallback navigateur classique
+        val fallback = Intent(Intent.ACTION_VIEW, uri).apply {
+            if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        if (fallback.resolveActivity(context.packageManager) != null) {
+            (activity ?: context).startActivity(fallback)
+        } else {
+            Log.e(TAG, "No app can handle this URL: $url")
+        }
+    }
+}
+
+fun openInExternalBrowser(context: Context, url: String) {
+    val uri = url.toUri()
+    val pm = context.packageManager
+
+    val base = Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE)
+
+    val candidates = pm.queryIntentActivities(base, PackageManager.MATCH_DEFAULT_ONLY)
+        .map { it.activityInfo.packageName }
+        .distinct()
+        .filter { it != context.packageName } // <-- exclut ton app
+
+    val chosenPackage = candidates.firstOrNull()
+
+    Log.d("OpenUrl", "browser candidates=$candidates chosen=$chosenPackage")
+
+    val intent = if (chosenPackage != null) {
+        base.setPackage(chosenPackage)
+    } else {
+        base // fallback: Android choisira
+    }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    context.startActivity(intent)
 }

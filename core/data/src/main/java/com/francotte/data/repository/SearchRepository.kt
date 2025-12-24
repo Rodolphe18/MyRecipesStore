@@ -1,6 +1,6 @@
 package com.francotte.data.repository
 
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableLightRecipes
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class SearchRepositoryImpl @Inject constructor(
     private val homeRepository: OfflineFirstHomeRepository,
     private val offlineSearchRepository: OfflineSearchRepository,
-    private val userDataSource: UserDataSource
+    private val userDataRepository: UserDataRepository
 ): SearchRepository {
 
     override fun observeAllIngredients(): Flow<List<String>> {
@@ -25,7 +25,7 @@ class SearchRepositoryImpl @Inject constructor(
     }
 
     override fun observeRecipesByArea(area:String): Flow<Result<List<LikeableRecipe>>> = combine(
-        userDataSource.userData,
+        userDataRepository.userData,
         homeRepository.getRecipesListByArea(area)
     ) { userData, recipes ->
         try {
@@ -37,7 +37,7 @@ class SearchRepositoryImpl @Inject constructor(
     }
 
     override fun observeRecipesByIngredients(ingredients: List<String>): Flow<Result<List<LikeableRecipe>>> = combine(
-        userDataSource.userData,
+        userDataRepository.userData,
         homeRepository.getRecipesByIngredients(ingredients)
         ) { userData, recipes ->
             try {

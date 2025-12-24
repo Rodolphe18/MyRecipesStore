@@ -1,7 +1,6 @@
 package com.francotte.add_recipe
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -44,7 +43,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.francotte.common.bitmapToUri
+import com.francotte.common.extension.bitmapToUri
 import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.theme.Orange
 import com.francotte.model.CustomIngredient

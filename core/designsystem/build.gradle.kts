@@ -37,7 +37,7 @@ android {
 
 dependencies {
     api(project(":core:model"))
-    api(project(":core:billing"))
+
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
@@ -52,7 +52,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    
     implementation(libs.coil.compose)
     implementation(libs.play.services.ads)
 }

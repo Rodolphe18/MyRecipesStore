@@ -4,16 +4,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.net.http.NetworkException
 import android.util.Log
 import androidx.core.graphics.scale
-import com.francotte.datastore.UserDataSource
-import com.francotte.model.CustomIngredient
+import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.network.api.FavoriteApi
 import com.francotte.network.model.NetworkCustomIngredient
 import com.francotte.network.model.NetworkCustomRecipe
-import com.francotte.network.model.NetworkIngredient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -41,7 +38,7 @@ class FavoriteManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: FavoriteApi,
     authManager: AuthManager,
-    private val foodPreferencesDataSource: UserDataSource
+    private val foodPreferencesDataSource: UserDataRepository
 ) {
 
     private val credentials: StateFlow<UserCredentials?> = authManager.credentials

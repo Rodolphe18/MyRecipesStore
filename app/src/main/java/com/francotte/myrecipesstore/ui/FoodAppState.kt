@@ -15,9 +15,6 @@ import com.francotte.add_recipe.ADD_ROUTE
 import com.francotte.add_recipe.navigateToAddRecipeScreen
 import com.francotte.categories.CATEGORIES_ROUTE
 import com.francotte.categories.navigateToCategoriesScreen
-import com.francotte.common.LaunchCounterManager
-import com.francotte.domain.AuthManager
-import com.francotte.domain.FavoriteManager
 import com.francotte.favorites.FAVORITE_ROUTE
 import com.francotte.favorites.navigateToFavoriteScreen
 import com.francotte.home.HOME_ROUTE
@@ -32,25 +29,17 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun rememberAppState(
-    coroutineScope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController = rememberNavController(),
-    favoriteManager: FavoriteManager,
-    authManager: AuthManager,
-    launchCounterManager: LaunchCounterManager,
     resetPasswordToken:String?=null
 ): AppState {
-    return remember(navController, coroutineScope) {
-        AppState(navController, coroutineScope, favoriteManager, authManager, launchCounterManager,resetPasswordToken)
+    return remember(navController) {
+        AppState(navController, resetPasswordToken)
     }
 }
 
 @Stable
 class AppState(
     val navController: NavHostController,
-    coroutineScope: CoroutineScope,
-    val favoriteManager: FavoriteManager,
-    val authManager: AuthManager,
-    launchCounterManager: LaunchCounterManager,
     val resetPasswordToken:String?=null
 ) {
 
@@ -96,15 +85,6 @@ class AppState(
             }
         }
 
-
-    init {
-        coroutineScope.launch {
-            favoriteManager.goToLoginScreenEvent.collect {
-                navController.navigateToLoginScreen()
-            }
-        }
-        launchCounterManager.incrementLaunchCount()
-    }
 
     fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
         val topLevelNavOptions = navOptions {

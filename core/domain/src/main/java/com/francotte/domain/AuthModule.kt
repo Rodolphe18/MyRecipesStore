@@ -1,9 +1,9 @@
 package com.francotte.domain
 
 import android.content.Context
-import com.francotte.common.ApplicationScope
+import com.francotte.common.extension.ApplicationScope
 import com.francotte.database.dao.FullRecipeDao
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.network.api.AuthApi
 import dagger.Module
 import dagger.Provides
@@ -22,7 +22,7 @@ object AuthModule {
     fun provideAuthManager(
         @ApplicationContext context: Context,
         api: AuthApi,
-        preferences: UserDataSource,
+        preferences: UserDataRepository,
         fullRecipeDao: FullRecipeDao,
         @ApplicationScope coroutineScope: CoroutineScope
     ) = AuthManager(context, api, preferences, fullRecipeDao, coroutineScope)

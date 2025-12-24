@@ -30,28 +30,31 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.francotte.designsystem.component.AdMobBanner
+import com.francotte.ads.BannerAd
+import com.francotte.ads.BannerPlacement
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.nbHomeColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
+import com.francotte.testing.util.HomeTags
 import com.francotte.ui.BigRecipeItem
 import com.francotte.ui.ErrorScreen
 import com.francotte.ui.HorizontalRecipesList
+import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
 import com.francotte.ui.VideoRecipeItem
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel(),
     windowSizeClass: WindowSizeClass,
     latestRecipes: LatestRecipes,
     americanRecipes: AmericanRecipes,
@@ -60,8 +63,13 @@ fun HomeScreen(
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onOpenSection: (String) -> Unit,
-    onVideoButtonClick: (String) -> Unit
+    onVideoButtonClick: (String) -> Unit,
+    isReloading: Boolean,
+    onReload: () -> Unit,
+    currentPage: Int,
+    onCurrentPageChange: (Int) -> Unit,
 ) {
+    val localBannerProvider = LocalBannerProvider.current
     val spanSize = GridItemSpan(windowSizeClass.widthSizeClass.nbHomeColumns)
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
@@ -84,16 +92,18 @@ fun HomeScreen(
                         .testTag("homeScreenReady")
                         .semantics { contentDescription = "homeScreenReady" } else Modifier
             ),
-        isRefreshing = viewModel.isReloading,
+        isRefreshing = isReloading,
         onRefresh = {
             coroutineScope.launch {
-                viewModel.reload()
+                onReload()
             }
         },
         state = pullRefreshState
     ) {
-        if (viewModel.isReloading) {
-            CustomCircularProgressIndicator()
+        if (latestRecipes == LatestRecipes.Loading) {
+            CustomCircularProgressIndicator(Modifier.semantics {
+                testTag = HomeTags.LOADING
+            })
         } else {
             LazyVerticalGrid(
                 modifier = Modifier
@@ -112,18 +122,23 @@ fun HomeScreen(
                             showNavIcon = false
                         )
                         when (latestRecipes) {
-                            LatestRecipes.Error -> ErrorScreen { viewModel.reload() }
+                            LatestRecipes.Error -> ErrorScreen { onReload() }
                             LatestRecipes.Loading -> {}
                             is LatestRecipes.Success -> {
                                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
                                     val pagerState = rememberPagerState(
-                                        initialPage = 0,
+                                        initialPage = currentPage,
                                         pageCount = { latestRecipes.latestRecipes.size }
                                     )
-                                    LaunchedEffect(pagerState) {
-                                        snapshotFlow { pagerState.currentPage }.collect { newPage ->
-                                            viewModel.currentPage = newPage
+                                    LaunchedEffect(currentPage) {
+                                        if (pagerState.currentPage != currentPage) {
+                                            pagerState.scrollToPage(currentPage)
                                         }
+                                    }
+                                    LaunchedEffect(pagerState) {
+                                        snapshotFlow { pagerState.currentPage }
+                                            .distinctUntilChanged()
+                                            .collect(onCurrentPageChange)
                                     }
                                     HorizontalPager(state = pagerState) { index ->
                                         VideoRecipeItem(
@@ -157,10 +172,12 @@ fun HomeScreen(
                         }
                     }
                 }
-
+                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
                 item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                    AdMobBanner(
-                        height = 50.dp
+                    BannerAd(
+                        placement = BannerPlacement.HOME_POS_1,
+                        provider = localBannerProvider,
+                        horizontalPadding = 16.dp
                     )
                 }
                 item(
@@ -202,20 +219,23 @@ fun HomeScreen(
                 }
                 item(
                     key = "banner_mid",
-                    contentType = "ad", span = { spanSize }) { AdMobBanner(height = 50.dp) }
-                item(span = { spanSize }) {
-                    Column(Modifier.padding(horizontal = 16.dp)) {
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = "English recipes",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    contentType = "ad", span = { spanSize }) {
+                    BannerAd(
+                        placement = BannerPlacement.HOME_POS_2,
+                        provider = localBannerProvider,
+                        horizontalPadding = 16.dp
+                    )
                 }
-
+                item(span = { spanSize }) { Spacer(Modifier.height(12.dp)) }
+                item(span = { spanSize }) {
+                    Text(
+                        text = "English recipes",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
                 when (englishRecipes) {
                     EnglishRecipes.Error -> item { ErrorScreen { } }
                     EnglishRecipes.Loading -> item { }

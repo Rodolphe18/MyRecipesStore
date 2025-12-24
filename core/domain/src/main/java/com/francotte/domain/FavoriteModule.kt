@@ -1,7 +1,7 @@
 package com.francotte.domain
 
 import com.francotte.data.repository.OfflineFirstFavoritesRepository
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +14,7 @@ object FavoriteModule {
 
     @Singleton
     @Provides
-    fun provideFavoritesRepository(offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository, userDataSource: UserDataSource, favoriteManager: FavoriteManager): FavoritesRepository =
-        FavoritesRepositoryImpl(offlineFirstFavoritesRepository, favoriteManager, userDataSource)
+    fun provideFavoritesRepository(offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository, userDataRepository: UserDataRepository, favoriteManager: FavoriteManager): FavoritesRepository =
+        FavoritesRepositoryImpl(offlineFirstFavoritesRepository, favoriteManager, userDataRepository)
 
 }

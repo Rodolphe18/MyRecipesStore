@@ -10,7 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.francotte.common.ScreenCounter
+import com.francotte.common.counters.ScreenCounter
 import com.francotte.model.LikeableRecipe
 import kotlinx.serialization.Serializable
 

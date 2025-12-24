@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.roborazzi)
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -44,6 +45,7 @@ dependencies {
     api(project(":core:domain"))
     api(project(":core:designsystem"))
     api(project(":core:ui"))
+    api(project(":feature:ads"))
 
     implementation("com.google.android.material:material:1.11.0")
     implementation(libs.kotlinx.metadata.jvm)
@@ -57,28 +59,31 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.coil.compose)
     implementation (libs.androidx.activity.ktx)
-    ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    ksp(libs.hilt.compiler)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.hilt.android.testing)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.accessibility.check)
+    testImplementation(libs.roborazzi.compose)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
 }

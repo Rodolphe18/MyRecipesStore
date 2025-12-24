@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import com.francotte.common.ApplicationScope
+import com.francotte.common.extension.ApplicationScope
 import com.francotte.database.dao.FullRecipeDao
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.network.api.AuthApi
 import com.francotte.network.model.AuthRequest
 import com.francotte.network.model.AuthResponse
@@ -38,7 +38,7 @@ import javax.inject.Singleton
 class AuthManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: AuthApi,
-    private val preferences: UserDataSource,
+    private val preferences: UserDataRepository,
     private val dao: FullRecipeDao,
     @ApplicationScope private val coroutineScope: CoroutineScope
 ) {

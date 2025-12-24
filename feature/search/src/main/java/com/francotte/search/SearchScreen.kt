@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,37 +29,45 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.francotte.designsystem.component.AdMobBanner
+import com.francotte.ads.BannerAd
+import com.francotte.ads.BannerPlacement
+import com.francotte.ui.LocalBannerProvider
 import kotlinx.serialization.Serializable
 
 @Composable
 fun SearchModeSelectionScreen(onSearchModeSelected: (SearchMode) -> Unit) {
 
     val scrollState = rememberScrollState()
-    Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp,vertical = 8.dp)) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "How would you like to \n search recipes ?",
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+    val localBannerProvider = LocalBannerProvider.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-            SearchModeButton("By ingredients", Icons.Default.ThumbUp) {
-                onSearchModeSelected(SearchMode.INGREDIENTS)
-            }
-            SearchModeButton("By country", Icons.Default.Notifications) {
-                onSearchModeSelected(SearchMode.COUNTRY)
-            }
+        BannerAd(
+            placement = BannerPlacement.SEARCH,
+            provider = localBannerProvider,
+            horizontalPadding = 16.dp
+        )
+        Spacer(Modifier.height(32.dp))
+        Text(
+            "How would you like to \n search recipes ?",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.height(32.dp))
+        SearchModeButton("By ingredients", Icons.Default.ThumbUp) {
+            onSearchModeSelected(SearchMode.INGREDIENTS)
         }
-        AdMobBanner(modifier = Modifier.align(Alignment.BottomCenter),height = 100.dp)
+        Spacer(Modifier.height(32.dp))
+        SearchModeButton("By country", Icons.Default.Notifications) {
+            onSearchModeSelected(SearchMode.COUNTRY)
+        }
     }
+
 }
 
 @Composable
@@ -77,6 +86,6 @@ fun SearchModeButton(label: String, icon: ImageVector, onClick: () -> Unit) {
 }
 
 @Serializable
-enum class SearchMode(val title:String) { INGREDIENTS("Ingredients"), COUNTRY("Countries") }
+enum class SearchMode(val title: String) { INGREDIENTS("Ingredients"), COUNTRY("Countries") }
 
 

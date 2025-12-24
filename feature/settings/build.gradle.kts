@@ -42,7 +42,7 @@ dependencies {
     api(project(":core:common"))
     api(project(":core:designsystem"))
     api(project(":feature:login"))
-    api(project(":core:common"))
+    api(project(":core:ui"))
     api(project(":core:billing"))
 
     implementation(libs.kotlinx.metadata.jvm)
@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
@@ -75,10 +75,11 @@ dependencies {
     implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    
     implementation(libs.billing)
     implementation(libs.billing.ktx)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
+    implementation("androidx.browser:browser:1.8.0")
 }

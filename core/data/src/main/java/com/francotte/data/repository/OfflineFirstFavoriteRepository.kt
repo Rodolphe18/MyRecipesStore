@@ -3,7 +3,7 @@ package com.francotte.data.repository
 import com.francotte.data.mapper.asEntity
 import com.francotte.database.dao.FullRecipeDao
 import com.francotte.database.model.asExternalModel
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.network.api.RecipeApi
@@ -21,13 +21,13 @@ import javax.inject.Singleton
 class OfflineFirstFavoritesRepositoryImpl @Inject constructor(
     private val api: RecipeApi,
     private val dao: FullRecipeDao,
-    private val userDataSource: UserDataSource
+    private val userDataRepository: UserDataRepository
 ) : OfflineFirstFavoritesRepository {
 
     private val cache = mutableMapOf<Long, LikeableRecipe>()
 
     override fun getFavoritesFullRecipes(): Flow<List<Recipe>> =
-        userDataSource.userData.flatMapLatest { userData ->
+        userDataRepository.userData.flatMapLatest { userData ->
             val ids = userData.favoriteRecipesIds.mapNotNull { it.toLongOrNull() }
 
             flow {

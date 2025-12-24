@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.roborazzi)
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -44,6 +45,7 @@ dependencies {
     api(project(":core:designsystem"))
     api(project(":feature:login"))
     api(project(":core:common"))
+    api(project(":feature:ads"))
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
@@ -56,16 +58,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.coil.compose)
-    implementation (libs.androidx.activity.ktx)
-    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -74,9 +68,21 @@ dependencies {
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.compose)
+    ksp(libs.hilt.compiler)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.hilt.android.testing)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.accessibility.check)
+    testImplementation(libs.roborazzi.compose)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

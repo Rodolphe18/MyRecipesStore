@@ -1,7 +1,6 @@
 package com.francotte.data.repository
 
-import com.francotte.common.FoodAreaSection
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableFullRecipes
 import com.francotte.model.mapToLikeableLightRecipes
@@ -13,15 +12,15 @@ import javax.inject.Singleton
 
 
 @Singleton
-class HomeRepository @Inject constructor(
+class HomeRepositoryImpl @Inject constructor(
     private val homeRepository: OfflineFirstHomeRepository,
-    private val userDataSource: UserDataSource
-) : LikeableLightRecipesRepository {
+    private val userDataRepository: UserDataRepository
+) : HomeRepository {
 
 
     override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
-            userDataSource.userData,
+            userDataRepository.userData,
             homeRepository.getLatestRecipes()
         ) { userData, latestRecipes ->
             try {
@@ -35,7 +34,7 @@ class HomeRepository @Inject constructor(
 
     override fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
-            userDataSource.userData,
+            userDataRepository.userData,
             homeRepository.getRecipesListByArea("British")
         ) { userData, latestRecipes ->
             try {
@@ -48,7 +47,7 @@ class HomeRepository @Inject constructor(
 
     override fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
-            userDataSource.userData,
+            userDataRepository.userData,
             homeRepository.getRecipesListByArea("American")
         ) { userData, latestRecipes ->
             try {
@@ -61,7 +60,7 @@ class HomeRepository @Inject constructor(
 
     override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> {
         return combine(
-            userDataSource.userData,
+            userDataRepository.userData,
             combine(
                 enumValues<FoodAreaSection>().map { section ->
                     homeRepository.getRecipesListByArea(section.title)
@@ -81,7 +80,7 @@ class HomeRepository @Inject constructor(
     }
 
     override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> = combine(
-    userDataSource.userData,
+    userDataRepository.userData,
     homeRepository.getRecipesByCategory(category)
     ) { userData, recipes ->
         try {
@@ -93,7 +92,7 @@ class HomeRepository @Inject constructor(
     }
 
     override fun observeFoodAreaSection(sectionName:String): Flow<Result<List<LikeableRecipe>>> = combine(
-        userDataSource.userData,
+        userDataRepository.userData,
         homeRepository.getRecipesListByArea(sectionName)
     ) { userData, recipes ->
         try {
@@ -108,11 +107,15 @@ class HomeRepository @Inject constructor(
 }
 
 
-interface LikeableLightRecipesRepository {
+interface HomeRepository {
     fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>>
     fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
     fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
     fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>>
     fun observeFoodAreaSection(sectionName:String): Flow<Result<List<LikeableRecipe>>>
     fun observeRecipesByCategory(category:String):Flow<Result<List<LikeableRecipe>>>
+}
+
+private enum class FoodAreaSection(val title:String) {
+    CHINESE("Chinese"), FRENCH("French"), INDIAN("Indian")
 }

@@ -64,12 +64,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
-import com.francotte.common.imageRequestBuilder
-import com.francotte.designsystem.component.AdMobBanner
+import com.francotte.ads.BannerAd
+import com.francotte.ads.BannerPlacement
+import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.ui.FavButton
+import com.francotte.ui.LocalBannerProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -82,6 +84,7 @@ fun DetailRecipeScreen(
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
     onBackCLick: () -> Unit
 ) {
+    val localBannerProvider = LocalBannerProvider.current
     val scope = rememberCoroutineScope()
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -140,10 +143,16 @@ fun DetailRecipeScreen(
                     Column(Modifier.padding(horizontal = 12.dp)) {
                         DetailScreenMainSectionTitle(link, onToggleFavorite)
                         DetailScreenSectionTitle(R.string.ingredients)
-                        AdMobBanner(height = 100.dp)
+                        BannerAd(
+                            placement = BannerPlacement.RECIPE_POS_1,
+                            provider = localBannerProvider
+                        )
                         IngredientRow(ingredients)
                         DetailRecipeShareRecipeButton(link, ingredients, context)
-                        AdMobBanner(height = 100.dp)
+                        BannerAd(
+                            placement = BannerPlacement.RECIPE_POS_2,
+                            provider = localBannerProvider
+                        )
                         DetailScreenSectionTitle(R.string.instructions)
                         Text(
                             text = (link.recipe as Recipe).strInstructions.orEmpty(),
@@ -198,14 +207,26 @@ fun DetailRecipeScreen(
                     ) {
                         DetailVideoScreen(likeableRecipe)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Column(Modifier.padding(horizontal = 12.dp)) {
+                        Column {
                             DetailScreenMainSectionTitle(likeableRecipe, onToggleFavorite)
+                            BannerAd(
+                                horizontalPadding = 12.dp,
+                                placement = BannerPlacement.RECIPE_POS_1,
+                                provider = localBannerProvider
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             DetailScreenSectionTitle(R.string.ingredients)
                             IngredientRow(ingredients)
                             DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
-                            Spacer(modifier = Modifier.height(24.dp))
+                            BannerAd(
+                                horizontalPadding = 12.dp,
+                                placement = BannerPlacement.RECIPE_POS_2,
+                                provider = localBannerProvider
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             DetailScreenSectionTitle(R.string.instructions)
                             Text(
+                                modifier = Modifier.padding(horizontal = 12.dp),
                                 text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 lineHeight = 22.sp,
@@ -382,7 +403,7 @@ private fun DetailRecipeShareRecipeButton(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
+            .padding(horizontal = 12.dp, vertical = 16.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -403,7 +424,7 @@ fun DetailScreenMainSectionTitle(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
 ) {
-    Row {
+    Row(Modifier.padding(horizontal = 12.dp)) {
         Text(
             text = likeableRecipe.recipe.strMeal,
             style = MaterialTheme.typography.headlineMedium,
@@ -432,7 +453,7 @@ private fun DetailScreenSectionTitle(@StringRes stringRes:Int) {
         text = stringResource(stringRes),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(bottom = 8.dp),
+        modifier = Modifier.padding(horizontal = 12.dp),
         color = MaterialTheme.colorScheme.secondary,
     )
 }
@@ -443,7 +464,7 @@ private fun IngredientRow(ingredients: List<Pair<String, String>>) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp),
+                .padding(horizontal = 12.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(

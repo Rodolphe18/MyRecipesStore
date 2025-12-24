@@ -10,7 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.francotte.common.ScreenCounter
+import com.francotte.common.counters.ScreenCounter
 import com.francotte.model.AbstractCategory
 
 const val CATEGORIES_ROUTE = "categories_route"

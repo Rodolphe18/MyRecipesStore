@@ -37,8 +37,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.francotte.designsystem.component.LocalBillingController
 import com.francotte.designsystem.component.TopAppBar
+import com.francotte.ui.LocalBillingController
 
 
 const val PREMIUM_ROUTE = "premium_route"

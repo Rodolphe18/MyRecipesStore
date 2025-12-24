@@ -36,7 +36,13 @@ android {
 dependencies {
     api(project(":core:model"))
     api(project(":core:common"))
+    api(project(":core:domain"))
     api(project(":core:designsystem"))
+    api(project(":core:inapp-rating"))
+    api(project(":core:cmp"))
+    api(project(":core:ads"))
+    api(project(":core:billing"))
+
 
     implementation(libs.coil.compose)
     implementation("com.google.android.material:material:1.11.0")

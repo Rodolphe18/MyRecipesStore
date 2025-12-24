@@ -4,9 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -20,13 +17,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.francotte.designsystem.component.AdMobBanner
+import com.francotte.ads.BannerAd
+import com.francotte.ads.BannerPlacement
+import com.francotte.ads.LazyGridWithBanners
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
-import com.francotte.designsystem.component.LazyGridWithBanners
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.component.nbSectionColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.ErrorScreen
+import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.RecipeItem
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -41,6 +40,7 @@ fun SectionScreen(
     onOpenRecipe: (List<String>, Int,String) -> Unit,
     onBack: () -> Unit
 ) {
+    val localBannerProvider = LocalBannerProvider.current
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -76,13 +76,13 @@ fun SectionScreen(
                         start = 16.dp,
                         end = 16.dp
                     ),
-                    bannerContent = {
-                        AdMobBanner(height = 100.dp)
-                    },
                     itemKey = { index -> likeableRecipes[index].recipe.idMeal },
                     itemContentType = { "recipe" },
                     bannerKey = { bannerIndex -> "section-banner-$bannerIndex" },
                     bannerContentType = "ad",
+                    bannerContent = {
+                        BannerAd(placement = BannerPlacement.FOOD_LIST, provider = localBannerProvider, horizontalPadding = 16.dp)
+                    }
                 ) { index ->
                     val likeableRecipe = likeableRecipes[index]
                     RecipeItem(

@@ -1,6 +1,6 @@
 package com.francotte.data.repository
 
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableFullRecipe
 import kotlinx.coroutines.flow.Flow
@@ -11,12 +11,12 @@ import javax.inject.Singleton
 @Singleton
 class FullRecipeRepositoryImpl @Inject constructor(
     private val offlineFullRecipeData: OfflineFirstFullRecipeRepository,
-    private val userDataSource: UserDataSource
+    private val userDataRepository: UserDataRepository
 ) : FullRecipeRepository {
 
 
     override fun observeFullRecipe(id:Long): Flow<Result<LikeableRecipe>> = combine(
-    userDataSource.userData,
+    userDataRepository.userData,
     offlineFullRecipeData.getRecipeDetail(id)
     ) { userData, fullRecipe ->
         try {

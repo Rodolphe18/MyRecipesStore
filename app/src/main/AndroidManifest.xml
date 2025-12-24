@@ -14,7 +14,7 @@
         android:label="@string/app_launcher_name"
         android:roundIcon="@mipmap/ic_custom_launcher_foreground"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyRecipesStore.SplashScreen"
+        android:theme="@style/Theme.MyRecipesStore"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <profileable android:shell="true" tools:targetApi="q" />
@@ -65,7 +65,7 @@
         <!-- Divers -->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="1210330677148706" />
         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="6532d330d63d15c5c97407ef7b06a79d" />
-        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713" />
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8828725570000941~5726339437" />
 
     </application>
 </manifest>

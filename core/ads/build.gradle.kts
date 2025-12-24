@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ads)
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -38,15 +39,24 @@ android {
 dependencies {
 
     implementation(project(":core:billing"))
+    implementation(project(":core:cmp"))
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.play.services.ads)
+    implementation(libs.play.services.ads.lite)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.material3)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.core)
+
 }

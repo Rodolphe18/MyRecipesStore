@@ -3,7 +3,7 @@ package com.francotte.domain
 
 import android.net.Uri
 import com.francotte.data.repository.OfflineFirstFavoritesRepository
-import com.francotte.datastore.UserDataSource
+import com.francotte.datastore.UserDataRepository
 import com.francotte.model.CustomIngredient
 import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
@@ -21,12 +21,12 @@ import javax.inject.Singleton
 class FavoritesRepositoryImpl @Inject constructor(
     private val offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository,
     private val favoriteManager: FavoriteManager,
-    private val userDataSource: UserDataSource
+    private val userDataRepository: UserDataRepository
 ) : FavoritesRepository {
 
     override fun observeFavoritesRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
-            userDataSource.userData,
+            userDataRepository.userData,
             offlineFirstFavoritesRepository.getFavoritesFullRecipes()
         ) { userData, favRecipes ->
             try {

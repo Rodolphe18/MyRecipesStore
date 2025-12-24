@@ -11,6 +11,7 @@ import androidx.work.Configuration
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.francotte.billing.BillingAppLifecycleObserver
+import com.francotte.common.counters.LaunchCounter
 import com.francotte.notifications.DailyNotificationWorkManager
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.HiltAndroidApp
@@ -31,9 +32,13 @@ class FoodApplication:Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var launchCounter: LaunchCounter
+
 
     override fun onCreate() {
         super.onCreate()
+        launchCounter.incrementLaunchCount()
         MobileAds.initialize(this) {}
         scheduleDailyRecipeNotification(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(billingObserver)

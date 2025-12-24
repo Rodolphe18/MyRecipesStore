@@ -11,7 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.francotte.common.findActivity
+import com.francotte.common.extension.findActivity
 
 @Composable
 fun NotificationPermissionEffect() {

@@ -28,18 +28,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.francotte.common.imageRequestBuilder
-import com.francotte.designsystem.component.AdMobBanner
+import com.francotte.ads.BannerAd
+import com.francotte.ads.BannerPlacement
+import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.nbCategoriesColumns
 import com.francotte.model.AbstractCategory
 import com.francotte.model.Category
 import com.francotte.ui.ErrorScreen
+import com.francotte.ui.LocalBannerProvider
 
 @Composable
 fun CategoriesScreen(
@@ -49,6 +52,7 @@ fun CategoriesScreen(
     onOpenCategory: (AbstractCategory) -> Unit
 ) {
     val lazyListState = rememberLazyGridState()
+    val localBannerProvider = LocalBannerProvider.current
     when (categoryUiState) {
         CategoriesUiState.Loading -> CustomCircularProgressIndicator()
         CategoriesUiState.Error -> ErrorScreen { onReload() }
@@ -62,9 +66,23 @@ fun CategoriesScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     item(key = "banner_top", contentType = "ad", span = { GridItemSpan(2) }) {
-                        AdMobBanner(
-                            height = 50.dp
-                        )
+                        Box(modifier = Modifier.layout { measurable, constraints ->
+                            val placeable = measurable.measure(
+                                constraints.copy(
+                                    maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
+                                ),
+                            )
+                            layout(placeable.width, placeable.height) {
+                                placeable.place(0, 0)
+                            }
+                        }) {
+                            BannerAd(
+                                placement = BannerPlacement.FOOD_LIST,
+                                provider = localBannerProvider,
+                                horizontalPadding = 16.dp
+                            )
+                        }
+
                     }
                     items(
                         key = { it.strCategory },

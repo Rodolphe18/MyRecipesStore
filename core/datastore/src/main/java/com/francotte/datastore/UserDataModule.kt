@@ -13,5 +13,5 @@ interface UserDataModule {
     @Suppress("unused")
     @Singleton
     @Binds
-    fun bindUserDataModule(foodPreferencesDataSource: FoodPreferencesDataSource): UserDataSource
+    fun bindUserDataModule(foodPreferencesDataSource: FoodPreferencesDataRepository): UserDataRepository
 }

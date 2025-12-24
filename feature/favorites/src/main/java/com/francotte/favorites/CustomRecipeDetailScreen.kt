@@ -1,7 +1,6 @@
 package com.francotte.favorites
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -62,8 +61,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.francotte.common.bitmapToUri
-import com.francotte.common.imageRequestBuilder
+import com.francotte.common.extension.bitmapToUri
+import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.theme.Orange

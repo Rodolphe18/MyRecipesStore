@@ -81,73 +81,8 @@ sealed class TopLevelDestination(
     )
 }
 
-private fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestination): Boolean {
+fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestination): Boolean {
     return this?.hierarchy?.any { navDestination ->
         navDestination.route == destination.route
     } ?: false
-}
-
-@Composable
-fun BottomBar(
-    modifier: Modifier = Modifier,
-    destinations: List<TopLevelDestination>,
-    onNavigateToDestination: (TopLevelDestination) -> Unit,
-    currentDestination: NavDestination?,
-    isAuthenticated: Boolean
-) {
-    NavigationBar(modifier = modifier) {
-        val customDestinations =
-            if (isAuthenticated) destinations.filterNot { it == TopLevelDestination.LOGIN } else destinations.filterNot { it == TopLevelDestination.FAVORITES }
-        customDestinations.forEach { destination ->
-            val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
-
-            if (destination == TopLevelDestination.ADD) {
-                // Custom ADD button (no ripple, full control)
-                Box(
-                    modifier = Modifier.Companion
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(55.dp)
-                            .clip(CircleShape)
-                            .background(Orange)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                onNavigateToDestination(destination)
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                    }
-                }
-            } else {
-                CustomNavigationBarItem(
-                    selected = selected,
-                    selectedIndicatorColor = Orange.copy(0.1f),
-                    onClick = { onNavigateToDestination(destination) },
-                    icon = {
-                        Icon(
-                            imageVector = destination.icon,
-                            contentDescription = null
-                        )
-                    },
-                    label = {
-                        Text(
-                            stringResource(destination.titleTextId),
-                            fontWeight = FontWeight.Light,
-                            fontSize = 10.sp
-                        )
-                    }
-                )
-            }
-        }
-    }
 }

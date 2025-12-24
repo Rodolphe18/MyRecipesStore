@@ -40,7 +40,8 @@ android {
     signingConfigs {
         create("release") {
             // Nom du fichier keystore relatif AU MODULE app
-            val storeFileName = keystoreProperties.getProperty("storeFile") ?: "release-keystore.jks"
+            val storeFileName =
+                keystoreProperties.getProperty("storeFile") ?: "release-keystore.jks"
             storeFile = file(storeFileName)
 
             // En local : pris dans keystore.properties
@@ -90,6 +91,22 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        resources {
+            excludes.addAll(
+                arrayOf(
+                    "META-INF/versions/**",
+                    "META-INF/*.kotlin_module",
+                    "META-INF/DEPENDENCIES",
+                    "META-INF/LICENSE*",
+                    "META-INF/NOTICE*",
+                    "META-INF/AL2.0",
+                    "META-INF/LGPL2.1",
+                    "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+                )
+            )
+        }
+    }
 }
 
 dependencies {
@@ -106,6 +123,10 @@ dependencies {
     implementation(project(":core:ads"))
     implementation(project(":core:premium"))
     implementation(project(":core:notifications"))
+    implementation(project(":core:cmp"))
+    implementation(project(":core:inapp-update"))
+    implementation(project(":core:inapp-rating"))
+    implementation(project(":core:shared-prefs"))
 
     implementation(project(":feature:home"))
     implementation(project(":feature:categories"))
@@ -120,7 +141,8 @@ dependencies {
     implementation(project(":feature:reset"))
     implementation(project(":feature:video"))
     implementation(project(":feature:settings"))
-
+    implementation(project(":feature:inapp-update"))
+    implementation(project(":feature:inapp-rating"))
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
@@ -135,7 +157,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
@@ -213,6 +235,16 @@ dependencies {
             }
         }
     }
+    implementation(libs.review)
+    implementation(libs.review.ktx)
+    implementation(libs.play.services.ads.identifier)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics.ktx)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.android.play.app.update)
+    implementation(libs.android.play.app.update.ktx)
 }
 
 configurations.matching { cfg ->
