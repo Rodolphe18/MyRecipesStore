@@ -2,122 +2,108 @@ package com.francotte.ads
 
 import android.app.Activity
 import com.francotte.billing.PremiumStatusProvider
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
+import com.francotte.cmp.ConsentManager
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
+sealed interface InterstitialAdState {
+    data object Idle : InterstitialAdState
+    data object Loading : InterstitialAdState
+    data object Timeout : InterstitialAdState
+    data class FailedToLoad(val error: LoadAdError) : InterstitialAdState
+    data object Showing : InterstitialAdState
+    data object Shown : InterstitialAdState
+    data object Clicked : InterstitialAdState
+    data object Done : InterstitialAdState
+}
+
+
 @Singleton
 class InterstitialManager @Inject constructor(
-    private val premiumStatus: PremiumStatusProvider
+    private val premiumStatus: PremiumStatusProvider,
+    private val consentManager: ConsentManager
 ) {
 
-    private var mInterstitialAd: InterstitialAd? = null
     private var hasShownAd = false
+    private val adMutex = Mutex()
 
-    private val _shouldKeepSplashScreen = MutableStateFlow(true)
-    val shouldKeepSplashScreen = _shouldKeepSplashScreen.asStateFlow()
+    fun loadAndShowInterstitialAd(activity: Activity): Flow<InterstitialAdState> = channelFlow {
 
-    private val _isAdShowing = MutableStateFlow(false)
-    val isAdShowing = _isAdShowing.asStateFlow()
+        fun sendState(state: InterstitialAdState) {
+            trySend(state).isSuccess
+        }
 
-    private val _hasTimedOut = MutableStateFlow(false)
-    val hasTimedOut = _hasTimedOut.asStateFlow()
-
-    init {
-        // Si premium -> on libère direct (pas de pub, pas de splash d'attente)
-        CoroutineScope(Dispatchers.Main.immediate).launch {
-            premiumStatus.isPremium.collect { premium ->
-                if (premium) _shouldKeepSplashScreen.value = false
+        adMutex.withLock {
+            if (premiumStatus.isPremium.value || hasShownAd) {
+                sendState(InterstitialAdState.Done)
+                return@withLock
             }
-        }
 
-        // Fallback: même non premium, on ne bloque pas plus de 2s
-        CoroutineScope(Dispatchers.Main.immediate).launch {
-            delay(2000)
-            _shouldKeepSplashScreen.value = false
-        }
-    }
+            sendState(InterstitialAdState.Loading)
 
-    fun loadAndShowAd(activity: Activity) {
-        // ✅ Premium => aucune pub
-        if (premiumStatus.isPremium.value) {
-            _shouldKeepSplashScreen.value = false
-            return
-        }
-
-        if (hasShownAd) {
-            _shouldKeepSplashScreen.value = false
-            return
-        }
-
-        _hasTimedOut.value = false
-
-        CoroutineScope(Dispatchers.Main.immediate).launch {
-            delay(3000)
-            if (mInterstitialAd == null) {
-                _hasTimedOut.value = true
-                _shouldKeepSplashScreen.value = false
+            val canRequestAds = consentManager.ensureConsent(activity)
+            if (!canRequestAds) {
+                sendState(InterstitialAdState.Done)
+                return@withLock
             }
-        }
 
-        val adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(
-            activity,
-            "ca-app-pub-3940256099942544/1033173712",
-            adRequest,
-            object : InterstitialAdLoadCallback() {
+            val adRequest = consentManager.buildAdRequest()
 
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    // Re-check au moment du load (au cas où premium vient d’être acheté)
+            val loadResultOrNull = withTimeoutOrNull(3000) {
+                withContext(Dispatchers.Main.immediate) {
+                    activity.loadInterstitialAd("ca-app-pub-8828725570000941/9240302363",adRequest)
+                }
+            }
+
+            if (loadResultOrNull == null) {
+                sendState(InterstitialAdState.Timeout)
+                sendState(InterstitialAdState.Done)
+                return@withLock
+            }
+
+            when (loadResultOrNull) {
+                is InterstitialLoadResult.Failed -> {
+                    sendState(InterstitialAdState.FailedToLoad(loadResultOrNull.error))
+                    sendState(InterstitialAdState.Done)
+                    return@withLock
+                }
+
+                is InterstitialLoadResult.Success -> {
                     if (premiumStatus.isPremium.value) {
-                        _shouldKeepSplashScreen.value = false
-                        return
+                        sendState(InterstitialAdState.Done)
+                        return@withLock
                     }
 
-                    mInterstitialAd = ad
-                    mInterstitialAd?.fullScreenContentCallback =
-                        object : FullScreenContentCallback() {
-
-                            override fun onAdShowedFullScreenContent() {
-                                _isAdShowing.value = true
-                            }
-
-                            override fun onAdDismissedFullScreenContent() {
-                                _isAdShowing.value = false
-                                _shouldKeepSplashScreen.value = false
-                                mInterstitialAd = null
-                            }
-
-                            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                _isAdShowing.value = false
-                                _shouldKeepSplashScreen.value = false
-                                mInterstitialAd = null
-                            }
-                        }
-
                     hasShownAd = true
-                    mInterstitialAd?.show(activity)
-                }
+                    sendState(InterstitialAdState.Showing)
 
-                override fun onAdFailedToLoad(adError: LoadAdError) {
-                    _shouldKeepSplashScreen.value = false
+                    // ✅ Show events
+                    withContext(Dispatchers.Main.immediate) {
+                        loadResultOrNull.ad
+                            .showInterstitialAd(activity)
+                            .collect { event ->
+                                when (event) {
+                                    InterstitialShowEvent.Shown -> sendState(InterstitialAdState.Shown)
+                                    InterstitialShowEvent.Clicked -> sendState(InterstitialAdState.Clicked)
+                                    InterstitialShowEvent.Closed -> Unit
+                                    is InterstitialShowEvent.FailedToShow -> Unit
+                                }
+                            }
+                    }
+
+                    sendState(InterstitialAdState.Done)
                 }
             }
-        )
-    }
+        }
 
-    fun retryLoadAd(activity: Activity) {
-        loadAndShowAd(activity)
     }
 }
