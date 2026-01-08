@@ -38,6 +38,7 @@ suspend fun Activity.loadInterstitialAd(
         adRequest,
         object : InterstitialAdLoadCallback() {
             override fun onAdLoaded(ad: InterstitialAd) {
+                ad.setImmersiveMode(true)
                 if (continuation.isActive) continuation.resume(InterstitialLoadResult.Success(ad))
             }
 
