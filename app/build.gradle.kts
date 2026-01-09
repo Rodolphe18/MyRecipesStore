@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.baselineprofile)
+    id("com.google.gms.google-services")
     id("kotlin-parcelize")
 }
 
