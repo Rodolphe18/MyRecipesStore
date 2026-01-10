@@ -14,6 +14,8 @@ import com.francotte.billing.BillingAppLifecycleObserver
 import com.francotte.common.counters.LaunchCounter
 import com.francotte.notifications.DailyNotificationWorkManager
 import com.google.android.gms.ads.MobileAds
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
 import dagger.hilt.android.HiltAndroidApp
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -40,29 +42,10 @@ class FoodApplication:Application(), Configuration.Provider {
         super.onCreate()
         launchCounter.incrementLaunchCount()
         MobileAds.initialize(this) {}
-        scheduleDailyRecipeNotification(this)
+        Firebase.messaging.subscribeToTopic("daily_meal")
+            .addOnSuccessListener { Log.d("FCM", "Subscribed to daily_meal") }
+            .addOnFailureListener { e -> Log.e("FCM", "Subscribe failed", e) }
         ProcessLifecycleOwner.get().lifecycle.addObserver(billingObserver)
     }
 
-}
-
-fun scheduleDailyRecipeNotification(context: Context) {
-    val dailyRequest = OneTimeWorkRequestBuilder<DailyNotificationWorkManager>()
-        .setInitialDelay(2, TimeUnit.SECONDS) // petite attente pour test
-        .build()
-
-       // PeriodicWorkRequestBuilder<DailyNotificationWorkManager>(1, TimeUnit.DAYS)
-       // .setInitialDelay(500, TimeUnit.MILLISECONDS)
-       // .build()
-
-    WorkManager.getInstance(context).enqueue(dailyRequest)
-    Log.d("DailyNotification", "WorkManager: Daily worker scheduled")
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun calculateInitialDelay(): Long {
-    val now = LocalDateTime.now()
-    val target = now.withHour(18).withMinute(0).withSecond(0)
-    val adjustedTarget = if (now >= target) target.plusDays(1) else target
-    return ChronoUnit.MILLIS.between(now, adjustedTarget)
 }
