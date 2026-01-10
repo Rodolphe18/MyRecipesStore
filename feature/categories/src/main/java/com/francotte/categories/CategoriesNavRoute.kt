@@ -10,17 +10,18 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.model.AbstractCategory
 
-const val CATEGORIES_ROUTE = "categories_route"
+const val CATEGORIES_ROUTE = "categories"
 
 fun NavController.navigateToCategoriesScreen(navOptions: NavOptions? = null) {
     this.navigate(CATEGORIES_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.categoriesScreen(windowSizeClass: WindowSizeClass,onOpenCategory: (String) -> Unit) {
-    composable(route = CATEGORIES_ROUTE) {
+    composable(route = CATEGORIES_ROUTE,deepLinks = listOf(navDeepLink { uriPattern = "myapp://categories" })) {
         CategoriesRoute(windowSizeClass = windowSizeClass) {
             onOpenCategory(it.strCategory)
         }

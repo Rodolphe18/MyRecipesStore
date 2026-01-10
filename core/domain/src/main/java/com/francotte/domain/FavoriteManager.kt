@@ -1,10 +1,14 @@
 package com.francotte.domain
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.scale
 import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
@@ -32,6 +36,12 @@ import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.net.toUri
+import androidx.lifecycle.LifecycleCoroutineScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+const val SHORTCUT_ID_FAVORITES = "shortcut_favorites"
 
 @Singleton
 class FavoriteManager @Inject constructor(
@@ -41,13 +51,26 @@ class FavoriteManager @Inject constructor(
     private val foodPreferencesDataSource: UserDataRepository
 ) {
 
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+
     private val credentials: StateFlow<UserCredentials?> = authManager.credentials
+
+    val isAuthenticated = authManager.isAuthenticated
 
     val goToLoginScreenEvent = MutableSharedFlow<Unit>()
 
     val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
     val customRecipeHasBeenUpdatedSuccessfully = MutableStateFlow(false)
+
+    init {
+        coroutineScope.launch {
+            isAuthenticated.collect { isAuthenticated ->
+                setupFavoritesShortcut(context, isAuthenticated)
+            }
+        }
+    }
 
     suspend fun initFavorites() {
         try {
@@ -57,6 +80,34 @@ class FavoriteManager @Inject constructor(
             Log.d("debug_google_error_fav", e.message.toString())
         }
     }
+
+
+    fun setupFavoritesShortcut(context: Context, enable: Boolean) {
+        if (enable) {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = "myapp://favorites".toUri()
+                putExtra("is_shortcut", true)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+
+            val shortcut = ShortcutInfoCompat.Builder(context, SHORTCUT_ID_FAVORITES)
+                .setIcon(
+                    IconCompat.createWithResource(
+                        context,
+                        R.drawable.ic_favorite
+                    )
+                )
+                .setShortLabel("favorites")
+                .setLongLabel("favorites")
+                .setIntent(intent)
+                .build()
+
+            ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
+        } else {
+            ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(SHORTCUT_ID_FAVORITES))
+        }
+    }
+
 
     suspend fun toggleRecipeFavorite(
         likeableRecipe: LikeableRecipe
@@ -181,6 +232,10 @@ class FavoriteManager @Inject constructor(
         } else {
             throw Exception("ss")
         }
+    }
+
+    companion object {
+        private const val SHORTCUT_ID = "favorites"
     }
 
 }

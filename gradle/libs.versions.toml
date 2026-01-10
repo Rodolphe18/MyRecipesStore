@@ -7,11 +7,11 @@ billing = "8.0.0"
 billingKtxVersion = "8.0.0"
 coilCompose = "2.5.0"
 criteoPublisherSdk = "7.0.0"
-firebaseBom = "32.8.0"
+firebaseBom = "34.7.0"
 hiltCompilerVersion = "1.1.0"
 hiltWork = "1.2.0"
 kotlin = "2.0.20"
-ads = "4.4.0"
+googleService = "4.4.2"
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -82,9 +82,8 @@ billing = { module = "com.android.billingclient:billing", version.ref = "billing
 billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 criteo-publisher-sdk = { module = "com.criteo.publisher:criteo-publisher-sdk", version.ref = "criteoPublisherSdk" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 kotlinx-metadata-jvm = { module = "org.jetbrains.kotlinx:kotlinx-metadata-jvm", version.ref = "kotlinxMetadataJvm" }
@@ -165,7 +164,8 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ads = { id = "com.google.gms.google-services", version.ref = "ads"  }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleService"  }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-test = { id = "com.android.test", version.ref = "agp" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }

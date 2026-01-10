@@ -11,6 +11,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.model.LikeableRecipe
 
@@ -27,7 +28,7 @@ fun NavGraphBuilder.favoritesScreen(
     onCustomRecipeClick: (String) -> Unit,
     customRecipeHasBeenUpdated: Boolean
 ) {
-    composable(route = FAVORITE_ROUTE) {
+    composable(route = FAVORITE_ROUTE,deepLinks = listOf(navDeepLink { uriPattern = "myapp://favorites" })) {
         FavoriteRoute(
             windowSizeClass = windowSizeClass,
             onRecipeClick = { ids, index, title -> onOpenRecipe(ids, index, title) },

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:shortcutId="shortcut_categories"
+        android:enabled="true"
+        android:icon="@drawable/ic_category"
+        android:shortcutShortLabel="@string/categories"
+        android:shortcutLongLabel="@string/categories">
+
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="myapp://categories" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="shortcut_search"
+        android:enabled="true"
+        android:icon="@drawable/ic_search"
+        android:shortcutShortLabel="@string/search"
+        android:shortcutLongLabel="@string/search">
+
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="myapp://search" />
+    </shortcut>
+
+</shortcuts>

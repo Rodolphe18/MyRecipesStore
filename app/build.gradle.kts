@@ -8,7 +8,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.baselineprofile)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.google.services)
     id("kotlin-parcelize")
 }
 
@@ -240,10 +241,8 @@ dependencies {
     implementation(libs.review.ktx)
     implementation(libs.play.services.ads.identifier)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics.ktx)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
-    implementation(libs.firebase.analytics.ktx)
     implementation(libs.android.play.app.update)
     implementation(libs.android.play.app.update.ktx)
 }
