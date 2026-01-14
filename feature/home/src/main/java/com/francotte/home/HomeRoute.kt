@@ -78,12 +78,6 @@ fun HomeRoute(
             currentPage = currentPage,
             onCurrentPageChange = homeViewModel::setCurrentPage
         )
-//        if (ScreenCounter.screenCount.get() < 2 && localLaunchCounter.getLaunchCount() < 2) {
-//            CustomTooltip(
-//                modifier = Modifier.align(Alignment.BottomCenter),
-//                fullText = "Create your own recipe by clicking the button below"
-//            )
-//        }
     }
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
