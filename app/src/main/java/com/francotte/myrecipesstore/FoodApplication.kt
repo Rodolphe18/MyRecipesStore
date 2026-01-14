@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.francotte.billing.BillingAppLifecycleObserver
 import com.francotte.common.counters.LaunchCounter
+import com.francotte.ui.HomeSyncScheduler
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.Firebase
 import com.google.firebase.messaging.messaging
@@ -22,6 +23,7 @@ class FoodApplication:Application() {
 
     override fun onCreate() {
         super.onCreate()
+        HomeSyncScheduler.enqueueOneShot(this)
         launchCounter.incrementLaunchCount()
         MobileAds.initialize(this) {}
         Firebase.messaging.subscribeToTopic("daily_meal")

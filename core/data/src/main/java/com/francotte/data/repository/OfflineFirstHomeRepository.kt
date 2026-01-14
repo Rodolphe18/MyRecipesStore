@@ -1,6 +1,5 @@
 package com.francotte.data.repository
 
-import android.util.Log
 import com.francotte.data.mapper.asEntity
 import com.francotte.database.dao.FullRecipeDao
 import com.francotte.database.dao.LightRecipeDao
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class OfflineFirstHomeRepository @Inject constructor(
@@ -26,60 +26,30 @@ class OfflineFirstHomeRepository @Inject constructor(
 ) : RecipesRepository {
 
 
-//    suspend fun sync(synchronizer: Synchronizer<NetworkLightRecipe, LightRecipeEntity>) {
-//        synchronizer.sync(
-//            modelFetcher = {
-//                val latestMeals =
-//                    network.getLatestMeals().meals.filterIsInstance<NetworkLightRecipe>()
-//                val map = mutableMapOf<String, List<NetworkLightRecipe>>()
-//                enumValues<FoodAreaSection>().forEach { section ->
-//                    val recipes = network.getRecipesListByArea(section.title).meals
-//                    map[section.title] = recipes.filterIsInstance<NetworkLightRecipe>()
-//                }
-//                val foodAreaList = listOf(
-//                    FoodAreaSection.CHINESE.title,
-//                    FoodAreaSection.FRENCH.title,
-//                    FoodAreaSection.INDIAN.title
-//                ).flatMap { key ->
-//                    map[key] ?: emptyList()
-//                }
-//                latestMeals + foodAreaList
-//            },
-//            modelMapper = { it.asEntity() },
-//            modelSaver = { lightRecipeDao.upsertAllLightRecipes(it) }
-//        )
-//    }
-
-    override fun getLatestRecipes(): Flow<List<Recipe>> = flow {
+    override suspend fun refreshLatestRecipes(force: Boolean) = withContext(Dispatchers.IO) {
         val lastUpdated = fullRecipeDao.getLastUpdatedForLatest()
         val now = System.currentTimeMillis()
-        val ttl = 24 * 60 * 60 * 1000 // 24h
-        if (lastUpdated == null || now - lastUpdated > ttl) {
-            try {
+        val ttl = 24 * 60 * 60 * 1000
 
-                val networkData = network.getLatestMeals().meals
-                    .filterIsInstance<NetworkRecipe>()
-                    .filter { !it.strMealThumb.isNullOrBlank() }
-                val entities = networkData.map {
-                    it.asEntity().apply {
-                        this.isLatest = true
-                        this.lastUpdated = now
-                    }
-                }
-                fullRecipeDao.deleteOldLatestRecipes()
-                fullRecipeDao.upsertAllFullRecipes(entities)
-            } catch (e: Exception) {
-                Log.e("LatestMeals", "Network error", e)
-                emit(emptyList())
+        val shouldRefresh = force || lastUpdated == null || now - lastUpdated > ttl
+        if (!shouldRefresh) return@withContext
+
+        val networkData = network.getLatestMeals().meals
+            .filterIsInstance<NetworkRecipe>()
+            .filter { !it.strMealThumb.isNullOrBlank() }
+
+        val entities = networkData.map {
+            it.asEntity().apply {
+                this.isLatest = true
+                this.lastUpdated = now
             }
         }
-        emitAll(
-            fullRecipeDao.getLatestFullRecipes()
-                .map { list ->
-                    list.map { it.asExternalModel() }
-                }
-        )
-    }.flowOn(Dispatchers.IO)
+        fullRecipeDao.refreshLatest(entities)
+    }
+
+    override fun observeLatestRecipes(): Flow<List<Recipe>> =
+        fullRecipeDao.getLatestFullRecipes().map { it.map { e -> e.asExternalModel() } }
+
 
     override fun getRecipesListByArea(area: String): Flow<List<LightRecipe>> = flow {
         val lastUpdated = lightRecipeDao.getLastUpdatedForArea(area)
@@ -134,7 +104,8 @@ class OfflineFirstHomeRepository @Inject constructor(
 }
 
 interface RecipesRepository {
-    fun getLatestRecipes(): Flow<List<Recipe>>
+    fun observeLatestRecipes(): Flow<List<Recipe>>
+    suspend fun refreshLatestRecipes(force: Boolean = false)
     fun getRecipesListByArea(area: String): Flow<List<LightRecipe>>
     fun getRecipesByCategory(category: String): Flow<List<LightRecipe>>
     fun getRecipesByIngredients(ingredients:List<String>): Flow<List<LightRecipe>>

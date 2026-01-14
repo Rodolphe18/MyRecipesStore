@@ -74,7 +74,7 @@ fun HomeRoute(
             onVideoButtonClick = onVideoButtonClick,
             windowSizeClass = windowSizeClass,
             isReloading = isReloading,
-            onReload = { homeViewModel.reload() },
+            onReload = { homeViewModel.onPullToRefresh() },
             currentPage = currentPage,
             onCurrentPageChange = homeViewModel::setCurrentPage
         )

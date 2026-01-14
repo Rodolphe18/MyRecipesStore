@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import com.francotte.database.model.FullRecipeEntity
 import kotlinx.coroutines.flow.Flow
@@ -49,4 +50,10 @@ interface FullRecipeDao {
 
     @Query("DELETE FROM full_recipe_entity")
     suspend fun clearAll()
+
+    @Transaction
+    suspend fun refreshLatest(recipes: List<FullRecipeEntity>) {
+        deleteOldLatestRecipes()
+        upsertAllFullRecipes(recipes)
+    }
 }

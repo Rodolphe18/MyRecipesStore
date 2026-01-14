@@ -21,7 +21,7 @@ class HomeRepositoryImpl @Inject constructor(
     override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
             userDataRepository.userData,
-            homeRepository.getLatestRecipes()
+            homeRepository.observeLatestRecipes()
         ) { userData, latestRecipes ->
             try {
                 val likeable = latestRecipes.mapToLikeableFullRecipes(userData)
