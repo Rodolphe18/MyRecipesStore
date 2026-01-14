@@ -59,14 +59,6 @@ interface AuthApi {
     @POST("users/auth/google")
     suspend fun authGoogle(@Body request: GoogleIdTokenRequest): Response<AuthResponse>
 
-    @POST("users/create/facebook")
-    suspend fun createFacebook(@Body request: FacebookAccessTokenRequest): Response<AuthResponse>
-
-    @POST("users/auth/facebook")
-    suspend fun authFacebook(@Body request: FacebookAccessTokenRequest): Response<AuthResponse>
-
-
-
     @DELETE("users/all")
     suspend fun deleteAllUsers()
 
