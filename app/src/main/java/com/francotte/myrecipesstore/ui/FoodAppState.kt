@@ -24,8 +24,6 @@ import com.francotte.login.navigateToLoginScreen
 import com.francotte.myrecipesstore.navigation.TopLevelDestination
 import com.francotte.search.SEARCH_ROUTE
 import com.francotte.search.navigateToSearchScreen
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun rememberAppState(
