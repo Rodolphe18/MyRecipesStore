@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -34,10 +36,20 @@ android {
 
 dependencies {
 
+    implementation(project(":core:network"))
+    implementation(project(":core:datastore"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.core)
+    implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     
 }
