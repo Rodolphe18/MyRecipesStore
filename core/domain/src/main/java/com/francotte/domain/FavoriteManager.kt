@@ -38,7 +38,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleCoroutineScope
+import com.francotte.ui.FavoritesSyncScheduler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 const val SHORTCUT_ID_FAVORITES = "shortcut_favorites"
@@ -109,37 +111,23 @@ class FavoriteManager @Inject constructor(
     }
 
 
-    suspend fun toggleRecipeFavorite(
-        likeableRecipe: LikeableRecipe
-    ) {
+    suspend fun toggleRecipeFavorite(likeableRecipe: LikeableRecipe) {
         val cred = credentials.firstOrNull()
-        if (cred == null || credentials.value?.token.isNullOrEmpty()) {
+        val token = cred?.token
+        if (token.isNullOrEmpty()) {
             goToLoginScreenEvent.emit(Unit)
-        } else {
-            val recipeId = likeableRecipe.recipe.idMeal
-            val isFavorite = api.getRecipeFavoriteStatus(
-                recipeId,
-                "Bearer ${cred.token}"
-            )
-            val willBeFavorite = !isFavorite
-            withContext(NonCancellable) {
-                if (willBeFavorite) {
-                    api.addFavorite(
-                        recipeId,
-                        "Bearer ${cred.token}"
-                    )
-                    foodPreferencesDataSource.setFavoriteId(recipeId, true)
-                    snackBarMessage.tryEmit("Recipe added to favorites")
-                } else {
-                    api.removeFavorite(
-                        recipeId,
-                        "Bearer ${cred.token}"
-                    )
-                    foodPreferencesDataSource.setFavoriteId(recipeId, false)
-                    snackBarMessage.tryEmit("Recipe deleted from favorites")
-                }
-            }
+            return
         }
+        val recipeId = likeableRecipe.recipe.idMeal
+        val currentlyFavorite = foodPreferencesDataSource.userData.first().favoriteRecipesIds.contains(recipeId)
+        val desiredFavorite = !currentlyFavorite
+        foodPreferencesDataSource.setFavoriteId(recipeId, desiredFavorite)
+        foodPreferencesDataSource.upsertPendingFavorite(recipeId, desiredFavorite)
+        snackBarMessage.tryEmit(
+            if (desiredFavorite) "Recipe added to favorites"
+            else "Recipe removed from favorites"
+        )
+        FavoritesSyncScheduler.enqueue(context)
     }
 
     suspend fun createRecipe(
