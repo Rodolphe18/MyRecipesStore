@@ -82,6 +82,25 @@ class TestUserDataRepository : UserDataRepository {
         )
     }
 
+    override suspend fun isFavoriteLocal(recipeId: String): Boolean {
+        return false
+    }
+
+    override suspend fun upsertPendingFavorite(
+        recipeId: String,
+        desiredFavorite: Boolean
+    ) {
+
+    }
+
+    override suspend fun removePendingFavorite(recipeId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getPendingFavorites(): List<Pair<String, Boolean>> {
+        TODO("Not yet implemented")
+    }
+
 
     fun setUserData(userData: UserData) {
         _userData.tryEmit(userData)
