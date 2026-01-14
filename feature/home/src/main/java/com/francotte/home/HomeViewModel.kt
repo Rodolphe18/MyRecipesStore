@@ -41,7 +41,7 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AreasRecipes.Loading)
 
 
-    fun onPullToRefresh() {
+    fun refresh() {
         viewModelScope.launch {
             _isReloading.value = true
             runCatching { homeSyncer.syncLatest(true) }

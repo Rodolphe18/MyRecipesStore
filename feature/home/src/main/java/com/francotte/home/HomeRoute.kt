@@ -6,7 +6,6 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -15,7 +14,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.francotte.common.counters.ScreenCounter
-import com.francotte.designsystem.component.CustomTooltip
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.LocalLaunchCounterManager
 
@@ -74,7 +72,7 @@ fun HomeRoute(
             onVideoButtonClick = onVideoButtonClick,
             windowSizeClass = windowSizeClass,
             isReloading = isReloading,
-            onReload = { homeViewModel.onPullToRefresh() },
+            onReload = { homeViewModel.refresh() },
             currentPage = currentPage,
             onCurrentPageChange = homeViewModel::setCurrentPage
         )

@@ -4,6 +4,7 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.model.TestRecipe
 import com.francotte.testing.FakeHomeRepository
 import com.francotte.testing.util.MainDispatcherRule
+import com.francotte.ui.HomeSyncer
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
@@ -24,12 +25,14 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeHomeRepository
+
+    private lateinit var homeSyncer: HomeSyncer
     private lateinit var viewModel: HomeViewModel
 
     @Before
     fun setup() {
         repository = FakeHomeRepository()
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository,homeSyncer)
     }
 
     @Test
@@ -108,7 +111,7 @@ class HomeViewModelTest {
         assertEquals(LatestRecipes.Success(first), viewModel.latestRecipes.value)
 
         // 2) reload
-        viewModel.reload()
+        viewModel.refresh()
         advanceUntilIdle()
 
         // isReloading repasse à false à la fin
