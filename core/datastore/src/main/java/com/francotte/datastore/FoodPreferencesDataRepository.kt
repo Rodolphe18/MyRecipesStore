@@ -8,6 +8,7 @@ import androidx.datastore.dataStoreFile
 import com.francotte.datastore_proto.User
 import com.francotte.datastore_proto.UserPreferences
 import com.francotte.datastore_proto.copy
+import com.francotte.datastore_proto.pendingFavoriteAction
 import com.francotte.datastore_proto.user
 import com.francotte.datastore_proto.userInfo
 import com.francotte.model.ConnectionMethod
@@ -20,6 +21,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.util.concurrent.ExecutorService
@@ -131,6 +133,39 @@ class FoodPreferencesDataRepository @Inject constructor(
             }
         }
     }
+
+    override suspend fun isFavoriteLocal(recipeId: String): Boolean {
+        return userPreferences.data.first().favoritesIdsMap.containsKey(recipeId)
+    }
+
+    override suspend fun upsertPendingFavorite(recipeId: String, desiredFavorite: Boolean) {
+        userPreferences.updateData { prefs ->
+            prefs.copy {
+                this.pendingFavorites.put(
+                    recipeId,
+                    pendingFavoriteAction {
+                        this.recipeId = recipeId
+                        this.desiredFavorite = desiredFavorite
+                        this.createdAt = System.currentTimeMillis()
+                    }
+                )
+            }
+        }
+    }
+
+    override suspend fun removePendingFavorite(recipeId: String) {
+        userPreferences.updateData { prefs ->
+            prefs.copy {
+                this.pendingFavorites.remove(recipeId)
+            }
+        }
+    }
+
+    override suspend fun getPendingFavorites(): List<Pair<String, Boolean>> {
+        val prefs = userPreferences.data.first()
+        return prefs.pendingFavoritesMap.values.map { it.recipeId to it.desiredFavorite }
+    }
+
 
 }
 
