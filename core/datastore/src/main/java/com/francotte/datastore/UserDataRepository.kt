@@ -14,5 +14,6 @@ interface UserDataRepository {
     suspend fun upsertPendingFavorite(recipeId: String, desiredFavorite: Boolean)
     suspend fun removePendingFavorite(recipeId: String)
     suspend fun getPendingFavorites(): List<Pair<String, Boolean>>
+    suspend fun clearPendingFavorites()
 }
 

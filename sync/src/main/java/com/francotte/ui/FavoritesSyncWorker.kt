@@ -1,7 +1,8 @@
 package com.francotte.ui
 
 import android.content.Context
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresExtension
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -17,6 +18,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
+import retrofit2.HttpException
+import java.io.IOException
 
 class FavoritesSyncWorker(
     ctx: Context,
@@ -30,29 +33,109 @@ class FavoritesSyncWorker(
             FavoritesSyncEntryPoint::class.java
         )
         val api = entryPoint.favoriteApi()
-        val dataRepo = entryPoint.foodPreferencesRepo()
+        val repo = entryPoint.foodPreferencesRepo()
 
-        val user = dataRepo.userData.first()
+        val user = repo.userData.first()
         val token = user.token
-        if (token.isNullOrBlank()) return Result.failure()
 
-        val pending = dataRepo.getPendingFavorites()
+        if (!user.isConnected || token.isNullOrBlank()) {
+            return Result.failure()
+        }
+
+        val pending = repo.getPendingFavorites()
         if (pending.isEmpty()) return Result.success()
 
-        return try {
+        val maxAttemptsBeforeReconcile = 3
+        if (runAttemptCount >= maxAttemptsBeforeReconcile) {
+            return reconcileFromServer(api, repo, token)
+        }
+
+        try {
+            // On traite item par item pour éviter qu’un seul item “fatal” bloque tout
             for ((recipeId, desiredFav) in pending) {
-                if (desiredFav) api.addFavorite(recipeId, "Bearer $token")
-                else api.removeFavorite(recipeId, "Bearer $token")
-                dataRepo.removePendingFavorite(recipeId)
+                val itemResult = trySyncOne(api, repo, token, recipeId, desiredFav)
+                when (itemResult) {
+                    ItemSyncResult.Synced -> Unit
+                    ItemSyncResult.StopNoLogin -> return Result.failure() // pending conservé
+                    ItemSyncResult.Reconcile -> return reconcileFromServer(api, repo, token)
+                    ItemSyncResult.Retry -> return Result.retry()
+                }
             }
-            Log.d("debug_worker_fav", "FavoritesSyncWorker2")
+
+            return Result.success()
+
+        } catch (_: Exception) {
+            // Inattendu => retry (tu peux aussi reconcile ici si tu préfères)
+            return Result.retry()
+        }
+    }
+
+    private suspend fun trySyncOne(
+        api: FavoriteApi,
+        repo: FoodPreferencesDataRepository,
+        token: String,
+        recipeId: String,
+        desiredFav: Boolean
+    ): ItemSyncResult {
+        return try {
+            if (desiredFav) api.addFavorite(recipeId, "Bearer $token")
+            else api.removeFavorite(recipeId, "Bearer $token")
+
+            repo.removePendingFavorite(recipeId)
+            ItemSyncResult.Synced
+
+        } catch (e: HttpException) {
+            when (e.code()) {
+                401, 403 -> {
+                    // ✅ IMPORTANT : on garde pending, on stoppe (re-login requis)
+                    ItemSyncResult.StopNoLogin
+                }
+                in 400..499 -> {
+                    // Erreur définitive => server wins
+                    ItemSyncResult.Reconcile
+                }
+                else -> {
+                    // 5xx etc.
+                    ItemSyncResult.Retry
+                }
+            }
+        } catch (_: IOException) {
+            // Réseau
+            ItemSyncResult.Retry
+        }
+    }
+
+    private suspend fun reconcileFromServer(
+        api: FavoriteApi,
+        repo: FoodPreferencesDataRepository,
+        token: String
+    ): Result {
+        return try {
+            val serverIds = api.getFavoriteRecipeIds("Bearer $token")
+            repo.setFavoritesIds(serverIds.toSet())
+            repo.clearPendingFavorites()
             Result.success()
-        } catch (e: Exception) {
-            Log.d("debug_worker_fav", "FavoritesSyncWorker3 ${e.message}")
+        } catch (e: HttpException) {
+            return when (e.code()) {
+                401, 403 -> {
+                    // Pas possible de réconcilier sans login : on garde pending
+                    Result.failure()
+                }
+                else -> Result.retry()
+            }
+        } catch (_: IOException) {
             Result.retry()
         }
     }
+
+    private enum class ItemSyncResult {
+        Synced,
+        StopNoLogin,
+        Reconcile,
+        Retry
+    }
 }
+
 
 object FavoritesSyncScheduler {
     fun enqueue(context: Context) {
@@ -72,12 +155,12 @@ object FavoritesSyncScheduler {
         WorkManager
             .getInstance(context)
             .enqueueUniqueWork(
-            "favorites-sync",
-            ExistingWorkPolicy.KEEP,
-            request
-        )
+                "favorites-sync",
+                ExistingWorkPolicy.KEEP,
+                request
+            )
 
-    //        val wm = WorkManager.getInstance(context.applicationContext)
+        //        val wm = WorkManager.getInstance(context.applicationContext)
 //        wm.getWorkInfosForUniqueWorkLiveData("favorites-sync")
 //            .observeForever { infos ->
 //                infos.forEach { info ->

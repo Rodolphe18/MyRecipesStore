@@ -29,16 +29,17 @@ class JsonConverterFactory @Inject constructor(private val json: Json) : Convert
 
         val deserializer = json.serializersModule.serializer(type) as DeserializationStrategy<Any?>
 
-        return object : Converter<ResponseBody,Any?> {
-            override fun convert(body: ResponseBody): Any? = body.use { responseBody ->
+        return Converter<ResponseBody, Any?> { body ->
+            body.use { responseBody ->
                 val source = responseBody.source()
-                if (responseBody.contentLength() == 0L || source.exhausted()) return null
+                if (responseBody.contentLength() == 0L || source.exhausted()) return@Converter null
                 json.decodeFromBufferedSource(deserializer,source)
             }
         }
 
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override fun requestBodyConverter(
         type: Type,
         parameterAnnotations: Array<out Annotation>,
@@ -49,14 +50,11 @@ class JsonConverterFactory @Inject constructor(private val json: Json) : Convert
         val serializer = json.serializersModule.serializer(type) as SerializationStrategy<Any>
         val contentType = "application/json".toMediaType()
 
-        return object : Converter<Any, RequestBody> {
-            @OptIn(ExperimentalSerializationApi::class)
-            override fun convert(value: Any): RequestBody {
-                return object : RequestBody() {
-                    override fun contentType() = contentType
-                    override fun writeTo(sink: BufferedSink) {
-                        json.encodeToBufferedSink(serializer, value, sink)
-                    }
+        return Converter<Any, RequestBody> { value ->
+            object : RequestBody() {
+                override fun contentType() = contentType
+                override fun writeTo(sink: BufferedSink) {
+                    json.encodeToBufferedSink(serializer, value, sink)
                 }
             }
         }

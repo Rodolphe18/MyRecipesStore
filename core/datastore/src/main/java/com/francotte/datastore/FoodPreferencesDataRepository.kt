@@ -166,6 +166,14 @@ class FoodPreferencesDataRepository @Inject constructor(
         return prefs.pendingFavoritesMap.values.map { it.recipeId to it.desiredFavorite }
     }
 
+    override suspend fun clearPendingFavorites() {
+        userPreferences.updateData { prefs ->
+            prefs.copy {
+                this.pendingFavorites.clear()
+            }
+        }
+    }
+
 
 }
 

@@ -12,6 +12,7 @@ import com.francotte.network.model.AuthRequest
 import com.francotte.network.model.AuthResponse
 import com.francotte.network.model.EmailRequest
 import com.francotte.network.model.GoogleIdTokenRequest
+import com.francotte.ui.FavoritesSyncScheduler
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -79,7 +80,7 @@ class AuthManager @Inject constructor(
 
     val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
-    val loginIsSuccessFull = MutableStateFlow<Boolean>(false)
+    val loginIsSuccessFull = MutableStateFlow(false)
 
     val authToken =  credentials.value?.token
 
@@ -179,6 +180,7 @@ class AuthManager @Inject constructor(
                     snackBarMessage.tryEmit("Welcome back ${response.user.username}")
                 }
             }
+            FavoritesSyncScheduler.enqueue(context)
         } else if (apiResponse.code() == 413) {
             loginIsSuccessFull.value = false
             snackBarMessage.tryEmit("Payload Too Large")

@@ -3,6 +3,7 @@ package com.francotte.home
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.TestRecipe
 import com.francotte.testing.FakeHomeRepository
+import com.francotte.testing.FakeHomeSyncer
 import com.francotte.testing.util.MainDispatcherRule
 import com.francotte.ui.HomeSyncer
 import junit.framework.TestCase.assertEquals
@@ -26,12 +27,13 @@ class HomeViewModelTest {
 
     private lateinit var repository: FakeHomeRepository
 
-    private lateinit var homeSyncer: HomeSyncer
+    private lateinit var homeSyncer: FakeHomeSyncer
     private lateinit var viewModel: HomeViewModel
 
     @Before
     fun setup() {
         repository = FakeHomeRepository()
+        homeSyncer = FakeHomeSyncer()
         viewModel = HomeViewModel(repository,homeSyncer)
     }
 
