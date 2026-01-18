@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class NetworkUser(
     val userId: Long,
     val username: String? = null,
-    val email:String?=null,
-    val image: String?=null,
+    val email: String? = null,
+    val image: String? = null,
     @Transient val provider: ConnectionMethod = ConnectionMethod.EMAIL,
 )

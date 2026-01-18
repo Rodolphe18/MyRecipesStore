@@ -8,20 +8,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filterNotNull
 
-
-val emptyUserData = UserData(
-    userId = -1L,
-    userName = "Paul",
-    connectionMethod = ConnectionMethod.EMAIL,
-    email = "",
-    image = "",
-    isConnected = false,
-    token = null,
-    favoriteRecipesIds = emptySet(),
-)
+val emptyUserData =
+    UserData(
+        userId = -1L,
+        userName = "Paul",
+        connectionMethod = ConnectionMethod.EMAIL,
+        email = "",
+        image = "",
+        isConnected = false,
+        token = null,
+        favoriteRecipesIds = emptySet(),
+    )
 
 class TestUserDataRepository : UserDataRepository {
-
     private val _userData =
         MutableSharedFlow<UserData>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
@@ -34,13 +33,17 @@ class TestUserDataRepository : UserDataRepository {
         _userData.tryEmit(currentUserData.copy(favoriteRecipesIds = favoritesIds))
     }
 
-    override suspend fun setFavoriteId(favoriteId: String, isFavorite: Boolean) {
+    override suspend fun setFavoriteId(
+        favoriteId: String,
+        isFavorite: Boolean,
+    ) {
         val current = currentUserData
-        val updated = if (isFavorite) {
-            current.favoriteRecipesIds + favoriteId
-        } else {
-            current.favoriteRecipesIds - favoriteId
-        }
+        val updated =
+            if (isFavorite) {
+                current.favoriteRecipesIds + favoriteId
+            } else {
+                current.favoriteRecipesIds - favoriteId
+            }
         _userData.tryEmit(current.copy(favoriteRecipesIds = updated))
     }
 
@@ -50,7 +53,7 @@ class TestUserDataRepository : UserDataRepository {
         userId: Long,
         userToken: String,
         userEmail: String,
-        userImage: String
+        userImage: String,
     ) {
         _userData.tryEmit(
             currentUserData.copy(
@@ -60,7 +63,7 @@ class TestUserDataRepository : UserDataRepository {
                 token = userToken,
                 email = userEmail,
                 image = userImage,
-            )
+            ),
         )
     }
 
@@ -69,7 +72,7 @@ class TestUserDataRepository : UserDataRepository {
     }
 
     override suspend fun deleteUser() {
-       _userData.tryEmit(
+        _userData.tryEmit(
             currentUserData.copy(
                 isConnected = false,
                 userName = "",
@@ -78,19 +81,16 @@ class TestUserDataRepository : UserDataRepository {
                 image = "",
                 token = null,
                 favoriteRecipesIds = emptySet(),
-            )
+            ),
         )
     }
 
-    override suspend fun isFavoriteLocal(recipeId: String): Boolean {
-        return false
-    }
+    override suspend fun isFavoriteLocal(recipeId: String): Boolean = false
 
     override suspend fun upsertPendingFavorite(
         recipeId: String,
-        desiredFavorite: Boolean
+        desiredFavorite: Boolean,
     ) {
-
     }
 
     override suspend fun removePendingFavorite(recipeId: String) {
@@ -101,10 +101,11 @@ class TestUserDataRepository : UserDataRepository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun clearPendingFavorites() {
+        TODO("Not yet implemented")
+    }
 
     fun setUserData(userData: UserData) {
         _userData.tryEmit(userData)
     }
 }
-
-

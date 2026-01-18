@@ -11,9 +11,7 @@ import com.android.billingclient.api.QueryPurchasesParams
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-suspend fun BillingClient.queryProductDetailsAwait(
-    params: QueryProductDetailsParams
-): Pair<BillingResult, List<ProductDetails>> =
+suspend fun BillingClient.queryProductDetailsAwait(params: QueryProductDetailsParams): Pair<BillingResult, List<ProductDetails>> =
     suspendCancellableCoroutine { cont ->
         queryProductDetailsAsync(params) { billingResult, queryResult: QueryProductDetailsResult ->
             val list = queryResult.productDetailsList
@@ -21,18 +19,14 @@ suspend fun BillingClient.queryProductDetailsAwait(
         }
     }
 
-suspend fun BillingClient.queryPurchasesAwait(
-    params: QueryPurchasesParams
-): Pair<BillingResult, List<Purchase>> =
+suspend fun BillingClient.queryPurchasesAwait(params: QueryPurchasesParams): Pair<BillingResult, List<Purchase>> =
     suspendCancellableCoroutine { cont ->
         queryPurchasesAsync(params) { result, purchasesList ->
             if (cont.isActive) cont.resume(result to purchasesList)
         }
     }
 
-suspend fun BillingClient.acknowledgePurchaseAwait(
-    params: AcknowledgePurchaseParams
-): BillingResult =
+suspend fun BillingClient.acknowledgePurchaseAwait(params: AcknowledgePurchaseParams): BillingResult =
     suspendCancellableCoroutine { cont ->
         acknowledgePurchase(params) { result ->
             if (cont.isActive) cont.resume(result)

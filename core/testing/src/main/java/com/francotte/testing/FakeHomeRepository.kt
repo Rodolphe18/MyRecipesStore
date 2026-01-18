@@ -6,8 +6,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class FakeHomeRepository: HomeRepository {
-
+class FakeHomeRepository : HomeRepository {
     private val latestFlow =
         MutableSharedFlow<Result<List<LikeableRecipe>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
@@ -26,7 +25,6 @@ class FakeHomeRepository: HomeRepository {
     private val categoryFlows =
         mutableMapOf<String, MutableSharedFlow<Result<List<LikeableRecipe>>>>()
 
-
     override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> = latestFlow
 
     override fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>> = englishFlow
@@ -35,11 +33,9 @@ class FakeHomeRepository: HomeRepository {
 
     override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> = areasSectionsFlow
 
-    override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> =
-        sectionFlow(sectionName)
+    override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> = sectionFlow(sectionName)
 
-    override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> =
-        categoryFlow(category)
+    override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> = categoryFlow(category)
 
     fun sendLatestRecipes(result: Result<List<LikeableRecipe>>) {
         latestFlow.tryEmit(result)
@@ -57,14 +53,19 @@ class FakeHomeRepository: HomeRepository {
         areasSectionsFlow.tryEmit(result)
     }
 
-    fun sendSection(sectionName: String, result: Result<List<LikeableRecipe>>) {
+    fun sendSection(
+        sectionName: String,
+        result: Result<List<LikeableRecipe>>,
+    ) {
         sectionFlow(sectionName).tryEmit(result)
     }
 
-    fun sendCategory(category: String, result: Result<List<LikeableRecipe>>) {
+    fun sendCategory(
+        category: String,
+        result: Result<List<LikeableRecipe>>,
+    ) {
         categoryFlow(category).tryEmit(result)
     }
-
 
     private fun sectionFlow(sectionName: String): MutableSharedFlow<Result<List<LikeableRecipe>>> =
         sectionFlows.getOrPut(sectionName) {
@@ -75,6 +76,4 @@ class FakeHomeRepository: HomeRepository {
         categoryFlows.getOrPut(category) {
             MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
         }
-
-
 }

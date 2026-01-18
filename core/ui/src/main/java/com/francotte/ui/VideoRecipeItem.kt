@@ -33,32 +33,36 @@ import com.francotte.model.LikeableRecipe
 fun VideoRecipeItem(
     modifier: Modifier = Modifier,
     likeableRecipe: LikeableRecipe,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: () -> Unit,
     onVideoButtonClick: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .height(360.dp)
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { onOpenRecipe() }) {
+        modifier =
+            modifier
+                .padding(horizontal = 16.dp)
+                .height(360.dp)
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { onOpenRecipe() },
+    ) {
         Box {
             Image(
                 painter =
                     rememberAsyncImagePainter(
-                        model = imageRequestBuilder(
-                            LocalContext.current,
-                            likeableRecipe.recipe.strMealThumb
-                        )
+                        model =
+                            imageRequestBuilder(
+                                LocalContext.current,
+                                likeableRecipe.recipe.strMealThumb,
+                            ),
                     ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
             )
             Text(
                 text = likeableRecipe.recipe.strMeal,
@@ -68,26 +72,29 @@ fun VideoRecipeItem(
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.TopStart)
+                modifier =
+                    Modifier
+                        .padding(16.dp)
+                        .align(Alignment.TopStart),
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_card_play),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(60.dp)
-                    .align(Alignment.Center)
-                    .clickable { onVideoButtonClick() }
+                modifier =
+                    Modifier
+                        .size(60.dp)
+                        .align(Alignment.Center)
+                        .clickable { onVideoButtonClick() },
             )
             FavButton(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .align(Alignment.BottomEnd),
+                modifier =
+                    Modifier
+                        .padding(12.dp)
+                        .align(Alignment.BottomEnd),
                 buttonSize = 55.dp,
                 iconSize = 30.dp,
-                onToggleFavorite = { checked -> onToggleFavorite(likeableRecipe, checked) },
-                isFavorite = likeableRecipe.isFavorite
+                onToggleFavorite = { onToggleFavorite(likeableRecipe) },
+                isFavorite = likeableRecipe.isFavorite,
             )
         }
     }

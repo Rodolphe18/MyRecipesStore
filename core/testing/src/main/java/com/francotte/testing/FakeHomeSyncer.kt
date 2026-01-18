@@ -7,9 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class FakeHomeSyncer(
     private val delayMs: Long = 0L,
-    private var nextResult: Result<Unit> = Result.success(Unit)
+    private var nextResult: Result<Unit> = Result.success(Unit),
 ) : HomeSyncer {
-
     // Spy: nombre d'appels + derniers paramètres
     private val _callCount = AtomicInteger(0)
     val callCount: Int get() = _callCount.get()

@@ -18,26 +18,26 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object JsonModule {
-
     @Singleton
     @Provides
-    fun providesJson(): Json = Json {
-        serializersModule = SerializersModule {
-            polymorphic(NetworkAbstractRecipe::class) {
-                subclass(NetworkRecipe::class, NetworkRecipe.serializer())
-                subclass(NetworkLightRecipe::class, NetworkLightRecipe.serializer())
-            }
-            polymorphic(NetworkAbstractCategory::class) {
-                subclass(NetworkCategory::class, NetworkCategory.serializer())
-                subclass(NetworkLightCategory::class, NetworkLightCategory.serializer())
-            }
+    fun providesJson(): Json =
+        Json {
+            serializersModule =
+                SerializersModule {
+                    polymorphic(NetworkAbstractRecipe::class) {
+                        subclass(NetworkRecipe::class, NetworkRecipe.serializer())
+                        subclass(NetworkLightRecipe::class, NetworkLightRecipe.serializer())
+                    }
+                    polymorphic(NetworkAbstractCategory::class) {
+                        subclass(NetworkCategory::class, NetworkCategory.serializer())
+                        subclass(NetworkLightCategory::class, NetworkLightCategory.serializer())
+                    }
+                }
+            ignoreUnknownKeys = true
+            isLenient = true
+            prettyPrint = false
+            encodeDefaults = true
+            allowStructuredMapKeys = true
+            coerceInputValues = true
         }
-        ignoreUnknownKeys = true
-        isLenient = true
-        prettyPrint = false
-        encodeDefaults = true
-        allowStructuredMapKeys = true
-        coerceInputValues = true
-    }
-
 }

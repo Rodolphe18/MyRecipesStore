@@ -12,7 +12,6 @@ import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlin.annotation.AnnotationRetention.RUNTIME
 
-
 @Retention(AnnotationRetention.RUNTIME)
 @Qualifier
 annotation class ApplicationScope
@@ -30,7 +29,9 @@ object CoroutineScopesModule {
 
 @Qualifier
 @Retention(RUNTIME)
-annotation class Dispatcher(val foodDispatcher: FoodDispatchers)
+annotation class Dispatcher(
+    val foodDispatcher: FoodDispatchers,
+)
 
 enum class FoodDispatchers {
     Default,
@@ -40,7 +41,6 @@ enum class FoodDispatchers {
 @Module
 @InstallIn(SingletonComponent::class)
 object DispatchersModule {
-
     @Provides
     @Dispatcher(FoodDispatchers.IO)
     fun provideIODispatcher(): CoroutineDispatcher = Dispatchers.IO

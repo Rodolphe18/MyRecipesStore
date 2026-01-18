@@ -7,8 +7,8 @@ plugins {
 }
 
 android {
-    namespace = "com.francotte.inapp_rating"
-    compileSdk = 35
+    namespace = "com.francotte.feature.inapp_rating"
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -22,7 +22,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }

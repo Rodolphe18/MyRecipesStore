@@ -10,13 +10,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HomeSyncerImpl @Inject constructor(
-    private val repo: OfflineFirstHomeRepository,
-) : HomeSyncer {
-    override suspend fun syncLatest(force: Boolean) {
-        repo.refreshLatestRecipes(force)
+class HomeSyncerImpl
+    @Inject
+    constructor(
+        private val repo: OfflineFirstHomeRepository,
+    ) : HomeSyncer {
+        override suspend fun syncLatest(force: Boolean) {
+            repo.refreshLatestRecipes(force)
+        }
     }
-}
 
 @Module
 @InstallIn(SingletonComponent::class)

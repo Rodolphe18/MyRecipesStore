@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun CustomTextField(
     text: String,
@@ -50,7 +49,7 @@ fun CustomTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     minLines: Int = 1,
     maxLines: Int = 1,
-    verticalPadding: Dp = 16.dp
+    verticalPadding: Dp = 16.dp,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -62,23 +61,23 @@ fun CustomTextField(
         BasicTextField(
             value = text,
             onValueChange = onTextChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 16.dp, vertical = verticalPadding)
-                .onFocusEvent { event ->
-                    if (event.isFocused) {
-                        scope.launch {
-                            delay(250)
-                            bringIntoViewRequester.bringIntoView()
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
+                    .border(
+                        width = 1.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(12.dp),
+                    ).padding(horizontal = 16.dp, vertical = verticalPadding)
+                    .onFocusEvent { event ->
+                        if (event.isFocused) {
+                            scope.launch {
+                                delay(250)
+                                bringIntoViewRequester.bringIntoView()
+                            }
                         }
-                    }
-                },
+                    },
             textStyle = LocalTextStyle.current.copy(color = Color(0xFF6D4C41)),
             keyboardOptions = keyboardOptions,
             minLines = minLines,
@@ -88,30 +87,28 @@ fun CustomTextField(
             decorationBox = { innerTextField ->
                 Row(
                     Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         if (text.isEmpty()) {
                             Text(
                                 text = label,
                                 color = Color(0xFF6D4C41),
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
                             )
                         }
                         innerTextField()
                     }
                 }
-            }
+            },
         )
     }
 }
 
-
-
 @Composable
 fun PasswordField(
     password: String,
-    onPasswordChange: (String) -> Unit
+    onPasswordChange: (String) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -122,15 +119,15 @@ fun PasswordField(
         BasicTextField(
             value = password,
             onValueChange = onPasswordChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
+                    .border(
+                        width = 1.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(12.dp),
+                    ).padding(horizontal = 16.dp, vertical = 8.dp),
             textStyle = LocalTextStyle.current.copy(color = Color(0xFF6D4C41)),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -139,31 +136,31 @@ fun PasswordField(
             decorationBox = { innerTextField ->
                 Row(
                     Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         if (password.isEmpty()) {
                             Text(
                                 text = "Password",
                                 color = Color(0xFF6D4C41),
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
                             )
                         }
                         innerTextField()
                     }
                     IconButton(
-                        onClick = { passwordVisible = !passwordVisible }
+                        onClick = { passwordVisible = !passwordVisible },
                     ) {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                            tint = Color(0xFF6D4C41)
+                            tint = Color(0xFF6D4C41),
                         )
                     }
                 }
-            }
+            },
         )
     }
 }

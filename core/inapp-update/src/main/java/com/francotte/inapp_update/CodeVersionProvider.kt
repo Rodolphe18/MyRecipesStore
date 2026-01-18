@@ -13,20 +13,20 @@ interface CodeVersionProvider {
     fun currentVersionCode(): Int
 }
 
-class AndroidVersionCodeProvider @Inject constructor(
-    @ApplicationContext private val context: Context
-) : CodeVersionProvider {
-    override fun currentVersionCode(): Int {
-        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) packageInfo.versionCode else packageInfo.longVersionCode.toInt()
+class AndroidVersionCodeProvider
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) : CodeVersionProvider {
+        override fun currentVersionCode(): Int {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) packageInfo.versionCode else packageInfo.longVersionCode.toInt()
+        }
     }
-}
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class VersionModule {
     @Binds
-    abstract fun bindVersionCodeProvider(
-        impl: AndroidVersionCodeProvider
-    ): CodeVersionProvider
+    abstract fun bindVersionCodeProvider(impl: AndroidVersionCodeProvider): CodeVersionProvider
 }

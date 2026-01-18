@@ -20,21 +20,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.francotte.designsystem.R
 
-
 @Composable
-fun ErrorScreen(modifier: Modifier = Modifier, retry: (() -> Unit)) {
-    Column(modifier = modifier.fillMaxSize().padding(20.dp).offset(y=20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+fun ErrorScreen(
+    modifier: Modifier = Modifier,
+    retry: (() -> Unit),
+) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(20.dp).offset(y = 20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Image(painterResource(com.francotte.ui.R.drawable.ic_error), null)
         Spacer(Modifier.height(16.dp))
         Text(stringResource(com.francotte.ui.R.string.error_title), textAlign = TextAlign.Center)
         Spacer(Modifier.height(16.dp))
         Text(
             stringResource(com.francotte.ui.R.string.error_subtitle),
-            textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center,
+        )
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = retry,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(com.francotte.ui.R.string.error_button_text))
         }

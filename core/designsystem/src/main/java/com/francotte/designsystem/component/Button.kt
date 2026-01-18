@@ -14,24 +14,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun CustomButton(onClick:()->Unit, enabled: Boolean, @StringRes contentText: Int){
+fun CustomButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    @StringRes contentText: Int,
+) {
     Button(
         onClick = { onClick() },
         enabled = enabled,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(46.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF6D4C41), // Café brun
-            contentColor = Color.White,
-            disabledContainerColor = Color(0xFFBCAAA4), // plus pâle
-            disabledContentColor = Color.White.copy(alpha = 0.6f)
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(46.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF6D4C41), // Café brun
+                contentColor = Color.White,
+                disabledContainerColor = Color(0xFFBCAAA4), // plus pâle
+                disabledContentColor = Color.White.copy(alpha = 0.6f),
+            ),
     ) {
         Text(
             text = stringResource(id = contentText),
             fontSize = 18.sp,
-            color = Color.White
+            color = Color.White,
         )
     }
 }

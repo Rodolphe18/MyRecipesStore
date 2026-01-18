@@ -2,7 +2,6 @@ package com.francotte.model
 
 import kotlin.Long
 
-
 data class UserData(
     val userId: Long,
     val userName: String,
@@ -15,8 +14,7 @@ data class UserData(
 )
 
 enum class ConnectionMethod {
-    EMAIL, FACEBOOK, GOOGLE;
+    EMAIL,
+    FACEBOOK,
+    GOOGLE,
 }
-
-
-

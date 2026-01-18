@@ -25,11 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
-
 @Composable
 fun CustomTooltip(
     fullText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val displayedText = remember { mutableStateOf("") }
     var visible by remember { mutableStateOf(true) }
@@ -56,44 +55,47 @@ fun CustomTooltip(
         val cornerRadius = 8.dp
 
         Box(
-            modifier = modifier
-                .padding(8.dp)
-                .height(60.dp + triangleHeight)
-                .width(240.dp)
-                .drawBehind {
-                    val tooltipHeight = size.height - triangleHeight.toPx()
-                    val width = size.width
-                    val height = size.height
+            modifier =
+                modifier
+                    .padding(8.dp)
+                    .height(60.dp + triangleHeight)
+                    .width(240.dp)
+                    .drawBehind {
+                        val tooltipHeight = size.height - triangleHeight.toPx()
+                        val width = size.width
+                        val height = size.height
 
-                    val trianglePath = Path().apply {
-                        moveTo(width / 2f - triangleHeight.toPx(), tooltipHeight)
-                        lineTo(width / 2f, height)
-                        lineTo(width / 2f + triangleHeight.toPx(), tooltipHeight)
-                        close()
-                    }
+                        val trianglePath =
+                            Path().apply {
+                                moveTo(width / 2f - triangleHeight.toPx(), tooltipHeight)
+                                lineTo(width / 2f, height)
+                                lineTo(width / 2f + triangleHeight.toPx(), tooltipHeight)
+                                close()
+                            }
 
-                    val brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFFF8541A), Color(0xFFFF6F00)),
-                        start = Offset.Zero,
-                        end = Offset(width, height)
-                    )
+                        val brush =
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFF8541A), Color(0xFFFF6F00)),
+                                start = Offset.Zero,
+                                end = Offset(width, height),
+                            )
 
-                    drawRoundRect(
-                        brush = brush,
-                        topLeft = Offset(0f, 0f),
-                        size = Size(width, tooltipHeight),
-                        cornerRadius = CornerRadius(cornerRadius.toPx())
-                    )
-                    drawPath(trianglePath, brush = brush)
-                },
-            contentAlignment = Alignment.TopCenter
+                        drawRoundRect(
+                            brush = brush,
+                            topLeft = Offset(0f, 0f),
+                            size = Size(width, tooltipHeight),
+                            cornerRadius = CornerRadius(cornerRadius.toPx()),
+                        )
+                        drawPath(trianglePath, brush = brush)
+                    },
+            contentAlignment = Alignment.TopCenter,
         ) {
             Text(
                 text = displayedText.value,
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 12.dp, end = 12.dp, start = 12.dp).align(Alignment.Center)
+                modifier = Modifier.padding(bottom = 12.dp, end = 12.dp, start = 12.dp).align(Alignment.Center),
             )
         }
     }

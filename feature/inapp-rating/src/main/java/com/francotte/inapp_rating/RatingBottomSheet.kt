@@ -56,7 +56,7 @@ fun RatingBottomSheetHost(inAppRatingManager: InAppRatingManager) {
                     inAppRatingManager.requestReviewOnPlayStore(safeActivity)
                 }
             },
-            onLater = { showSheet = false }
+            onLater = { showSheet = false },
         )
     }
 }
@@ -69,37 +69,38 @@ private fun RatingBottomSheet(
 ) {
     ModalBottomSheet(onDismissRequest = onLater) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(top = 8.dp, bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 8.dp, bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = "Tu apprécies l’app ?",
                 style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "Une note sur le Play Store nous aide énormément 🙂",
                 style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedButton(
                     modifier = Modifier.weight(1f),
-                    onClick = onLater
+                    onClick = onLater,
                 ) {
                     Text("Plus tard")
                 }
                 Button(
                     modifier = Modifier.weight(1f),
-                    onClick = onRate
+                    onClick = onRate,
                 ) {
                     Text("Noter")
                 }
@@ -108,4 +109,3 @@ private fun RatingBottomSheet(
         }
     }
 }
-

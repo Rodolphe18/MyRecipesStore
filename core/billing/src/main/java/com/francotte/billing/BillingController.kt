@@ -11,21 +11,29 @@ import javax.inject.Singleton
 
 interface BillingController {
     val isPremium: StateFlow<Boolean>
-    fun launchPurchase(activity: Activity, offerToken: String)
+
+    fun launchPurchase(
+        activity: Activity,
+        offerToken: String,
+    )
 }
 
 @Singleton
-class BillingControllerImpl @Inject constructor(
-    private val billingManager: BillingManager
-) : BillingController {
+class BillingControllerImpl
+    @Inject
+    constructor(
+        private val billingManager: BillingManager,
+    ) : BillingController {
+        override val isPremium: StateFlow<Boolean> = billingManager.isPremium
 
-    override val isPremium: StateFlow<Boolean> = billingManager.isPremium
-
-    override fun launchPurchase(activity: Activity, offerToken: String) {
-        val productDetails = billingManager.productDetails.value ?: return
-        billingManager.launchBillingFlow(activity, productDetails, offerToken)
+        override fun launchPurchase(
+            activity: Activity,
+            offerToken: String,
+        ) {
+            val productDetails = billingManager.productDetails.value ?: return
+            billingManager.launchBillingFlow(activity, productDetails, offerToken)
+        }
     }
-}
 
 @Module
 @InstallIn(SingletonComponent::class)

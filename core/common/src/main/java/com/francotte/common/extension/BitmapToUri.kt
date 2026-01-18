@@ -7,7 +7,10 @@ import android.provider.MediaStore
 import androidx.core.net.toUri
 import java.io.ByteArrayOutputStream
 
-fun bitmapToUri(context: Context, bitmap: Bitmap): Uri {
+fun bitmapToUri(
+    context: Context,
+    bitmap: Bitmap,
+): Uri {
     val bytes = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
     val path =
@@ -15,7 +18,7 @@ fun bitmapToUri(context: Context, bitmap: Bitmap): Uri {
             context.contentResolver,
             bitmap,
             "RecipeImage",
-            null
+            null,
         )
     return path.toUri()
 }

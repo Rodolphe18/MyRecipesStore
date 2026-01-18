@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.francotte.ui"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -20,7 +20,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -42,7 +42,6 @@ dependencies {
     api(project(":core:cmp"))
     api(project(":core:ads"))
     api(project(":core:billing"))
-
 
     implementation(libs.coil.compose)
     implementation("com.google.android.material:material:1.11.0")

@@ -16,7 +16,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AuthModule {
-
     @Singleton
     @Provides
     fun provideAuthManager(
@@ -24,8 +23,6 @@ object AuthModule {
         api: AuthApi,
         preferences: UserDataRepository,
         fullRecipeDao: FullRecipeDao,
-        @ApplicationScope coroutineScope: CoroutineScope
+        @ApplicationScope coroutineScope: CoroutineScope,
     ) = AuthManager(context, api, preferences, fullRecipeDao, coroutineScope)
-
-
 }

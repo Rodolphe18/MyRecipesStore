@@ -14,7 +14,13 @@ import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.robolectric.RuntimeEnvironment
 
-data class TestDevice(val name: String, val widthDp: Int, val heightDp: Int, val dpi: Int)
+data class TestDevice(
+    val name: String,
+    val widthDp: Int,
+    val heightDp: Int,
+    val dpi: Int,
+)
+
 val Phone480 = TestDevice("phone", 640, 360, 480)
 val PhoneLandscape480 = TestDevice("phone_land", 960, 540, 480)
 
@@ -23,7 +29,7 @@ val DefaultRoborazziOptions = RoborazziOptions()
 fun <A : ComponentActivity> AndroidComposeTestRule<ActivityScenarioRule<A>, A>.captureForDevice(
     device: TestDevice,
     fileName: String,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     RuntimeEnvironment.setQualifiers("w${device.widthDp}dp-h${device.heightDp}dp-${device.dpi}dpi")
     setContent {
@@ -33,6 +39,6 @@ fun <A : ComponentActivity> AndroidComposeTestRule<ActivityScenarioRule<A>, A>.c
     }
     onRoot().captureRoboImage(
         "src/test/screenshots/${fileName}_${device.name}.png",
-        roborazziOptions = DefaultRoborazziOptions
+        roborazziOptions = DefaultRoborazziOptions,
     )
 }

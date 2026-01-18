@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LightRecipeDao {
-
     @Query("SELECT * FROM light_recipe_entity")
     fun getAllLightRecipes(): Flow<List<LightRecipeEntity>>
 
@@ -35,8 +34,6 @@ interface LightRecipeDao {
     @Query("SELECT COUNT(*) FROM light_recipe_entity WHERE isLatest = 1")
     suspend fun countLatestLightRecipes(): Int
 
-
-
     @Query("SELECT MAX(lastUpdated) FROM light_recipe_entity WHERE area = :area")
     suspend fun getLastUpdatedForArea(area: String): Long?
 
@@ -49,4 +46,3 @@ interface LightRecipeDao {
     @Query("DELETE FROM light_recipe_entity")
     suspend fun clearAll()
 }
-

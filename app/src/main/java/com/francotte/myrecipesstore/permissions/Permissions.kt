@@ -17,31 +17,34 @@ import com.francotte.common.extension.findActivity
 fun NotificationPermissionEffect() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
     val context = LocalContext.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            Toast.makeText(
-                context,
-                if (isGranted) "Permission granted ✅" else "Permission denied ❌",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    )
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted ->
+                Toast
+                    .makeText(
+                        context,
+                        if (isGranted) "Permission granted ✅" else "Permission denied ❌",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+            },
+        )
 
     LaunchedEffect(Unit) {
-        val hasPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
+        val hasPermission =
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
 
-        val shouldShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
-            context.findActivity(),
-            Manifest.permission.POST_NOTIFICATIONS
-        )
+        val shouldShowRationale =
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                context.findActivity(),
+                Manifest.permission.POST_NOTIFICATIONS,
+            )
 
         if (!hasPermission && !shouldShowRationale) {
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 }
-

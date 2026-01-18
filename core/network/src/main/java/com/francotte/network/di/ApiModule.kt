@@ -1,7 +1,6 @@
 package com.francotte.network.di
 
 import android.content.Context
-import android.util.Log
 import com.francotte.network.api.AuthApi
 import com.francotte.network.api.FavoriteApi
 import com.francotte.network.api.RecipeApi
@@ -16,15 +15,10 @@ import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
 import okhttp3.Dns
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.ResponseBody
-import okio.GzipSource
-import okio.buffer
 import retrofit2.Retrofit
 import retrofit2.create
 import java.io.File
-import java.io.IOException
 import java.net.InetAddress
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
@@ -33,52 +27,58 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApiModule {
-
     @Provides
     @Singleton
-    fun provideCustomDns(): Dns = object :Dns {
-        override fun lookup(hostname: String): List<InetAddress> {
-            return if (hostname == "app.myrecipesstore18.com" || hostname == "myrecipesstore18.com") {
-                listOf(InetAddress.getByName("46.202.170.205"))
-            } else {
-                Dns.SYSTEM.lookup(hostname)
-            }
+    fun provideCustomDns(): Dns =
+        object : Dns {
+            override fun lookup(hostname: String): List<InetAddress> =
+                if (hostname == "app.myrecipesstore18.com" || hostname == "myrecipesstore18.com") {
+                    listOf(InetAddress.getByName("46.202.170.205"))
+                } else {
+                    Dns.SYSTEM.lookup(hostname)
+                }
         }
-    }
 
-    private inline fun <reified A> providesFoodApi(client: OkHttpClient, jsonConverterFactory: JsonConverterFactory): A {
-        return Retrofit.Builder()
+    private inline fun <reified A> providesFoodApi(
+        client: OkHttpClient,
+        jsonConverterFactory: JsonConverterFactory,
+    ): A =
+        Retrofit
+            .Builder()
             .baseUrl("https://www.themealdb.com/api/json/v2/$API_KEY/")
             .client(client)
             .addConverterFactory(jsonConverterFactory)
             .build()
             .create()
-    }
 
-    private inline fun <reified A> providesUserApi(client: OkHttpClient, jsonConverterFactory: JsonConverterFactory): A {
-        return Retrofit.Builder()
+    private inline fun <reified A> providesUserApi(
+        client: OkHttpClient,
+        jsonConverterFactory: JsonConverterFactory,
+    ): A =
+        Retrofit
+            .Builder()
             .baseUrl("https://app.myrecipesstore18.com")
             .client(client)
             .addConverterFactory(jsonConverterFactory)
             .build()
             .create()
-    }
-
 
     @Provides
     @Singleton
     fun provideOkHttpClient(
         @ApplicationContext context: Context,
         sharedExecutor: ExecutorService,
-        dns: Dns
+        dns: Dns,
     ): OkHttpClient {
         val cacheSize = 10 * 1024 * 1024L // 10 MB cache
         val cache = Cache(File(context.cacheDir, "http_cache"), cacheSize)
 
-        val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        return OkHttpClient.Builder()
+        val httpLoggingInterceptor =
+            HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+        return OkHttpClient
+            .Builder()
             .dns(dns)
             .cache(cache)
             .dispatcher(Dispatcher(sharedExecutor))
@@ -90,22 +90,24 @@ object ApiModule {
             .build()
     }
 
+    @Singleton
+    @Provides
+    fun provideRecipeApi(
+        okhttpCall: OkHttpClient,
+        jsonConverterFactory: JsonConverterFactory,
+    ): RecipeApi = providesFoodApi(client = okhttpCall, jsonConverterFactory = jsonConverterFactory)
 
     @Singleton
     @Provides
-    fun provideRecipeApi(okhttpCall: OkHttpClient, jsonConverterFactory: JsonConverterFactory): RecipeApi =
-        providesFoodApi(client = okhttpCall, jsonConverterFactory = jsonConverterFactory)
+    fun provideAuthApi(
+        okhttpCall: OkHttpClient,
+        jsonConverterFactory: JsonConverterFactory,
+    ): AuthApi = providesUserApi(client = okhttpCall, jsonConverterFactory = jsonConverterFactory)
 
     @Singleton
     @Provides
-    fun provideAuthApi(okhttpCall: OkHttpClient, jsonConverterFactory: JsonConverterFactory): AuthApi {
-        return providesUserApi(client = okhttpCall, jsonConverterFactory = jsonConverterFactory)
-    }
-
-    @Singleton
-    @Provides
-    fun provideFavoriteApi(okhttpCall: OkHttpClient, jsonConverterFactory: JsonConverterFactory): FavoriteApi =
-        providesUserApi(client = okhttpCall, jsonConverterFactory = jsonConverterFactory)
-
-
+    fun provideFavoriteApi(
+        okhttpCall: OkHttpClient,
+        jsonConverterFactory: JsonConverterFactory,
+    ): FavoriteApi = providesUserApi(client = okhttpCall, jsonConverterFactory = jsonConverterFactory)
 }

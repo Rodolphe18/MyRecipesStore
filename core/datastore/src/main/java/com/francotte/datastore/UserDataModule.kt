@@ -9,7 +9,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 interface UserDataModule {
-
     @Suppress("unused")
     @Singleton
     @Binds

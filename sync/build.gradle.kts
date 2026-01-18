@@ -6,8 +6,8 @@ plugins {
 }
 
 android {
-    namespace = "com.francotte.ui"
-    compileSdk = 35
+    namespace = "com.francotte.sync"
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -21,7 +21,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -51,6 +51,4 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.retrofit.core)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-
-    
 }

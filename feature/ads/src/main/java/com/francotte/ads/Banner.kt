@@ -4,9 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,10 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.francotte.ui.LocalBillingController
 
-
 @Composable
 fun BannerAd(
-    horizontalPadding: Dp= 0.dp,
+    horizontalPadding: Dp = 0.dp,
     placement: BannerPlacement,
     provider: BannerAdProvider,
 ) {
@@ -36,22 +33,21 @@ fun BannerAd(
     if (isPremium) return
 
     provider.Banner(
-            placement = placement,
-            useAdaptiveSize = true,
-            horizontalPadding = horizontalPadding,
-            heightFallback = 100.dp
+        placement = placement,
+        useAdaptiveSize = true,
+        horizontalPadding = horizontalPadding,
+        heightFallback = 100.dp,
     )
 }
-
 
 @Composable
 fun <T> ListWithBanners(
     items: List<T>,
-    horizontalPadding:Dp,
+    horizontalPadding: Dp,
     bannerInterval: Int = 5,
     placement: BannerPlacement,
     provider: BannerAdProvider,
-    itemContent: @Composable (index: Int, item: T) -> Unit
+    itemContent: @Composable (index: Int, item: T) -> Unit,
 ) {
     val totalItemCount = items.size + (items.size / bannerInterval)
     for (index in 0 until totalItemCount) {
@@ -61,7 +57,7 @@ fun <T> ListWithBanners(
                 placement = placement,
                 useAdaptiveSize = true,
                 horizontalPadding = horizontalPadding,
-                heightFallback = 50.dp
+                heightFallback = 50.dp,
             )
         } else if (actualItemIndex in items.indices) {
             itemContent(index, items[actualItemIndex])
@@ -75,7 +71,7 @@ fun <T> LazyListWithBanners(
     bannerInterval: Int = 5,
     placement: BannerPlacement,
     provider: BannerAdProvider,
-    itemContent: @Composable (item: T) -> Unit
+    itemContent: @Composable (item: T) -> Unit,
 ) {
     LazyColumn {
         val totalCount = items.size + items.size / bannerInterval
@@ -87,7 +83,7 @@ fun <T> LazyListWithBanners(
                     placement = placement,
                     useAdaptiveSize = true,
                     horizontalPadding = 16.dp,
-                    heightFallback = 50.dp
+                    heightFallback = 50.dp,
                 )
             } else if (actualItemIndex < items.size) {
                 itemContent(items[actualItemIndex])
@@ -95,7 +91,6 @@ fun <T> LazyListWithBanners(
         }
     }
 }
-
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -127,7 +122,7 @@ fun LazyGridWithBanners(
         contentPadding = contentPadding,
         flingBehavior = flingBehavior,
         horizontalArrangement = horizontalArrangement,
-        verticalArrangement = verticalArrangement
+        verticalArrangement = verticalArrangement,
     ) {
         items(
             count = totalCountWithBanners,
@@ -141,27 +136,32 @@ fun LazyGridWithBanners(
                 }
             },
             contentType = { index ->
-                if ((index + 1) % bannerStep == 0) bannerContentType
-                else {
+                if ((index + 1) % bannerStep == 0) {
+                    bannerContentType
+                } else {
                     val realIndex = index - (index / bannerStep)
                     itemContentType(realIndex)
                 }
             },
             span = { index ->
                 if ((index + 1) % bannerStep == 0) GridItemSpan(columns) else GridItemSpan(1)
-            }
+            },
         ) { index ->
             if ((index + 1) % bannerStep == 0) {
-                Box(modifier = Modifier.layout { measurable, constraints ->
-                    val placeable = measurable.measure(
-                        constraints.copy(
-                            maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
-                        ),
-                    )
-                    layout(placeable.width, placeable.height) {
-                        placeable.place(0, 0)
-                    }
-                }) {
+                Box(
+                    modifier =
+                        Modifier.layout { measurable, constraints ->
+                            val placeable =
+                                measurable.measure(
+                                    constraints.copy(
+                                        maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
+                                    ),
+                                )
+                            layout(placeable.width, placeable.height) {
+                                placeable.place(0, 0)
+                            }
+                        },
+                ) {
                     bannerContent()
                 }
             } else {

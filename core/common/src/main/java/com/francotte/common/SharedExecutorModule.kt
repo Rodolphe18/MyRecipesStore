@@ -15,34 +15,26 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object SharedExecutorModule {
-
     @Provides
     @Singleton
-    fun provideSharedExecutor(): ExecutorService {
-        return Executors.newFixedThreadPool(4)
-    }
+    fun provideSharedExecutor(): ExecutorService = Executors.newFixedThreadPool(4)
 
     @Provides
     @Singleton
     fun provideImageLoader(
         context: Context,
-        sharedExecutor: ExecutorService
-    ): ImageLoader {
-        return ImageLoader.Builder(context)
+        sharedExecutor: ExecutorService,
+    ): ImageLoader =
+        ImageLoader
+            .Builder(context)
             .dispatcher(sharedExecutor.asCoroutineDispatcher())
             .build()
-    }
-
 
     @Provides
     @Singleton
-    fun provideWorkManagerConfiguration(
-        sharedExecutor: ExecutorService
-    ): Configuration {
-        return Configuration.Builder()
+    fun provideWorkManagerConfiguration(sharedExecutor: ExecutorService): Configuration =
+        Configuration
+            .Builder()
             .setExecutor(sharedExecutor)
             .build()
-    }
-
-
 }

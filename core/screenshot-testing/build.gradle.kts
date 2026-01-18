@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.francotte.screenshot_testing"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -20,7 +20,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -44,7 +44,7 @@ dependencies {
     implementation(libs.androidx.compose.material3.window.size.class1)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    
+
     api(libs.roborazzi)
     api(libs.roborazzi.accessibility.check)
     testImplementation(libs.androidx.activity.compose)
@@ -53,5 +53,4 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.9.3")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.9.3")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
-
 }

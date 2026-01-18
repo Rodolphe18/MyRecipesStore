@@ -21,46 +21,51 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination
+import androidx.navigation3.runtime.NavKey
 import com.francotte.designsystem.component.CustomNavigationBarItem
 import com.francotte.designsystem.theme.Orange
+import com.francotte.navigation.NavigationState
 
 @Composable
 fun BottomBar(
     modifier: Modifier = Modifier,
-    destinations: List<TopLevelDestination>,
-    onNavigateToDestination: (TopLevelDestination) -> Unit,
-    currentDestination: NavDestination?,
-    isAuthenticated: Boolean
+    navigationState: NavigationState,
+    onNavigateToDestination: (NavKey) -> Unit,
+    isAuthenticated: Boolean,
 ) {
     NavigationBar(modifier = modifier) {
-        val customDestinations =
-            if (isAuthenticated) destinations.filterNot { it == TopLevelDestination.LOGIN } else destinations.filterNot { it == TopLevelDestination.FAVORITES }
-        customDestinations.forEach { destination ->
-            val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
+        val currentNavItems =
+            if (isAuthenticated) {
+                TOP_LEVEL_NAV_ITEMS.filterNot { it.value == LOGIN }
+            } else {
+                TOP_LEVEL_NAV_ITEMS.filterNot { it.value == FAVORITES }
+            }
+        currentNavItems.forEach { (navKey, navItem) ->
+            val selected = navKey == navigationState.currentTopLevelKey
 
-            if (destination == TopLevelDestination.ADD) {
+            if (navItem == ADD) {
                 Box(
                     modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(55.dp)
-                            .clip(CircleShape)
-                            .background(Orange)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                onNavigateToDestination(destination)
-                            },
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(55.dp)
+                                .clip(CircleShape)
+                                .background(Orange)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) {
+                                    onNavigateToDestination(navKey)
+                                },
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             Icons.Filled.Add,
                             contentDescription = null,
-                            tint = Color.White
+                            tint = Color.White,
                         )
                     }
                 }
@@ -68,20 +73,20 @@ fun BottomBar(
                 CustomNavigationBarItem(
                     selected = selected,
                     selectedIndicatorColor = Orange.copy(0.1f),
-                    onClick = { onNavigateToDestination(destination) },
+                    onClick = { onNavigateToDestination(navKey) },
                     icon = {
                         Icon(
-                            imageVector = destination.icon,
-                            contentDescription = null
+                            imageVector = navItem.selectedIcon,
+                            contentDescription = null,
                         )
                     },
                     label = {
                         Text(
-                            stringResource(destination.titleTextId),
+                            stringResource(navItem.titleTextId),
                             fontWeight = FontWeight.Light,
-                            fontSize = 10.sp
+                            fontSize = 10.sp,
                         )
-                    }
+                    },
                 )
             }
         }

@@ -1,21 +1,21 @@
 package com.francotte.premium
 
-//import android.app.Activity
-//import android.content.Context
-//import com.android.billingclient.api.BillingClient
-//import com.android.billingclient.api.BillingClientStateListener
-//import com.android.billingclient.api.BillingFlowParams
-//import com.android.billingclient.api.BillingResult
-//import com.android.billingclient.api.QueryProductDetailsParams
-//import dagger.Module
-//import dagger.Provides
-//import dagger.hilt.InstallIn
-//import dagger.hilt.android.qualifiers.ApplicationContext
-//import dagger.hilt.components.SingletonComponent
-//import javax.inject.Singleton
+// import android.app.Activity
+// import android.content.Context
+// import com.android.billingclient.api.BillingClient
+// import com.android.billingclient.api.BillingClientStateListener
+// import com.android.billingclient.api.BillingFlowParams
+// import com.android.billingclient.api.BillingResult
+// import com.android.billingclient.api.QueryProductDetailsParams
+// import dagger.Module
+// import dagger.Provides
+// import dagger.hilt.InstallIn
+// import dagger.hilt.android.qualifiers.ApplicationContext
+// import dagger.hilt.components.SingletonComponent
+// import javax.inject.Singleton
 //
-//@Singleton
-//class BillingManager(context: Context) {
+// @Singleton
+// class BillingManager(context: Context) {
 //    private val billingClient = BillingClient.newBuilder(context)
 //        .setListener { billingResult, purchases ->
 //            // Traiter l'achat ici
@@ -68,13 +68,13 @@ package com.francotte.premium
 //            billingClient.launchBillingFlow(activity, billingFlowParams)
 //        }
 //    }
-//}
+// }
 //
-//@Module
-//@InstallIn(SingletonComponent::class)
-//object BillingModule {
+// @Module
+// @InstallIn(SingletonComponent::class)
+// object BillingModule {
 //
 //    @Provides
 //    @Singleton
 //    fun provideBillingManager(@ApplicationContext context: Context): BillingManager = BillingManager(context)
-//}
+// }

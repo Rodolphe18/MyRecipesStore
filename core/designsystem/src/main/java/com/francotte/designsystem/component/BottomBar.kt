@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.francotte.designsystem.theme.Orange
 
-
 @Composable
 fun RowScope.CustomNavigationBarItem(
     selected: Boolean,
@@ -29,20 +28,16 @@ fun RowScope.CustomNavigationBarItem(
         modifier = modifier,
         enabled = enabled,
         label = label,
-        colors = NavigationBarItemColors(
-            Orange,
-            Orange,
-            selectedIndicatorColor,
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.primaryContainer,
-        ),
+        colors =
+            NavigationBarItemColors(
+                Orange,
+                Orange,
+                selectedIndicatorColor,
+                MaterialTheme.colorScheme.primaryContainer,
+                MaterialTheme.colorScheme.primaryContainer,
+                MaterialTheme.colorScheme.primaryContainer,
+                MaterialTheme.colorScheme.primaryContainer,
+            ),
         alwaysShowLabel = alwaysShowLabel,
     )
 }
-
-
-
-
-

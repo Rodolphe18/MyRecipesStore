@@ -59,7 +59,3 @@ val SearchItemDarkModeColor2 = Color(0xFF37474F)
 
 @Stable
 val SearchItemDarkModeColor3 = Color(0xFF263238)
-
-
-
-

@@ -6,19 +6,20 @@ import com.francotte.common.counters.LaunchCountPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class LaunchCountPreferencesImpl @Inject constructor(
-    @ApplicationContext context: Context
-) : LaunchCountPreferences {
+class LaunchCountPreferencesImpl
+    @Inject
+    constructor(
+        @ApplicationContext context: Context,
+    ) : LaunchCountPreferences {
+        private val prefs = context.getSharedPreferences("launcher_count_prefs", Context.MODE_PRIVATE)
 
-    private val prefs = context.getSharedPreferences("launcher_count_prefs", Context.MODE_PRIVATE)
+        companion object {
+            private const val KEY_LAUNCH_COUNT = "launch_count"
+        }
 
-    companion object {
-        private const val KEY_LAUNCH_COUNT = "launch_count"
+        override fun launchCount(): Int = prefs.getInt(KEY_LAUNCH_COUNT, 0)
+
+        override fun setLaunchCount(value: Int) {
+            prefs.edit { putInt(KEY_LAUNCH_COUNT, value) }
+        }
     }
-
-    override fun launchCount(): Int = prefs.getInt(KEY_LAUNCH_COUNT, 0)
-
-    override fun setLaunchCount(value: Int) {
-        prefs.edit { putInt(KEY_LAUNCH_COUNT, value) }
-    }
-}

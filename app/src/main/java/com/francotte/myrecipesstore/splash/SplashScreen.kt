@@ -18,19 +18,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import com.francotte.ui.R
 
-
 @Composable
 fun SplashScreen() {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.orange)),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(colorResource(R.color.orange)),
+        contentAlignment = Alignment.Center,
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_recipe_launcher),
             contentDescription = "Logo",
-            modifier = Modifier.size(250.dp)
+            modifier = Modifier.size(250.dp),
         )
     }
 }

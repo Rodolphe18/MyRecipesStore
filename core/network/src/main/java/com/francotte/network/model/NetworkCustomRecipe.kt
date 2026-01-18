@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import com.francotte.model.CustomIngredient
 import com.francotte.model.CustomRecipe
-import com.francotte.model.LightRecipe
 import kotlinx.serialization.Serializable
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -16,15 +15,16 @@ import kotlin.String
 data class NetworkCustomIngredient(
     val name: String,
     val quantity: String,
-    val measureType: String
+    val measureType: String,
 )
 
 @Serializable
 data class NetworkCustomRecipe(
-    val id: String, val title: String,
+    val id: String,
+    val title: String,
     val ingredients: List<NetworkCustomIngredient>,
     val instructions: String,
-    val imageUrl: String?
+    val imageUrl: String?,
 )
 
 fun NetworkCustomRecipe.asExternalModel(): CustomRecipe =
@@ -33,10 +33,10 @@ fun NetworkCustomRecipe.asExternalModel(): CustomRecipe =
         title = title,
         ingredients = ingredients.map { it.asExternalModel() },
         instructions = instructions,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
     )
 
-fun NetworkCustomIngredient.asExternalModel(): CustomIngredient = CustomIngredient(name,quantity,measureType)
+fun NetworkCustomIngredient.asExternalModel(): CustomIngredient = CustomIngredient(name, quantity, measureType)
 
 fun CustomRecipe.asDto(): NetworkCustomRecipe =
     NetworkCustomRecipe(
@@ -44,13 +44,16 @@ fun CustomRecipe.asDto(): NetworkCustomRecipe =
         title = title,
         ingredients = ingredients.map { it.asDto() },
         instructions = instructions,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
     )
 
-fun CustomIngredient.asDto(): NetworkCustomIngredient = NetworkCustomIngredient(name,quantity,measureType)
+fun CustomIngredient.asDto(): NetworkCustomIngredient = NetworkCustomIngredient(name, quantity, measureType)
 
-
-fun uriToMultipart(uri: Uri?, context: Context, partName: String = "images"): MultipartBody.Part? {
+fun uriToMultipart(
+    uri: Uri?,
+    context: Context,
+    partName: String = "images",
+): MultipartBody.Part? {
     val contentResolver = context.contentResolver
     val inputStream = uri?.let { contentResolver.openInputStream(it) ?: return null }
     val fileName = uri?.lastPathSegment ?: "image.jpg"
@@ -62,4 +65,3 @@ fun uriToMultipart(uri: Uri?, context: Context, partName: String = "images"): Mu
     val requestBody = file.asRequestBody(mediaType)
     return MultipartBody.Part.createFormData(partName, file.name, requestBody)
 }
-

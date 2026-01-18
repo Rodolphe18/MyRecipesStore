@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CustomCircularProgressIndicator(modifier: Modifier=Modifier) {
+fun CustomCircularProgressIndicator(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(modifier = Modifier.size(50.dp).testTag("loadingWheel"), color = Color.Red)
     }

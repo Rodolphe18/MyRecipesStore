@@ -19,94 +19,112 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class OfflineFirstHomeRepository @Inject constructor(
-    private val lightRecipeDao: LightRecipeDao,
-    private val fullRecipeDao: FullRecipeDao,
-    private val network: RecipeApi,
-) : RecipesRepository {
+class OfflineFirstHomeRepository
+    @Inject
+    constructor(
+        private val lightRecipeDao: LightRecipeDao,
+        private val fullRecipeDao: FullRecipeDao,
+        private val network: RecipeApi,
+    ) : RecipesRepository {
+        override suspend fun refreshLatestRecipes(force: Boolean) =
+            withContext(Dispatchers.IO) {
+                val lastUpdated = fullRecipeDao.getLastUpdatedForLatest()
+                val now = System.currentTimeMillis()
+                val ttl = 24 * 60 * 60 * 1000
 
+                val shouldRefresh = force || lastUpdated == null || now - lastUpdated > ttl
+                if (!shouldRefresh) return@withContext
 
-    override suspend fun refreshLatestRecipes(force: Boolean) = withContext(Dispatchers.IO) {
-        val lastUpdated = fullRecipeDao.getLastUpdatedForLatest()
-        val now = System.currentTimeMillis()
-        val ttl = 24 * 60 * 60 * 1000
+                val networkData =
+                    network
+                        .getLatestMeals()
+                        .meals
+                        .filterIsInstance<NetworkRecipe>()
+                        .filter { !it.strMealThumb.isNullOrBlank() }
 
-        val shouldRefresh = force || lastUpdated == null || now - lastUpdated > ttl
-        if (!shouldRefresh) return@withContext
-
-        val networkData = network.getLatestMeals().meals
-            .filterIsInstance<NetworkRecipe>()
-            .filter { !it.strMealThumb.isNullOrBlank() }
-
-        val entities = networkData.map {
-            it.asEntity().apply {
-                this.isLatest = true
-                this.lastUpdated = now
+                val entities =
+                    networkData.map {
+                        it.asEntity().apply {
+                            this.isLatest = true
+                            this.lastUpdated = now
+                        }
+                    }
+                fullRecipeDao.refreshLatest(entities)
             }
-        }
-        fullRecipeDao.refreshLatest(entities)
+
+        override fun observeLatestRecipes(): Flow<List<Recipe>> =
+            fullRecipeDao.getLatestFullRecipes().map { it.map { e -> e.asExternalModel() } }
+
+        override fun getRecipesListByArea(area: String): Flow<List<LightRecipe>> =
+            flow {
+                val lastUpdated = lightRecipeDao.getLastUpdatedForArea(area)
+                val now = System.currentTimeMillis()
+                val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
+                if (lastUpdated == null || now - lastUpdated > ttl) {
+                    val networkData = network.getRecipesListByArea(area).meals.filterIsInstance<NetworkLightRecipe>()
+                    val entities =
+                        networkData.map {
+                            it.asEntity().apply {
+                                this.area = area
+                                this.lastUpdated = now
+                            }
+                        }
+                    lightRecipeDao.upsertAllLightRecipes(entities)
+                }
+                emitAll(
+                    lightRecipeDao
+                        .getLightRecipesByArea(area)
+                        .map { list -> list.map { it.asExternalModel() } },
+                )
+            }.flowOn(Dispatchers.IO)
+
+        override fun getRecipesByCategory(category: String): Flow<List<LightRecipe>> =
+            flow {
+                val lastUpdated = lightRecipeDao.getLastUpdatedForCategory(category)
+                val now = System.currentTimeMillis()
+                val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
+                if (lastUpdated == null || now - lastUpdated > ttl) {
+                    val networkData = network.getRecipesListByCategory(category).meals.filterIsInstance<NetworkLightRecipe>()
+                    val entities =
+                        networkData.map {
+                            it.asEntity().apply {
+                                this.category = category
+                                this.lastUpdated = now
+                            }
+                        }
+                    lightRecipeDao.upsertAllLightRecipes(entities)
+                }
+                emitAll(
+                    lightRecipeDao
+                        .getLightRecipesByCategory(category)
+                        .map { list -> list.map { it.asExternalModel() } },
+                )
+            }.flowOn(Dispatchers.IO)
+
+        override fun getRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>> =
+            flow {
+                try {
+                    val networkData =
+                        network
+                            .getRecipesListByMultiIngredients(
+                                ingredients.joinToString(),
+                            ).meals
+                            .filterIsInstance<NetworkLightRecipe>()
+                    emit(networkData.map { it.asExternalModel() })
+                } catch (e: Exception) {
+                    emit(emptyList())
+                }
+            }.flowOn(Dispatchers.IO)
     }
-
-    override fun observeLatestRecipes(): Flow<List<Recipe>> =
-        fullRecipeDao.getLatestFullRecipes().map { it.map { e -> e.asExternalModel() } }
-
-
-    override fun getRecipesListByArea(area: String): Flow<List<LightRecipe>> = flow {
-        val lastUpdated = lightRecipeDao.getLastUpdatedForArea(area)
-        val now = System.currentTimeMillis()
-        val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
-        if (lastUpdated == null || now - lastUpdated > ttl) {
-            val networkData = network.getRecipesListByArea(area).meals.filterIsInstance<NetworkLightRecipe>()
-            val entities = networkData.map {
-                it.asEntity().apply {
-                    this.area = area
-                    this.lastUpdated = now
-                }
-            }
-            lightRecipeDao.upsertAllLightRecipes(entities)
-        }
-        emitAll(
-            lightRecipeDao.getLightRecipesByArea(area)
-                .map { list -> list.map { it.asExternalModel() } }
-        )
-    }.flowOn(Dispatchers.IO)
-
-    override fun getRecipesByCategory(category: String): Flow<List<LightRecipe>> = flow {
-        val lastUpdated = lightRecipeDao.getLastUpdatedForCategory(category)
-        val now = System.currentTimeMillis()
-        val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
-        if (lastUpdated == null || now - lastUpdated > ttl) {
-            val networkData = network.getRecipesListByCategory(category).meals.filterIsInstance<NetworkLightRecipe>()
-            val entities = networkData.map {
-                it.asEntity().apply {
-                    this.category = category
-                    this.lastUpdated = now
-                }
-            }
-            lightRecipeDao.upsertAllLightRecipes(entities)
-        }
-        emitAll(
-            lightRecipeDao.getLightRecipesByCategory(category)
-                .map { list -> list.map { it.asExternalModel() } }
-        )
-    }.flowOn(Dispatchers.IO)
-
-    override fun getRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>> = flow {
-        try {
-            val networkData = network.getRecipesListByMultiIngredients(ingredients.joinToString()).meals.filterIsInstance<NetworkLightRecipe>()
-            emit(networkData.map { it.asExternalModel() })
-        } catch (e: Exception) {
-            emit(emptyList())
-        }
-    }.flowOn(Dispatchers.IO)
-
-
-}
 
 interface RecipesRepository {
     fun observeLatestRecipes(): Flow<List<Recipe>>
+
     suspend fun refreshLatestRecipes(force: Boolean = false)
+
     fun getRecipesListByArea(area: String): Flow<List<LightRecipe>>
+
     fun getRecipesByCategory(category: String): Flow<List<LightRecipe>>
-    fun getRecipesByIngredients(ingredients:List<String>): Flow<List<LightRecipe>>
+
+    fun getRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>>
 }

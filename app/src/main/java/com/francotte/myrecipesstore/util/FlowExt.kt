@@ -5,8 +5,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-inline fun <T> CoroutineScope.startCollection(flow: Flow<T>, crossinline block: suspend (T) -> Unit): Job {
-    return launch {
+inline fun <T> CoroutineScope.startCollection(
+    flow: Flow<T>,
+    crossinline block: suspend (T) -> Unit,
+): Job =
+    launch {
         flow.collect { block(it) }
     }
-}

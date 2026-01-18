@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.francotte.common"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -21,7 +21,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -41,12 +41,11 @@ dependencies {
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    
+
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     ksp(libs.hilt.compiler)
     implementation(libs.coil.compose)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation (libs.androidx.activity.ktx)
-
+    implementation(libs.androidx.activity.ktx)
 }

@@ -28,165 +28,175 @@ import java.util.concurrent.ExecutorService
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
-class FoodPreferencesDataRepository @Inject constructor(
-    private val userPreferences: DataStore<UserPreferences>,
-) : UserDataRepository {
-    override val userData = userPreferences.data
-        .map {
-            UserData(
-                userId = it.userInfo.user.id,
-                userName = it.userInfo.user.userName,
-                connectionMethod = it.toConnectionMethod(),
-                email = it.userInfo.user.email,
-                image = it.userInfo.user.image,
-                isConnected = it.userInfo.connected,
-                token = it.userInfo.token,
-                favoriteRecipesIds = it.favoritesIdsMap.keys
-            )
-        }
-
-    override suspend fun setFavoritesIds(favoritesIds: Set<String>) {
-        try {
-            userPreferences.updateData {
-                it.copy {
-                    this.favoritesIds.clear()
-                    this.favoritesIds.putAll(favoritesIds.associateWith { true })
+class FoodPreferencesDataRepository
+    @Inject
+    constructor(
+        private val userPreferences: DataStore<UserPreferences>,
+    ) : UserDataRepository {
+        override val userData =
+            userPreferences.data
+                .map {
+                    UserData(
+                        userId = it.userInfo.user.id,
+                        userName = it.userInfo.user.userName,
+                        connectionMethod = it.toConnectionMethod(),
+                        email = it.userInfo.user.email,
+                        image = it.userInfo.user.image,
+                        isConnected = it.userInfo.connected,
+                        token = it.userInfo.token,
+                        favoriteRecipesIds = it.favoritesIdsMap.keys,
+                    )
                 }
-            }
-        } catch (ioException: IOException) {
-            Log.e("FoodPreferences", "Failed to update favorite ids", ioException)
-        }
-    }
 
-    override suspend fun setFavoriteId(favoriteId: String, isFavorite: Boolean) {
-        try {
-            userPreferences.updateData {
-                it.copy {
-                    if (isFavorite) {
-                        this.favoritesIds.put(favoriteId, true)
-                    } else {
-                        this.favoritesIds.remove(favoriteId)
+        override suspend fun setFavoritesIds(favoritesIds: Set<String>) {
+            try {
+                userPreferences.updateData {
+                    it.copy {
+                        this.favoritesIds.clear()
+                        this.favoritesIds.putAll(favoritesIds.associateWith { true })
                     }
                 }
+            } catch (ioException: IOException) {
+                Log.e("FoodPreferences", "Failed to update favorite ids", ioException)
             }
-        } catch (ioException: IOException) {
-            Log.e("FoodPreferences", "Failed to update user favorites ids", ioException)
         }
-    }
 
-    override suspend fun updateUserInfo(
-        isConnected: Boolean,
-        name: String,
-        userId: Long,
-        userToken: String,
-        userEmail: String,
-        userImage: String
-    ) {
-        try {
-            userPreferences.updateData {
-                it.copy {
-                    this.userInfo = userInfo {
-                        connected = isConnected
-                        user = user {
-                            userName = name
-                            id = userId
-                            email = userEmail
-                            image = userImage
+        override suspend fun setFavoriteId(
+            favoriteId: String,
+            isFavorite: Boolean,
+        ) {
+            try {
+                userPreferences.updateData {
+                    it.copy {
+                        if (isFavorite) {
+                            this.favoritesIds.put(favoriteId, true)
+                        } else {
+                            this.favoritesIds.remove(favoriteId)
                         }
-                        token = userToken
-
                     }
                 }
+            } catch (ioException: IOException) {
+                Log.e("FoodPreferences", "Failed to update user favorites ids", ioException)
             }
-        } catch (ioException: IOException) {
-            Log.e("FoodPreferences", "Failed to update user info", ioException)
         }
-    }
 
-    override suspend fun deleteFavoriteIds() {
-        try {
+        override suspend fun updateUserInfo(
+            isConnected: Boolean,
+            name: String,
+            userId: Long,
+            userToken: String,
+            userEmail: String,
+            userImage: String,
+        ) {
+            try {
+                userPreferences.updateData {
+                    it.copy {
+                        this.userInfo =
+                            userInfo {
+                                connected = isConnected
+                                user =
+                                    user {
+                                        userName = name
+                                        id = userId
+                                        email = userEmail
+                                        image = userImage
+                                    }
+                                token = userToken
+                            }
+                    }
+                }
+            } catch (ioException: IOException) {
+                Log.e("FoodPreferences", "Failed to update user info", ioException)
+            }
+        }
+
+        override suspend fun deleteFavoriteIds() {
+            try {
+                userPreferences.updateData {
+                    it.copy {
+                        this.favoritesIds.clear()
+                    }
+                }
+            } catch (ioException: IOException) {
+                Log.e("FoodPreferences", "Failed to update favorite ids", ioException)
+            }
+        }
+
+        override suspend fun deleteUser() {
             userPreferences.updateData {
                 it.copy {
                     this.favoritesIds.clear()
-                }
-            }
-        } catch (ioException: IOException) {
-            Log.e("FoodPreferences", "Failed to update favorite ids", ioException)
-        }
-    }
-
-    override suspend fun deleteUser() {
-        userPreferences.updateData {
-            it.copy {
-                this.favoritesIds.clear()
-                this.userInfo = userInfo {
-                    connected = false
-                    user = user {
-                        userName = ""
-                        id = -1
-                        email = ""
-                        image = ""
-                    }
-                    token = ""
+                    this.userInfo =
+                        userInfo {
+                            connected = false
+                            user =
+                                user {
+                                    userName = ""
+                                    id = -1
+                                    email = ""
+                                    image = ""
+                                }
+                            token = ""
+                        }
                 }
             }
         }
-    }
 
-    override suspend fun isFavoriteLocal(recipeId: String): Boolean {
-        return userPreferences.data.first().favoritesIdsMap.containsKey(recipeId)
-    }
+        override suspend fun isFavoriteLocal(recipeId: String): Boolean =
+            userPreferences.data
+                .first()
+                .favoritesIdsMap
+                .containsKey(recipeId)
 
-    override suspend fun upsertPendingFavorite(recipeId: String, desiredFavorite: Boolean) {
-        userPreferences.updateData { prefs ->
-            prefs.copy {
-                this.pendingFavorites.put(
-                    recipeId,
-                    pendingFavoriteAction {
-                        this.recipeId = recipeId
-                        this.desiredFavorite = desiredFavorite
-                        this.createdAt = System.currentTimeMillis()
-                    }
-                )
+        override suspend fun upsertPendingFavorite(
+            recipeId: String,
+            desiredFavorite: Boolean,
+        ) {
+            userPreferences.updateData { prefs ->
+                prefs.copy {
+                    this.pendingFavorites.put(
+                        recipeId,
+                        pendingFavoriteAction {
+                            this.recipeId = recipeId
+                            this.desiredFavorite = desiredFavorite
+                            this.createdAt = System.currentTimeMillis()
+                        },
+                    )
+                }
+            }
+        }
+
+        override suspend fun removePendingFavorite(recipeId: String) {
+            userPreferences.updateData { prefs ->
+                prefs.copy {
+                    this.pendingFavorites.remove(recipeId)
+                }
+            }
+        }
+
+        override suspend fun getPendingFavorites(): List<Pair<String, Boolean>> {
+            val prefs = userPreferences.data.first()
+            return prefs.pendingFavoritesMap.values.map { it.recipeId to it.desiredFavorite }
+        }
+
+        override suspend fun clearPendingFavorites() {
+            userPreferences.updateData { prefs ->
+                prefs.copy {
+                    this.pendingFavorites.clear()
+                }
             }
         }
     }
-
-    override suspend fun removePendingFavorite(recipeId: String) {
-        userPreferences.updateData { prefs ->
-            prefs.copy {
-                this.pendingFavorites.remove(recipeId)
-            }
-        }
-    }
-
-    override suspend fun getPendingFavorites(): List<Pair<String, Boolean>> {
-        val prefs = userPreferences.data.first()
-        return prefs.pendingFavoritesMap.values.map { it.recipeId to it.desiredFavorite }
-    }
-
-    override suspend fun clearPendingFavorites() {
-        userPreferences.updateData { prefs ->
-            prefs.copy {
-                this.pendingFavorites.clear()
-            }
-        }
-    }
-
-
-}
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-
     @Provides
     @Singleton
     fun providesUserPreferencesDataStore(
         @ApplicationContext context: Context,
         userPreferencesSerializer: UserPreferencesSerializer,
-        sharedExecutor: ExecutorService
+        sharedExecutor: ExecutorService,
     ): DataStore<UserPreferences> =
         DataStoreFactory.create(
             serializer = userPreferencesSerializer,

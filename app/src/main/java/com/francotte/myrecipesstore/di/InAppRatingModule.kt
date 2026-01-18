@@ -14,21 +14,16 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class RatingDiBindsModule {
+abstract class InAppRatingModule {
+    @Binds
+    @Singleton
+    abstract fun bindInAppRatingPrefs(impl: InAppRatingPreferencesImpl): InAppRatingPreferences
 
     @Binds
     @Singleton
-    abstract fun bindInAppRatingPrefs(
-        impl: InAppRatingPreferencesImpl
-    ): InAppRatingPreferences
+    abstract fun bindInAppReview(impl: InAppReviewImpl): InAppReview
 
-    @Binds @Singleton
-    abstract fun bindInAppReview(
-        impl: InAppReviewImpl
-    ): InAppReview
-
-    @Binds @Singleton
-    abstract fun bindStoreListingOpener(
-        impl: PlayStoreOpenerImpl
-    ): PlayStoreOpener
+    @Binds
+    @Singleton
+    abstract fun bindStoreListingOpener(impl: PlayStoreOpenerImpl): PlayStoreOpener
 }

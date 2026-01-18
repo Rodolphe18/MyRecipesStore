@@ -13,8 +13,7 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class FoodApplication:Application() {
-
+class FoodApplication : Application() {
     @Inject
     lateinit var billingObserver: BillingAppLifecycleObserver
 
@@ -26,12 +25,10 @@ class FoodApplication:Application() {
         HomeSyncScheduler.enqueueOneShot(this)
         launchCounter.incrementLaunchCount()
         MobileAds.initialize(this) {}
-        Firebase.messaging.subscribeToTopic("daily_meal")
+        Firebase.messaging
+            .subscribeToTopic("daily_meal")
             .addOnSuccessListener { Log.d("FCM", "Subscribed to daily_meal") }
             .addOnFailureListener { e -> Log.e("FCM", "Subscribe failed", e) }
         ProcessLifecycleOwner.get().lifecycle.addObserver(billingObserver)
     }
-
-
-
 }

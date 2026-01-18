@@ -18,61 +18,64 @@ import javax.inject.Singleton
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
-class OfflineFirstFavoritesRepositoryImpl @Inject constructor(
-    private val api: RecipeApi,
-    private val dao: FullRecipeDao,
-    private val userDataRepository: UserDataRepository
-) : OfflineFirstFavoritesRepository {
+class OfflineFirstFavoritesRepositoryImpl
+    @Inject
+    constructor(
+        private val api: RecipeApi,
+        private val dao: FullRecipeDao,
+        private val userDataRepository: UserDataRepository,
+    ) : OfflineFirstFavoritesRepository {
+        private val cache = mutableMapOf<Long, LikeableRecipe>()
 
-    private val cache = mutableMapOf<Long, LikeableRecipe>()
+        override fun getFavoritesFullRecipes(): Flow<List<Recipe>> =
+            userDataRepository.userData.flatMapLatest { userData ->
+                val ids = userData.favoriteRecipesIds.mapNotNull { it.toLongOrNull() }
 
-    override fun getFavoritesFullRecipes(): Flow<List<Recipe>> =
-        userDataRepository.userData.flatMapLatest { userData ->
-            val ids = userData.favoriteRecipesIds.mapNotNull { it.toLongOrNull() }
+                flow {
+                    val results = mutableListOf<Recipe>()
 
-            flow {
-                val results = mutableListOf<Recipe>()
+                    for (id in ids) {
+                        val cached = cache[id]
+                        if (cached != null) {
+                            results.add(cached.recipe as Recipe)
+                            continue
+                        }
 
-                for (id in ids) {
-                    val cached = cache[id]
-                    if (cached != null) {
-                        results.add(cached.recipe as Recipe)
-                        continue
-                    }
+                        val localData = dao.getFullRecipeById(id.toString()).firstOrNull()
+                        if (localData != null) {
+                            val recipe = localData.asExternalModel()
+                            results.add(recipe)
+                            cache[id] = LikeableRecipe(recipe, userData)
+                        } else {
+                            try {
+                                val networkData =
+                                    api
+                                        .getMealDetail(id)
+                                        .meals
+                                        .filterIsInstance<NetworkRecipe>()
+                                        .firstOrNull()
 
-                    val localData = dao.getFullRecipeById(id.toString()).firstOrNull()
-                    if (localData != null) {
-                        val recipe = localData.asExternalModel()
-                        results.add(recipe)
-                        cache[id] = LikeableRecipe(recipe, userData)
-                    } else {
-                        try {
-                            val networkData = api.getMealDetail(id)
-                                .meals.filterIsInstance<NetworkRecipe>()
-                                .firstOrNull()
+                                if (networkData != null) {
+                                    val entity =
+                                        networkData.asEntity().apply {
+                                            isFavorite = true
+                                        }
+                                    dao.insertFullRecipe(entity)
 
-                            if (networkData != null) {
-                                val entity = networkData.asEntity().apply {
-                                    isFavorite = true
+                                    val recipe = entity.asExternalModel()
+                                    results.add(recipe)
+                                    cache[id] = LikeableRecipe(recipe, userData)
                                 }
-                                dao.insertFullRecipe(entity)
-
-                                val recipe = entity.asExternalModel()
-                                results.add(recipe)
-                                cache[id] = LikeableRecipe(recipe, userData)
+                            } catch (_: Exception) {
+                                // skip this ID on failure
                             }
-                        } catch (_: Exception) {
-                            // skip this ID on failure
                         }
                     }
+
+                    emit(results)
                 }
-
-                emit(results)
             }
-        }
-
-}
-
+    }
 
 interface OfflineFirstFavoritesRepository {
     fun getFavoritesFullRecipes(): Flow<List<Recipe>>

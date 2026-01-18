@@ -17,26 +17,26 @@ configurations.all {
     exclude(group = "com.intellij", module = "annotations")
 }
 
-val keystoreProperties = Properties().apply {
-    val f = rootProject.file("keystore.properties")
-    if (f.exists()) {
-        load(f.inputStream())
+val keystoreProperties =
+    Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) {
+            load(f.inputStream())
+        }
     }
-}
 
 android {
     namespace = "com.francotte.myrecipesstore"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.francotte.myrecipesstore"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 22
         versionName = "1.2.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
     }
 
     signingConfigs {
@@ -63,7 +63,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("release")
         }
@@ -104,10 +104,14 @@ android {
                     "META-INF/NOTICE*",
                     "META-INF/AL2.0",
                     "META-INF/LGPL2.1",
-                    "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
-                )
+                    "META-INF/versions/9/OSGI-INF/MANIFEST.MF",
+                ),
             )
         }
+    }
+    lint {
+        disable.add("NullSafeMutableLiveData")
+        disable.add("RememberInComposition")
     }
 }
 
@@ -129,22 +133,38 @@ dependencies {
     implementation(project(":core:inapp-update"))
     implementation(project(":core:inapp-rating"))
     implementation(project(":core:shared-prefs"))
+    implementation(project(":core:navigation"))
 
-    implementation(project(":feature:home"))
-    implementation(project(":feature:categories"))
-    implementation(project(":feature:search"))
-    implementation(project(":feature:login"))
-    implementation(project(":feature:detail"))
-    implementation(project(":feature:add_recipe"))
-    implementation(project(":feature:register"))
-    implementation(project(":feature:profile"))
-    implementation(project(":feature:section"))
-    implementation(project(":feature:favorites"))
-    implementation(project(":feature:reset"))
-    implementation(project(":feature:video"))
-    implementation(project(":feature:settings"))
+    implementation(project(":feature:home:api"))
+    implementation(project(":feature:categories:api"))
+    implementation(project(":feature:search:api"))
+    implementation(project(":feature:login:api"))
+    implementation(project(":feature:detail:api"))
+    implementation(project(":feature:add_recipe:api"))
+    implementation(project(":feature:register:api"))
+    implementation(project(":feature:profile:api"))
+    implementation(project(":feature:section:api"))
+    implementation(project(":feature:favorites:api"))
+    implementation(project(":feature:reset:api"))
+    implementation(project(":feature:video:api"))
+    implementation(project(":feature:home:impl"))
+    implementation(project(":feature:categories:impl"))
+    implementation(project(":feature:search:impl"))
+    implementation(project(":feature:login:impl"))
+    implementation(project(":feature:detail:impl"))
+    implementation(project(":feature:add_recipe:impl"))
+    implementation(project(":feature:register:impl"))
+    implementation(project(":feature:profile:impl"))
+    implementation(project(":feature:section:impl"))
+    implementation(project(":feature:favorites:impl"))
+    implementation(project(":feature:reset:impl"))
+    implementation(project(":feature:video:impl"))
+    implementation(project(":feature:settings:api"))
+    implementation(project(":feature:settings:impl"))
     implementation(project(":feature:inapp-update"))
     implementation(project(":feature:inapp-rating"))
+
+
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
@@ -156,6 +176,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -247,12 +269,13 @@ dependencies {
     implementation(libs.android.play.app.update.ktx)
 }
 
-configurations.matching { cfg ->
-    cfg.name.contains("release", ignoreCase = true) &&
+configurations
+    .matching { cfg ->
+        cfg.name.contains("release", ignoreCase = true) &&
             cfg.name.endsWith("RuntimeClasspath")
-}.all {
-    exclude(group = "androidx.benchmark")
-    exclude(group = "androidx.tracing", module = "tracing-perfetto-binary")
-    exclude(group = "androidx.tracing", module = "tracing-perfetto")
-    exclude(group = "androidx.tracing", module = "tracing-perfetto-handshake")
-}
+    }.all {
+        exclude(group = "androidx.benchmark")
+        exclude(group = "androidx.tracing", module = "tracing-perfetto-binary")
+        exclude(group = "androidx.tracing", module = "tracing-perfetto")
+        exclude(group = "androidx.tracing", module = "tracing-perfetto-handshake")
+    }

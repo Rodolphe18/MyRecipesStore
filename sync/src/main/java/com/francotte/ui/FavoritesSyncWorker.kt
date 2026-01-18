@@ -1,8 +1,6 @@
 package com.francotte.ui
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresExtension
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -23,15 +21,14 @@ import java.io.IOException
 
 class FavoritesSyncWorker(
     ctx: Context,
-    params: WorkerParameters
+    params: WorkerParameters,
 ) : CoroutineWorker(ctx, params) {
-
     override suspend fun doWork(): Result {
-
-        val entryPoint = EntryPointAccessors.fromApplication(
-            applicationContext,
-            FavoritesSyncEntryPoint::class.java
-        )
+        val entryPoint =
+            EntryPointAccessors.fromApplication(
+                applicationContext,
+                FavoritesSyncEntryPoint::class.java,
+            )
         val api = entryPoint.favoriteApi()
         val repo = entryPoint.foodPreferencesRepo()
 
@@ -63,7 +60,6 @@ class FavoritesSyncWorker(
             }
 
             return Result.success()
-
         } catch (_: Exception) {
             // Inattendu => retry (tu peux aussi reconcile ici si tu préfères)
             return Result.retry()
@@ -75,15 +71,17 @@ class FavoritesSyncWorker(
         repo: FoodPreferencesDataRepository,
         token: String,
         recipeId: String,
-        desiredFav: Boolean
-    ): ItemSyncResult {
-        return try {
-            if (desiredFav) api.addFavorite(recipeId, "Bearer $token")
-            else api.removeFavorite(recipeId, "Bearer $token")
+        desiredFav: Boolean,
+    ): ItemSyncResult =
+        try {
+            if (desiredFav) {
+                api.addFavorite(recipeId, "Bearer $token")
+            } else {
+                api.removeFavorite(recipeId, "Bearer $token")
+            }
 
             repo.removePendingFavorite(recipeId)
             ItemSyncResult.Synced
-
         } catch (e: HttpException) {
             when (e.code()) {
                 401, 403 -> {
@@ -103,12 +101,11 @@ class FavoritesSyncWorker(
             // Réseau
             ItemSyncResult.Retry
         }
-    }
 
     private suspend fun reconcileFromServer(
         api: FavoriteApi,
         repo: FoodPreferencesDataRepository,
-        token: String
+        token: String,
     ): Result {
         return try {
             val serverIds = api.getFavoriteRecipeIds("Bearer $token")
@@ -132,32 +129,33 @@ class FavoritesSyncWorker(
         Synced,
         StopNoLogin,
         Reconcile,
-        Retry
+        Retry,
     }
 }
 
-
 object FavoritesSyncScheduler {
     fun enqueue(context: Context) {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
+        val constraints =
+            Constraints
+                .Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
 
-        val request = OneTimeWorkRequestBuilder<FavoritesSyncWorker>()
-            .setConstraints(constraints)
-            .setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
-                30_000,
-                java.util.concurrent.TimeUnit.MILLISECONDS
-            )
-            .build()
+        val request =
+            OneTimeWorkRequestBuilder<FavoritesSyncWorker>()
+                .setConstraints(constraints)
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    30_000,
+                    java.util.concurrent.TimeUnit.MILLISECONDS,
+                ).build()
 
         WorkManager
             .getInstance(context)
             .enqueueUniqueWork(
                 "favorites-sync",
                 ExistingWorkPolicy.KEEP,
-                request
+                request,
             )
 
         //        val wm = WorkManager.getInstance(context.applicationContext)
@@ -178,5 +176,6 @@ object FavoritesSyncScheduler {
 @InstallIn(SingletonComponent::class)
 interface FavoritesSyncEntryPoint {
     fun favoriteApi(): FavoriteApi
+
     fun foodPreferencesRepo(): FoodPreferencesDataRepository
 }

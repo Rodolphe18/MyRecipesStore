@@ -1,6 +1,5 @@
 package com.francotte.model
 
-
 data class Recipe(
     override val idMeal: String,
     override val strMeal: String,
@@ -56,5 +55,3 @@ data class Recipe(
     val strCreativeCommonsConfirmed: String?,
     val dateModified: String?,
 ) : AbstractRecipe()
-
-

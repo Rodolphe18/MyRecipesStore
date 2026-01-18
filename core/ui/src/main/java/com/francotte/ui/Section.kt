@@ -20,23 +20,32 @@ import com.francotte.model.LikeableRecipe
 fun HorizontalRecipesList(
     title: String,
     recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>,Int,String) -> Unit,
+    onOpenRecipe: (List<String>, Int, String) -> Unit,
     onOpenSection: (String) -> Unit,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
+    onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     val listState = rememberLazyListState()
     Column(modifier = Modifier.padding(top = 10.dp)) {
         if (recipes.isNotEmpty()) {
-            SectionTitle(modifier = Modifier.testTag("SectionTitle_$title").semantics { contentDescription = "SectionTitle_$title" },title = title, count = recipes.size, onOpenMore = onOpenSection)
+            SectionTitle(
+                modifier =
+                    Modifier.testTag("SectionTitle_$title").semantics {
+                        contentDescription = "SectionTitle_$title"
+                    },
+                title = title,
+                count = recipes.size,
+                onOpenMore = onOpenSection,
+            )
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 itemsIndexed(
                     items = recipes,
-                    key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal}) { index, likeableRecipe ->
+                    key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal },
+                ) { index, likeableRecipe ->
                     RecipeItem(
                         likeableRecipe = likeableRecipe,
                         onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
@@ -51,8 +60,8 @@ fun HorizontalRecipesList(
 @Composable
 fun SimpleHorizontalRecipesList(
     recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>,Int,String) -> Unit,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit
+    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     val listState = rememberLazyListState()
     Column(modifier = Modifier.padding(top = 10.dp)) {
@@ -61,11 +70,12 @@ fun SimpleHorizontalRecipesList(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 itemsIndexed(
                     items = recipes,
-                    key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal}) { index, likeableRecipe ->
+                    key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal },
+                ) { index, likeableRecipe ->
                     RecipeItem(
                         likeableRecipe = likeableRecipe,
                         onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },

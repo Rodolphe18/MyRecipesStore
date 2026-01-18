@@ -9,7 +9,7 @@ fun NetworkLightRecipe.asEntity(): LightRecipeEntity =
     LightRecipeEntity(
         idMeal = idMeal,
         strMeal = strMeal,
-        strMealThumb = strMealThumb ?: ""
+        strMealThumb = strMealThumb ?: "",
     )
 
 fun NetworkRecipe.asEntity(): FullRecipeEntity =
@@ -66,5 +66,5 @@ fun NetworkRecipe.asEntity(): FullRecipeEntity =
         strSource = strSource,
         strImageSource = strImageSource,
         strCreativeCommonsConfirmed = strCreativeCommonsConfirmed,
-        dateModified = dateModified
+        dateModified = dateModified,
     )

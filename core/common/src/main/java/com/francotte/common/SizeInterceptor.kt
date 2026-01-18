@@ -11,6 +11,7 @@ import coil.size.Size
 
 object SizeInterceptor : Interceptor {
 
+    @Suppress("ReturnCount")
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val request = chain.request
         val data = request.data
@@ -21,7 +22,7 @@ object SizeInterceptor : Interceptor {
             request
                 .newBuilder()
                 .data(uri.withSize(request.downloadSize ?: chain.size) ?: return chain.proceed(request))
-                .build()
+                .build(),
         )
     }
 }
@@ -35,10 +36,11 @@ const val SIZE_TEMPLATE = "[SIZE]"
 const val AUTO_SIZE = "auto"
 
 private val Dimension.remoteSize: String
-    get() = when (this) {
-        is Dimension.Pixels -> px.toString()
-        is Dimension.Undefined -> AUTO_SIZE
-    }
+    get() =
+        when (this) {
+            is Dimension.Pixels -> px.toString()
+            is Dimension.Undefined -> AUTO_SIZE
+        }
 
 fun Uri.withSize(size: Size): Uri? {
     // Only treat http or https
@@ -55,12 +57,10 @@ fun Uri.withSize(size: Size): Uri? {
             pathSegments.forEach { segment ->
                 appendPath(segment)
             }
-        }
-        .build()
+        }.build()
 }
 
 private const val DOWNLOAD_SIZE = "downloadSize"
-
 
 val ImageRequest.downloadSize: Size?
     get() = parameters.value(DOWNLOAD_SIZE)

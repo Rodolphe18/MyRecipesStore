@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FullRecipeDao {
-
     @Query("SELECT * FROM full_recipe_entity")
     fun getAllFullRecipes(): Flow<List<FullRecipeEntity>>
 
@@ -37,7 +36,7 @@ interface FullRecipeDao {
     suspend fun upsertAllFullRecipes(recipes: List<FullRecipeEntity>)
 
     @Query("SELECT MAX(lastUpdated) FROM full_recipe_entity WHERE idMeal = :id")
-    suspend fun getFullRecipeLastUpdated(id:String): Long?
+    suspend fun getFullRecipeLastUpdated(id: String): Long?
 
     @Query("SELECT MAX(lastUpdated) FROM full_recipe_entity WHERE isLatest = 1")
     suspend fun getLastUpdatedForLatest(): Long?

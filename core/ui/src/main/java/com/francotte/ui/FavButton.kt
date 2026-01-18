@@ -29,30 +29,36 @@ fun FavButton(
     isFavorite: Boolean,
     buttonSize: Dp = 45.dp,
     iconSize: Dp = 25.dp,
-    onToggleFavorite: (Boolean) -> Unit
+    onToggleFavorite: () -> Unit,
 ) {
     val transition = updateTransition(label = "favorite", targetState = isFavorite)
-    val backgroundColor by transition.animateColor(label = "backgroundColor") { isFav -> if (isFav) colorResource(R.color.orange) else MaterialTheme.colorScheme.tertiary }
-    val iconColor by transition.animateColor(label = "iconColor") { isFav -> if (isFav) Color.White else MaterialTheme.colorScheme.onTertiary }
+    val backgroundColor by transition.animateColor(
+        label = "backgroundColor",
+    ) { isFav -> if (isFav) colorResource(R.color.orange) else MaterialTheme.colorScheme.tertiary }
+    val iconColor by transition.animateColor(
+        label = "iconColor",
+    ) { isFav -> if (isFav) Color.White else MaterialTheme.colorScheme.onTertiary }
     Box(
-        modifier = modifier
-            .size(buttonSize)
-            .background(backgroundColor, CircleShape)
-            .clip(CircleShape)
-            .toggleable(
-                value = isFavorite,
-                onValueChange = { onToggleFavorite(it) },
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            )
+        modifier =
+            modifier
+                .size(buttonSize)
+                .background(backgroundColor, CircleShape)
+                .clip(CircleShape)
+                .toggleable(
+                    value = isFavorite,
+                    onValueChange = { onToggleFavorite() },
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ),
     ) {
         Icon(
             imageVector = Icons.Default.Favorite,
             contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(iconSize),
-            tint = iconColor
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .size(iconSize),
+            tint = iconColor,
         )
     }
 }

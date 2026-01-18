@@ -7,11 +7,14 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
 @Serializable
-data class NetworkCategories(val categories:List<NetworkAbstractCategory>)
+data class NetworkCategories(
+    val categories: List<NetworkAbstractCategory>,
+)
 
-class PolymorphicCategorySerializer: JsonContentPolymorphicSerializer<NetworkAbstractCategory>(
-    NetworkAbstractCategory::class) {
-
+class PolymorphicCategorySerializer :
+    JsonContentPolymorphicSerializer<NetworkAbstractCategory>(
+        NetworkAbstractCategory::class,
+    ) {
     private val fullCategoryFields = setOf("strCategoryThumb", "strCategoryDescription")
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out NetworkAbstractCategory> {
@@ -22,17 +25,16 @@ class PolymorphicCategorySerializer: JsonContentPolymorphicSerializer<NetworkAbs
             NetworkLightCategory.serializer()
         }
     }
-
 }
 
 @Serializable(with = PolymorphicCategorySerializer::class)
 sealed class NetworkAbstractCategory {
-   abstract val strCategory: String
+    abstract val strCategory: String
 }
 
 @Serializable
 data class NetworkLightCategory(
-    override val strCategory: String
+    override val strCategory: String,
 ) : NetworkAbstractCategory()
 
 @Serializable
@@ -40,8 +42,5 @@ data class NetworkCategory(
     val idCategory: String,
     override val strCategory: String,
     val strCategoryThumb: String,
-    val strCategoryDescription: String
+    val strCategoryDescription: String,
 ) : NetworkAbstractCategory()
-
-
-

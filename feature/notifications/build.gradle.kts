@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.francotte.notifications"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -39,5 +39,5 @@ dependencies {
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    
+
 }

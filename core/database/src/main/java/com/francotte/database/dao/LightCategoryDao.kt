@@ -10,20 +10,18 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LightCategoryDao {
+    @Query("SELECT * FROM light_category_entity")
+    fun getAllLightCategories(): Flow<List<LightCategoryEntity>>
 
-        @Query("SELECT * FROM light_category_entity")
-        fun getAllLightCategories(): Flow<List<LightCategoryEntity>>
+    @Query("SELECT * FROM light_category_entity WHERE strCategory = :categoryName")
+    suspend fun getLightCategoryByName(categoryName: String): LightCategoryEntity?
 
-        @Query("SELECT * FROM light_category_entity WHERE strCategory = :categoryName")
-        suspend fun getLightCategoryByName(categoryName: String): LightCategoryEntity?
+    @Upsert
+    suspend fun upsertAllLightCategories(categories: List<LightCategoryEntity>)
 
-        @Upsert
-        suspend fun upsertAllLightCategories(categories: List<LightCategoryEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLightCategory(category: LightCategoryEntity)
 
-        @Insert(onConflict = OnConflictStrategy.REPLACE)
-        suspend fun insertLightCategory(category:LightCategoryEntity)
-
-        @Query("DELETE FROM light_category_entity")
-        suspend fun clearAll()
-
+    @Query("DELETE FROM light_category_entity")
+    suspend fun clearAll()
 }

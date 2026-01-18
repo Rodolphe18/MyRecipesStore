@@ -29,25 +29,15 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 object DaoModule {
+    @Provides
+    fun providesLightRecipeDao(database: FoodDatabase): LightRecipeDao = database.lightRecipeDao()
 
     @Provides
-    fun providesLightRecipeDao(
-        database: FoodDatabase,
-    ): LightRecipeDao = database.lightRecipeDao()
+    fun providesRecipeDao(database: FoodDatabase): FullRecipeDao = database.fullRecipeDao()
 
     @Provides
-    fun providesRecipeDao(
-        database: FoodDatabase,
-    ): FullRecipeDao = database.fullRecipeDao()
+    fun providesLightCategoryDao(database: FoodDatabase): LightCategoryDao = database.lightCategoryDao()
 
     @Provides
-    fun providesLightCategoryDao(
-        database: FoodDatabase,
-    ): LightCategoryDao = database.lightCategoryDao()
-
-    @Provides
-    fun providesFullCategoryDao(
-        database: FoodDatabase,
-    ): FullCategoryDao = database.fullCategoryDao()
-
+    fun providesFullCategoryDao(database: FoodDatabase): FullCategoryDao = database.fullCategoryDao()
 }

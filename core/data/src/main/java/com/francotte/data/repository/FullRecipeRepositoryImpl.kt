@@ -9,27 +9,26 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FullRecipeRepositoryImpl @Inject constructor(
-    private val offlineFullRecipeData: OfflineFirstFullRecipeRepository,
-    private val userDataRepository: UserDataRepository
-) : FullRecipeRepository {
-
-
-    override fun observeFullRecipe(id:Long): Flow<Result<LikeableRecipe>> = combine(
-    userDataRepository.userData,
-    offlineFullRecipeData.getRecipeDetail(id)
-    ) { userData, fullRecipe ->
-        try {
-            val likeableRecipe = fullRecipe.mapToLikeableFullRecipe(userData)
-            Result.success(likeableRecipe)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+class FullRecipeRepositoryImpl
+    @Inject
+    constructor(
+        private val offlineFullRecipeData: OfflineFirstFullRecipeRepository,
+        private val userDataRepository: UserDataRepository,
+    ) : FullRecipeRepository {
+        override fun observeFullRecipe(id: Long): Flow<Result<LikeableRecipe>> =
+            combine(
+                userDataRepository.userData,
+                offlineFullRecipeData.getRecipeDetail(id),
+            ) { userData, fullRecipe ->
+                try {
+                    val likeableRecipe = fullRecipe.mapToLikeableFullRecipe(userData)
+                    Result.success(likeableRecipe)
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
+            }
     }
 
-
-}
-
 interface FullRecipeRepository {
-    fun observeFullRecipe(id:Long):Flow<Result<LikeableRecipe>>
+    fun observeFullRecipe(id: Long): Flow<Result<LikeableRecipe>>
 }

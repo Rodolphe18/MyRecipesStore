@@ -16,15 +16,17 @@ import com.francotte.database.model.LightRecipeEntity
         LightRecipeEntity::class,
         FullRecipeEntity::class,
         LightCategoryEntity::class,
-        CategoryEntity::class
+        CategoryEntity::class,
     ],
     version = 1,
     exportSchema = true,
 )
 abstract class FoodDatabase : RoomDatabase() {
     abstract fun lightRecipeDao(): LightRecipeDao
+
     abstract fun fullRecipeDao(): FullRecipeDao
+
     abstract fun lightCategoryDao(): LightCategoryDao
+
     abstract fun fullCategoryDao(): FullCategoryDao
 }
-

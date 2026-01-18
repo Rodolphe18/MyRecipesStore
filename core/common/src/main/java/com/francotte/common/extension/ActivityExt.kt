@@ -10,5 +10,5 @@ fun Context.findActivity(): Activity {
         if (ctx is Activity) return ctx
         ctx = ctx.baseContext
     }
-    throw IllegalStateException("Context is not an Activity.")
+    error("Context is not an Activity.")
 }

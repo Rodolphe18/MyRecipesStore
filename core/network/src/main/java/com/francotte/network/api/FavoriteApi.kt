@@ -14,41 +14,38 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface FavoriteApi {
-
     @GET("users/favorites")
     suspend fun getFavoriteRecipeIds(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
     ): List<String>
-
 
     @GET("users/recipes")
     suspend fun getUserRecipes(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
     ): List<NetworkCustomRecipe>
 
     @GET("users/recipes/{recipeId}")
     suspend fun getUserRecipe(
         @Header("Authorization") token: String,
-        @Path("recipeId") recipeId: String
+        @Path("recipeId") recipeId: String,
     ): NetworkCustomRecipe
 
     @GET("users/favorites/{recipeId}/status")
     suspend fun getRecipeFavoriteStatus(
         @Path("recipeId") recipeId: String,
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
     ): Boolean
-
 
     @POST("users/favorites/{recipeId}")
     suspend fun addFavorite(
         @Path("recipeId") recipeId: String,
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
     )
 
     @DELETE("users/favorites/{recipeId}")
     suspend fun removeFavorite(
         @Path("recipeId") recipeId: String,
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
     )
 
     @Multipart
@@ -58,7 +55,7 @@ interface FavoriteApi {
         @Part image: MultipartBody.Part?,
         @Part("title") title: RequestBody,
         @Part("instructions") instructions: RequestBody,
-        @Part("ingredients") ingredients: RequestBody
+        @Part("ingredients") ingredients: RequestBody,
     ): Response<Unit>
 
     @Multipart
@@ -69,7 +66,6 @@ interface FavoriteApi {
         @Part image: MultipartBody.Part?,
         @Part("title") title: RequestBody,
         @Part("instructions") instructions: RequestBody,
-        @Part("ingredients") ingredients: RequestBody
+        @Part("ingredients") ingredients: RequestBody,
     ): Response<Unit>
-
 }

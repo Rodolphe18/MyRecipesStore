@@ -1,7 +1,3 @@
-import org.gradle.internal.extensions.stdlib.capitalized
-import org.gradle.kotlin.dsl.getByName
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -11,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.francotte.datastore_proto"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -25,7 +21,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -40,7 +36,10 @@ android {
 
 protobuf {
     protoc {
-        artifact = libs.protobuf.protoc.get().toString()
+        artifact =
+            libs.protobuf.protoc
+                .get()
+                .toString()
     }
     generateProtoTasks {
         all().forEach { task ->
@@ -55,7 +54,6 @@ protobuf {
         }
     }
 }
-
 
 dependencies {
     api(libs.protobuf.kotlin.lite)

@@ -3,13 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.plugin)
-    alias(libs.plugins.google.services)
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
-    namespace = "com.francotte.ads"
-    compileSdk = 35
+    namespace = "com.francotte.core.ads"
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -23,7 +22,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -41,13 +40,12 @@ dependencies {
     implementation(project(":core:billing"))
     implementation(project(":core:cmp"))
 
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    
+
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
@@ -58,5 +56,4 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
-
 }

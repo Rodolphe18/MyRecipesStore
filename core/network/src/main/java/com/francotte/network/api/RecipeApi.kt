@@ -1,6 +1,5 @@
 package com.francotte.network.api
 
-
 import com.francotte.network.model.NetworkAreas
 import com.francotte.network.model.NetworkCategories
 import com.francotte.network.model.NetworkIngredients
@@ -8,9 +7,7 @@ import com.francotte.network.model.NetworkRecipeResult
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-
 interface RecipeApi {
-
     //  Latest Meals
     @GET("latest.php")
     suspend fun getLatestMeals(): NetworkRecipeResult
@@ -21,12 +18,15 @@ interface RecipeApi {
 
     //  Search meal by name
     @GET("search.php")
-    suspend fun getMealByName(@Query("s") name: String): NetworkRecipeResult
-
+    suspend fun getMealByName(
+        @Query("s") name: String,
+    ): NetworkRecipeResult
 
     // Lookup full meal details by id
     @GET("lookup.php")
-    suspend fun getMealDetail(@Query("i") id: Long): NetworkRecipeResult
+    suspend fun getMealDetail(
+        @Query("i") id: Long,
+    ): NetworkRecipeResult
 
     // Lookup a single random meal
     @GET("random.php")
@@ -38,27 +38,37 @@ interface RecipeApi {
 
     // List all Area
     @GET("list.php")
-    suspend fun getAllAreas(@Query("a") list: String = "list"): NetworkAreas
+    suspend fun getAllAreas(
+        @Query("a") list: String = "list",
+    ): NetworkAreas
 
     // List all Ingredients
     @GET("list.php")
-    suspend fun getAllIngredients(@Query("i") list: String = "list"): NetworkIngredients
+    suspend fun getAllIngredients(
+        @Query("i") list: String = "list",
+    ): NetworkIngredients
 
     // List all Categories
     @GET("list.php")
-    suspend fun getAllCategories(@Query("c") list: String = "list"): NetworkCategories
+    suspend fun getAllCategories(
+        @Query("c") list: String = "list",
+    ): NetworkCategories
 
     // Filter by multi-ingredient
     @GET("filter.php")
-    suspend fun getRecipesListByMultiIngredients(@Query("i") ingredient: String): NetworkRecipeResult
+    suspend fun getRecipesListByMultiIngredients(
+        @Query("i") ingredient: String,
+    ): NetworkRecipeResult
 
     // Filter by Category
     @GET("filter.php")
-    suspend fun getRecipesListByCategory(@Query("c") category: String): NetworkRecipeResult
+    suspend fun getRecipesListByCategory(
+        @Query("c") category: String,
+    ): NetworkRecipeResult
 
     // Filter by Area
     @GET("filter.php")
-    suspend fun getRecipesListByArea(@Query("a") area: String): NetworkRecipeResult
-
-
+    suspend fun getRecipesListByArea(
+        @Query("a") area: String,
+    ): NetworkRecipeResult
 }

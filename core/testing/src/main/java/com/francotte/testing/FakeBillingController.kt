@@ -6,7 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeBillingController : BillingController {
     override val isPremium = MutableStateFlow(true)
-    override fun launchPurchase(activity: Activity, offerToken: String) {
 
+    override fun launchPurchase(
+        activity: Activity,
+        offerToken: String,
+    ) {
     }
 }

@@ -34,230 +34,231 @@ import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
-class AuthManager @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val api: AuthApi,
-    private val preferences: UserDataRepository,
-    private val dao: FullRecipeDao,
-    @ApplicationScope private val coroutineScope: CoroutineScope
-) {
-
-    private val googleSignInClient = GoogleSignIn.getClient(
-        context,
-        GoogleSignInOptions
-            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("431140586774-o1p6cnlk42macn41t4ld0t0bh2kr21fi.apps.googleusercontent.com")
-            .requestEmail()
-            .requestProfile()
-            .build()
-    )
-
-    val googleSignInIntent: Intent
-        get() = googleSignInClient.signInIntent
-
-    private val userDataFlow = preferences.userData
-
-
-    val userCredentials = userDataFlow
-        .map { userData ->
-            UserCredentials(
-                userData.userId,
-                userData.token ?: return@map null
+class AuthManager
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+        private val api: AuthApi,
+        private val preferences: UserDataRepository,
+        private val dao: FullRecipeDao,
+        @ApplicationScope private val coroutineScope: CoroutineScope,
+    ) {
+        private val googleSignInClient =
+            GoogleSignIn.getClient(
+                context,
+                GoogleSignInOptions
+                    .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken("431140586774-o1p6cnlk42macn41t4ld0t0bh2kr21fi.apps.googleusercontent.com")
+                    .requestEmail()
+                    .requestProfile()
+                    .build(),
             )
-        }
 
-    val credentials = userCredentials.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+        val googleSignInIntent: Intent
+            get() = googleSignInClient.signInIntent
 
-    private val authenticatedFlow = userDataFlow
-        .map { userData -> userData.isConnected && userData.token?.isNotBlank() == true }
+        private val userDataFlow = preferences.userData
 
-    val isAuthenticated =
-        authenticatedFlow.stateIn(coroutineScope, SharingStarted.Eagerly, false)
-
-    val user = userDataFlow.stateIn(coroutineScope, SharingStarted.Eagerly, null)
-
-    val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
-
-    val loginIsSuccessFull = MutableStateFlow(false)
-
-    val authToken =  credentials.value?.token
-
-    suspend fun loginByUserNamePassword(userNameOrMail: String?, password: String) {
-        try {
-            onAuthResponse(
-                api.authUser(
-                    AuthRequest(
-                        userNameOrMail = userNameOrMail ?: "",
-                        password = password
+        val userCredentials =
+            userDataFlow
+                .map { userData ->
+                    UserCredentials(
+                        userData.userId,
+                        userData.token ?: return@map null,
                     )
-                )
-            )
-
-        } catch (e: Exception) {
-            Log.d("debug_on_auth_response", "on_auth_response")
-        }
-
-    }
-
-
-    suspend fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
-        val account = signInTask.await()
-        val idToken = account.idToken
-
-        if (idToken.isNullOrEmpty()) {
-            Log.e("debug_google", "ID token null ou vide")
-            throw Exception()
-        }
-        val request = GoogleIdTokenRequest(idToken)
-        val response = api.authGoogle(request)
-        if (response.isSuccessful) {
-            onAuthResponse(response)
-        } else if (response.code() == 404) {
-            val created = api.createGoogle(request)
-            onAuthResponse(created)
-        } else {
-            throw UnknownError()
-        }
-
-    }
-
-    suspend fun createUser(
-        username: String,
-        email: String,
-        password: String,
-        imageUri: Uri?,
-    )  {
-        val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
-        val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
-        val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
-        val imagePart = imageUri.toMultiPartBody(context)
-        val response = api.createUser(
-            username = usernamePart,
-            email = emailPart,
-            password = passwordPart,
-            image = imagePart
-        )
-        onAuthResponse(response, true)
-    }
-
-    suspend fun updateUser(username: String?, imageUri: Uri?) {
-        val token = "Bearer ${credentials.value?.token}"
-        val userName = username?.toRequestBody("text/plain".toMediaTypeOrNull())
-        val imagePart = imageUri.toMultiPartBody(context)
-
-        val response = api.updateUserProfile(
-            token = token,
-            username = userName,
-            image = imagePart
-        )
-        onAuthResponse(response, isUpdating = true)
-    }
-
-
-    suspend fun onAuthResponse(
-        apiResponse: Response<AuthResponse>,
-        isRegistering: Boolean = false,
-        isUpdating: Boolean = false
-    ) = withContext(Dispatchers.IO) {
-        if (apiResponse.code() == 202 || apiResponse.code() == 200) {
-            loginIsSuccessFull.value = true
-            apiResponse.body()?.let { response ->
-                preferences.updateUserInfo(
-                    isConnected = true,
-                    name = response.user.username!!,
-                    userId = response.user.userId,
-                    userToken = response.token,
-                    userEmail = response.user.email ?: "",
-                    userImage = response.user.image ?: ""
-                )
-                if (isRegistering) {
-                    snackBarMessage.tryEmit("Welcome ${response.user.username}! Your account has been created successfully")
-                } else if (isUpdating) {
-                    snackBarMessage.tryEmit("Your account has been updated successfully")
-                } else {
-                    snackBarMessage.tryEmit("Welcome back ${response.user.username}")
                 }
-            }
-            FavoritesSyncScheduler.enqueue(context)
-        } else if (apiResponse.code() == 413) {
-            loginIsSuccessFull.value = false
-            snackBarMessage.tryEmit("Payload Too Large")
-        } else if (apiResponse.code() == 409) {
-            loginIsSuccessFull.value = false
-            snackBarMessage.tryEmit("Your account can't be created : user already exists")
-        }
-        else {
-            loginIsSuccessFull.value = false
-            if (isRegistering) {
-                snackBarMessage.tryEmit("Unknown error. Retry later")
-               } else {
-                snackBarMessage.tryEmit("Email/Password combination failed !")
-            }
-        }
-    }
 
+        val credentials = userCredentials.stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    suspend fun requestPasswordReset(email: String): Result<Unit> {
-        return try {
-            val response = api.requestPasswordReset(EmailRequest(email))
+        private val authenticatedFlow =
+            userDataFlow
+                .map { userData -> userData.isConnected && userData.token?.isNotBlank() == true }
+
+        val isAuthenticated =
+            authenticatedFlow.stateIn(coroutineScope, SharingStarted.Eagerly, false)
+
+        val user = userDataFlow.stateIn(coroutineScope, SharingStarted.Eagerly, null)
+
+        val snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+
+        val loginIsSuccessFull = MutableStateFlow(false)
+
+        val authToken = credentials.value?.token
+
+        suspend fun loginByUserNamePassword(
+            userNameOrMail: String?,
+            password: String,
+        ) {
+            try {
+                onAuthResponse(
+                    api.authUser(
+                        AuthRequest(
+                            userNameOrMail = userNameOrMail ?: "",
+                            password = password,
+                        ),
+                    ),
+                )
+            } catch (e: Exception) {
+                Log.d("debug_on_auth_response", "on_auth_response")
+            }
+        }
+
+        suspend fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
+            val account = signInTask.await()
+            val idToken = account.idToken
+
+            if (idToken.isNullOrEmpty()) {
+                Log.e("debug_google", "ID token null ou vide")
+                throw Exception()
+            }
+            val request = GoogleIdTokenRequest(idToken)
+            val response = api.authGoogle(request)
             if (response.isSuccessful) {
-                Result.success(Unit)
+                onAuthResponse(response)
+            } else if (response.code() == 404) {
+                val created = api.createGoogle(request)
+                onAuthResponse(created)
             } else {
-                Result.failure(Exception("Erreur : ${response.code()}"))
+                throw UnknownError()
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
-    }
 
-
-    suspend fun deleteUser() {
-        val credentials = credentials.value ?: return
-        try {
-            withContext(NonCancellable) {
-                api.deleteUser(credentials.id)
-                preferences.deleteUser()
-                snackBarMessage.tryEmit("Your account has been deleted successfully")
-                signOutGoogleUser()
-                dao.deleteAllFavoritesRecipes()
-            }
-        } catch (e: Exception) {
-            Log.d("debug_error_while_signing_out", "Error while signing out")
+        suspend fun createUser(
+            username: String,
+            email: String,
+            password: String,
+            imageUri: Uri?,
+        ) {
+            val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
+            val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
+            val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
+            val imagePart = imageUri.toMultiPartBody(context)
+            val response =
+                api.createUser(
+                    username = usernamePart,
+                    email = emailPart,
+                    password = passwordPart,
+                    image = imagePart,
+                )
+            onAuthResponse(response, true)
         }
-    }
 
-    suspend fun deleteAllUsers() {
-        api.deleteAllUsers()
-    }
+        suspend fun updateUser(
+            username: String?,
+            imageUri: Uri?,
+        ) {
+            val token = "Bearer ${credentials.value?.token}"
+            val userName = username?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val imagePart = imageUri.toMultiPartBody(context)
 
+            val response =
+                api.updateUserProfile(
+                    token = token,
+                    username = userName,
+                    image = imagePart,
+                )
+            onAuthResponse(response, isUpdating = true)
+        }
 
-    private suspend fun signOutGoogleUser() {
-        googleSignInClient.signOut().await()
-    }
-
-    suspend fun logout() {
-        try {
-            withContext(NonCancellable) {
-                if (isAuthenticated.value) {
-                    snackBarMessage.tryEmit("You have been disconnected")
-                } else {
-                    snackBarMessage.tryEmit("You are not connected")
+        suspend fun onAuthResponse(
+            apiResponse: Response<AuthResponse>,
+            isRegistering: Boolean = false,
+            isUpdating: Boolean = false,
+        ) = withContext(Dispatchers.IO) {
+            if (apiResponse.code() == 202 || apiResponse.code() == 200) {
+                loginIsSuccessFull.value = true
+                apiResponse.body()?.let { response ->
+                    preferences.updateUserInfo(
+                        isConnected = true,
+                        name = response.user.username!!,
+                        userId = response.user.userId,
+                        userToken = response.token,
+                        userEmail = response.user.email ?: "",
+                        userImage = response.user.image ?: "",
+                    )
+                    if (isRegistering) {
+                        snackBarMessage.tryEmit("Welcome ${response.user.username}! Your account has been created successfully")
+                    } else if (isUpdating) {
+                        snackBarMessage.tryEmit("Your account has been updated successfully")
+                    } else {
+                        snackBarMessage.tryEmit("Welcome back ${response.user.username}")
+                    }
                 }
-                preferences.updateUserInfo(false)
-                preferences.deleteFavoriteIds()
-                // facebook - LoginManager.getInstance().logOut()
-                // google
-                signOutGoogleUser()
-                dao.deleteAllFavoritesRecipes()
-
+                FavoritesSyncScheduler.enqueue(context)
+            } else if (apiResponse.code() == 413) {
+                loginIsSuccessFull.value = false
+                snackBarMessage.tryEmit("Payload Too Large")
+            } else if (apiResponse.code() == 409) {
+                loginIsSuccessFull.value = false
+                snackBarMessage.tryEmit("Your account can't be created : user already exists")
+            } else {
+                loginIsSuccessFull.value = false
+                if (isRegistering) {
+                    snackBarMessage.tryEmit("Unknown error. Retry later")
+                } else {
+                    snackBarMessage.tryEmit("Email/Password combination failed !")
+                }
             }
-        } catch (e: Exception) {
-            Log.d("debug_error_while_signing_out", "Error while signing out")
+        }
+
+        suspend fun requestPasswordReset(email: String): Result<Unit> =
+            try {
+                val response = api.requestPasswordReset(EmailRequest(email))
+                if (response.isSuccessful) {
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception("Erreur : ${response.code()}"))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+
+        suspend fun deleteUser() {
+            val credentials = credentials.value ?: return
+            try {
+                withContext(NonCancellable) {
+                    api.deleteUser(credentials.id)
+                    preferences.deleteUser()
+                    snackBarMessage.tryEmit("Your account has been deleted successfully")
+                    signOutGoogleUser()
+                    dao.deleteAllFavoritesRecipes()
+                }
+            } catch (e: Exception) {
+                Log.d("debug_error_while_signing_out", "Error while signing out")
+            }
+        }
+
+        suspend fun deleteAllUsers() {
+            api.deleteAllUsers()
+        }
+
+        private suspend fun signOutGoogleUser() {
+            googleSignInClient.signOut().await()
+        }
+
+        suspend fun logout() {
+            try {
+                withContext(NonCancellable) {
+                    if (isAuthenticated.value) {
+                        snackBarMessage.tryEmit("You have been disconnected")
+                    } else {
+                        snackBarMessage.tryEmit("You are not connected")
+                    }
+                    preferences.updateUserInfo(false)
+                    preferences.deleteFavoriteIds()
+                    // facebook - LoginManager.getInstance().logOut()
+                    // google
+                    signOutGoogleUser()
+                    dao.deleteAllFavoritesRecipes()
+                }
+            } catch (e: Exception) {
+                Log.d("debug_error_while_signing_out", "Error while signing out")
+            }
         }
     }
-}
 
-
-data class UserCredentials(val id: Long, val token: String)
+data class UserCredentials(
+    val id: Long,
+    val token: String,
+)

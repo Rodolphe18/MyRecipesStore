@@ -7,10 +7,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 public object TestWindowSizes {
+    fun compactPhone(): WindowSizeClass = WindowSizeClass.calculateFromSize(DpSize(width = 360.dp, height = 640.dp))
 
-    fun compactPhone(): WindowSizeClass =
-        WindowSizeClass.calculateFromSize(DpSize(width = 360.dp, height = 640.dp))
-
-    fun landscapePhone(): WindowSizeClass =
-        WindowSizeClass.calculateFromSize(DpSize(width = 840.dp, height = 480.dp)) // souvent Medium
+    fun landscapePhone(): WindowSizeClass = WindowSizeClass.calculateFromSize(DpSize(width = 840.dp, height = 480.dp)) // souvent Medium
 }

@@ -14,18 +14,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
-
     @Provides
     @Singleton
     fun provideRoomDatabase(
         @ApplicationContext context: Context,
-        sharedExecutor: ExecutorService
-    ): FoodDatabase {
-        return Room.databaseBuilder(context, FoodDatabase::class.java, "food-database")
+        sharedExecutor: ExecutorService,
+    ): FoodDatabase =
+        Room
+            .databaseBuilder(context, FoodDatabase::class.java, "food-database")
             .setQueryExecutor(sharedExecutor)
             .setTransactionExecutor(sharedExecutor)
             .build()
-    }
-
 }

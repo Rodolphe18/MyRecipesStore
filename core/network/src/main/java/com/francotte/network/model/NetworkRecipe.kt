@@ -8,10 +8,8 @@ import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
-
 object RecipePolymorphicSerializer :
     JsonContentPolymorphicSerializer<NetworkAbstractRecipe>(NetworkAbstractRecipe::class) {
-
     private val fullRecipeFields = setOf("strCategory", "strInstructions")
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out NetworkAbstractRecipe> {
@@ -36,8 +34,7 @@ data class NetworkLightRecipe(
     override val strMeal: String,
     override val strMealThumb: String?,
     override val idMeal: String,
-) :
-    NetworkAbstractRecipe()
+) : NetworkAbstractRecipe()
 
 @Serializable
 data class NetworkRecipe(
@@ -97,17 +94,18 @@ data class NetworkRecipe(
 ) : NetworkAbstractRecipe()
 
 @Serializable
-data class NetworkRecipeResult(val meals: List<NetworkAbstractRecipe>)
+data class NetworkRecipeResult(
+    val meals: List<NetworkAbstractRecipe>,
+)
 
-
-fun NetworkLightRecipe.asExternalModel() : LightRecipe =
+fun NetworkLightRecipe.asExternalModel(): LightRecipe =
     LightRecipe(
         strMeal = strMeal,
         strMealThumb = strMealThumb ?: "",
-        idMeal = idMeal
+        idMeal = idMeal,
     )
 
-fun NetworkRecipe.asExternalModel() : Recipe =
+fun NetworkRecipe.asExternalModel(): Recipe =
     Recipe(
         idMeal = idMeal,
         strMeal = strMeal,
@@ -161,7 +159,5 @@ fun NetworkRecipe.asExternalModel() : Recipe =
         strSource = strSource,
         strImageSource = strImageSource,
         strCreativeCommonsConfirmed = strCreativeCommonsConfirmed,
-        dateModified = dateModified
+        dateModified = dateModified,
     )
-
-

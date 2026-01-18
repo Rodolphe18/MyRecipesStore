@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun MeasurementUnitDropDownMenu(
     modifier: Modifier = Modifier,
-    onMeasureSelected: (MeasurementUnit) -> Unit
+    onMeasureSelected: (MeasurementUnit) -> Unit,
 ) {
     val list = enumValues<MeasurementUnit>()
     var text by remember { mutableStateOf("Type") }
@@ -55,28 +55,31 @@ fun MeasurementUnitDropDownMenu(
         }
     }
     ExposedDropdownMenuBox(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF6E8D6)),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF6E8D6)),
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }) {
+        onExpandedChange = { expanded = !expanded },
+    ) {
         BasicTextField(
             value = text,
             onValueChange = {},
             readOnly = true,
             interactionSource = interactionSource,
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
-                .focusable(false)
-                .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
-                .padding(horizontal = 12.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                    .focusable(false)
+                    .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
             textStyle = LocalTextStyle.current.copy(color = Color(0xFF6D4C41)),
             decorationBox = { innerTextField ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Box(Modifier.weight(1f)) {
                         if (text.isEmpty()) {
@@ -84,7 +87,7 @@ fun MeasurementUnitDropDownMenu(
                                 text = "Type",
                                 textAlign = TextAlign.Center,
                                 color = Color(0xFF6D4C41),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
                             )
                         }
                         innerTextField()
@@ -92,23 +95,24 @@ fun MeasurementUnitDropDownMenu(
                     Icon(
                         imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = Color(0xFF6D4C41)
+                        tint = Color(0xFF6D4C41),
                     )
                 }
-            }
+            },
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             list.forEachIndexed { index, measureType ->
                 DropdownMenuItem(
                     text = {
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth(),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = measureType.toString(),
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
                         }
                     },
@@ -117,24 +121,28 @@ fun MeasurementUnitDropDownMenu(
                         onMeasureSelected(list[index])
                         expanded = false
                     },
-                    contentPadding = PaddingValues(vertical = 0.dp, horizontal = 8.dp))
+                    contentPadding = PaddingValues(vertical = 0.dp, horizontal = 8.dp),
+                )
             }
         }
     }
 }
 
-
-enum class MeasurementUnit(val displayName: String, val icon: String) {
-    TABLESPOON("tbsp","\uD83C\uDF7D️"), // 🍽️
-    TEASPOON("tsp","\u2615"),           // ☕ (symbol for hot beverage)
-    MILLIGRAM("mg","\u2696"), // ⚖
-    GRAM("g","\u2696"),
-    KILOGRAM("kg","\u2696"),
-    MILLILITER("ml","\uD83E\uDD64"), // 🥤
-    LITER("l","\uD83E\uDD64"),// 🥛
-    DASH("dash","\uD83E\uDDC2"),             // 🧂🍲
-    SLICE("slice","\uD83E\uDDC0"),
-    UNIT("piece",""); // 🔢
+enum class MeasurementUnit(
+    val displayName: String,
+    val icon: String,
+) {
+    TABLESPOON("tbsp", "\uD83C\uDF7D️"), // 🍽️
+    TEASPOON("tsp", "\u2615"), // ☕ (symbol for hot beverage)
+    MILLIGRAM("mg", "\u2696"), // ⚖
+    GRAM("g", "\u2696"),
+    KILOGRAM("kg", "\u2696"),
+    MILLILITER("ml", "\uD83E\uDD64"), // 🥤
+    LITER("l", "\uD83E\uDD64"), // 🥛
+    DASH("dash", "\uD83E\uDDC2"), // 🧂🍲
+    SLICE("slice", "\uD83E\uDDC0"),
+    UNIT("piece", ""), // 🔢
+    ;
 
     override fun toString(): String = "$icon $displayName"
 }

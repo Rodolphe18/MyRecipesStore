@@ -32,38 +32,41 @@ import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
 
-
 @Composable
 fun RecipeItem(
     likeableRecipe: LikeableRecipe,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: () -> Unit,
 ) {
     val context = LocalContext.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            modifier = Modifier
-                .height(175.dp)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onOpenRecipe() }
+            modifier =
+                Modifier
+                    .height(175.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable { onOpenRecipe() },
         ) {
             Image(
-                painter = rememberAsyncImagePainter(
-                    model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb)
-                ),
+                painter =
+                    rememberAsyncImagePainter(
+                        model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb),
+                    ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
             )
             FavButton(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.BottomEnd),
-                onToggleFavorite = { checked -> onToggleFavorite(likeableRecipe, checked) },
-                isFavorite = likeableRecipe.isFavorite
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .align(Alignment.BottomEnd),
+                onToggleFavorite = { onToggleFavorite(likeableRecipe) },
+                isFavorite = likeableRecipe.isFavorite,
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -74,7 +77,7 @@ fun RecipeItem(
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center,
             maxLines = 2,
-            modifier = Modifier.width(180.dp)
+            modifier = Modifier.width(180.dp),
         )
     }
 }
@@ -87,20 +90,22 @@ fun CustomRecipeItem(
     val image = customRecipe.imageUrl
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            modifier = Modifier
-                .height(175.dp)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onOpenRecipe() }
+            modifier =
+                Modifier
+                    .height(175.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable { onOpenRecipe() },
         ) {
             if (image != null) {
                 Image(
                     painter = rememberAsyncImagePainter(model = image),
                     contentDescription = image,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
                 )
             } else {
                 Image(imageVector = Icons.Default.Photo, contentDescription = null, modifier = Modifier.fillMaxSize())
@@ -113,45 +118,49 @@ fun CustomRecipeItem(
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center,
-            maxLines = 2
+            maxLines = 2,
         )
     }
 }
 
-
 @Composable
 fun BigRecipeItem(
     likeableRecipe: LikeableRecipe,
-    onToggleFavorite: (LikeableRecipe, Boolean) -> Unit,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: () -> Unit,
 ) {
     Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16 / 9f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onOpenRecipe() }
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16 / 9f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable { onOpenRecipe() },
         ) {
             Image(
-                painter = rememberAsyncImagePainter(
-                    model = imageRequestBuilder(
-                        LocalContext.current,
-                        likeableRecipe.recipe.strMealThumb
-                    )
-                ),
+                painter =
+                    rememberAsyncImagePainter(
+                        model =
+                            imageRequestBuilder(
+                                LocalContext.current,
+                                likeableRecipe.recipe.strMealThumb,
+                            ),
+                    ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
             )
             FavButton(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.BottomEnd),
-                onToggleFavorite = { checked -> onToggleFavorite(likeableRecipe, checked) },
-                isFavorite = likeableRecipe.isFavorite
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .align(Alignment.BottomEnd),
+                onToggleFavorite = { onToggleFavorite(likeableRecipe) },
+                isFavorite = likeableRecipe.isFavorite,
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
@@ -162,8 +171,7 @@ fun BigRecipeItem(
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Left,
-            maxLines = 2
+            maxLines = 2,
         )
     }
 }
-

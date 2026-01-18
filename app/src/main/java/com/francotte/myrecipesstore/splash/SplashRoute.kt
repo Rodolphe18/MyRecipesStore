@@ -7,21 +7,29 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.francotte.home.BASE_ROUTE
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import com.francotte.feature.home.api.HomeNavKey
+import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalConsentManager
 import com.francotte.ui.LocalInterstitialManager
+import kotlinx.serialization.Serializable
 
-const val SPLASH_ROUTE = "splash"
 
-
-fun NavController.goToBaseAndClearSplash() {
-    navigate(BASE_ROUTE) {
-        popUpTo(SPLASH_ROUTE) { inclusive = true }
-        launchSingleTop = true
-    }
+fun Navigator.goToBaseAndClearSplash(homeKey: NavKey) {
+    state.rootStack.clear()
+    navigate(homeKey)
 }
 
+
+@Serializable
+object SplashNavKey : NavKey
+
+fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator) {
+    entry<SplashNavKey> {
+        SplashRoute({ navigator.goToBaseAndClearSplash(HomeNavKey) })
+    }
+}
 
 @Composable
 fun SplashRoute(
@@ -43,12 +51,14 @@ fun SplashRoute(
                 val canRequestAds = consentManager.ensureConsent(safeActivity)
                 viewModel.onConsentFinished(canRequestAds)
             }
+
             SplashStep.Interstitial -> {
                 val safeActivity = activity ?: return@LaunchedEffect
                 interstitialManager
                     .loadAndShowInterstitialAd(safeActivity)
                     .collect { viewModel.onAdEvent(it) }
             }
+
             SplashStep.Done -> Unit
         }
     }
@@ -60,7 +70,3 @@ fun SplashRoute(
     ApplyAdSystemBarsFix(uiState.isAdShowing)
     SplashScreen()
 }
-
-
-
-

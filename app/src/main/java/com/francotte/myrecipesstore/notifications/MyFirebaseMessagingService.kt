@@ -18,8 +18,6 @@ import com.google.firebase.messaging.RemoteMessage
 
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-
-
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         val data = remoteMessage.data
         val title = remoteMessage.notification?.title ?: "Recette du jour 🍽️"
@@ -28,43 +26,52 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         showNotification(title, body, idMeal)
     }
 
-
-    private fun showNotification(title: String, body: String, idMeal: String?) {
+    private fun showNotification(
+        title: String,
+        body: String,
+        idMeal: String?,
+    ) {
         val channelId = "daily_meal"
         createChannelIfNeeded(channelId)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val granted = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+            val granted =
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS,
+                ) == PackageManager.PERMISSION_GRANTED
 
             if (!granted) return
         }
 
         val deepLinkUri = "myapp://recipe/$idMeal".toUri()
 
-        val intent = Intent(Intent.ACTION_VIEW, deepLinkUri).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        val intent =
+            Intent(Intent.ACTION_VIEW, deepLinkUri).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
 
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_recipe_launcher)
-            .setContentTitle(title)
-            .setContentText(body)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
+        val notification =
+            NotificationCompat
+                .Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_recipe_launcher)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build()
 
         try {
-            NotificationManagerCompat.from(this)
+            NotificationManagerCompat
+                .from(this)
                 .notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
         } catch (_: SecurityException) {
             // Permission refusée / état bizarre : on ignore
@@ -72,14 +79,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun createChannelIfNeeded(channelId: String) {
-
-        val channel = NotificationChannel(
-            channelId,
-            "Recette du jour 🍽️",
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            description = "Notifications quotidiennes avec la dernière recette"
-        }
+        val channel =
+            NotificationChannel(
+                channelId,
+                "Recette du jour 🍽️",
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply {
+                description = "Notifications quotidiennes avec la dernière recette"
+            }
 
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(channel)

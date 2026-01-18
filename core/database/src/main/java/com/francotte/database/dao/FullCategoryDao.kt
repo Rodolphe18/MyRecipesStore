@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FullCategoryDao {
-
     @Query("SELECT * FROM full_category_entity")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 

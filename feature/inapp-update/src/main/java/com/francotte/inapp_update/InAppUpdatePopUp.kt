@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.collectLatest
 fun InAppUpdateHost(
     appUpdateManager: AppUpdateManager,
     snackbarHostState: SnackbarHostState,
-    viewModel: InAppUpdateViewModel = hiltViewModel()
+    viewModel: InAppUpdateViewModel = hiltViewModel(),
 ) {
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult()
-    ) { result ->
-        viewModel.onUpdateFlowResult(result.resultCode)
-    }
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result ->
+            viewModel.onUpdateFlowResult(result.resultCode)
+        }
 
     LaunchedEffect(Unit) {
         viewModel.startObserving()
@@ -38,7 +38,7 @@ fun InAppUpdateHost(
                     appUpdateManager.startUpdateFlowForResult(
                         effect.info,
                         launcher,
-                        AppUpdateOptions.defaultOptions(effect.type)
+                        AppUpdateOptions.defaultOptions(effect.type),
                     )
                 }
             }
@@ -49,10 +49,11 @@ fun InAppUpdateHost(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(uiState.isUpdateDownloaded) {
         if (uiState.isUpdateDownloaded) {
-            val res = snackbarHostState.showSnackbar(
-                message = "Mise à jour prête à installer",
-                actionLabel = "Redémarrer"
-            )
+            val res =
+                snackbarHostState.showSnackbar(
+                    message = "Mise à jour prête à installer",
+                    actionLabel = "Redémarrer",
+                )
             if (res == androidx.compose.material3.SnackbarResult.ActionPerformed) {
                 viewModel.completeUpdate()
             }

@@ -39,75 +39,79 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
-class RecipeNotifier @Inject constructor(
-    @ApplicationContext private val context: Context,
-) : Notifier {
-
-    companion object {
-        private const val CHANNEL_ID = "recipe_notification_channel"
-        private const val GROUP_KEY_RECIPES = "DAILY_RECIPE_NOTIFICATIONS"
-        private const val REQUEST_CODE = 100
-    }
-
-
-    override fun postRecipeNotification(recipe: Recipe) = with(context) {
-        if (checkSelfPermission(this, permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED) {
-            return
+class RecipeNotifier
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) : Notifier {
+        companion object {
+            private const val CHANNEL_ID = "recipe_notification_channel"
+            private const val GROUP_KEY_RECIPES = "DAILY_RECIPE_NOTIFICATIONS"
+            private const val REQUEST_CODE = 100
         }
 
-        val pendingIntent = context.createPendingIntent(recipe.idMeal)
+        override fun postRecipeNotification(recipe: Recipe) =
+            with(context) {
+                if (checkSelfPermission(this, permission.POST_NOTIFICATIONS) != PERMISSION_GRANTED) {
+                    return
+                }
 
-        val notification = createNotification {
-            setContentTitle("Recette du jour")
-            setContentText("Découvrez la recette du jour : ${recipe.strMeal}")
-            setSmallIcon(R.mipmap.ic_custom_launcher_foreground)
-            setStyle(NotificationCompat.InboxStyle().addLine(recipe.strMeal))
-            setGroup(GROUP_KEY_RECIPES)
-            setContentIntent(pendingIntent)
-            setAutoCancel(true)
-        }
+                val pendingIntent = context.createPendingIntent(recipe.idMeal)
 
-        val notificationManager = NotificationManagerCompat.from(this)
-        notificationManager.notify(recipe.idMeal.hashCode(), notification)
-    }
+                val notification =
+                    createNotification {
+                        setContentTitle("Recette du jour")
+                        setContentText("Découvrez la recette du jour : ${recipe.strMeal}")
+                        setSmallIcon(R.mipmap.ic_custom_launcher_foreground)
+                        setStyle(NotificationCompat.InboxStyle().addLine(recipe.strMeal))
+                        setGroup(GROUP_KEY_RECIPES)
+                        setContentIntent(pendingIntent)
+                        setAutoCancel(true)
+                    }
 
-    private fun Context.createNotification(block: NotificationCompat.Builder.() -> Unit): Notification {
-        ensureChannelExists()
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .apply(block)
-            .build()
-    }
-
-    private fun Context.ensureChannelExists() {
-        if (VERSION.SDK_INT >= VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Recettes quotidiennes",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notification pour une recette aléatoire chaque jour"
+                val notificationManager = NotificationManagerCompat.from(this)
+                notificationManager.notify(recipe.idMeal.hashCode(), notification)
             }
-            NotificationManagerCompat.from(this).createNotificationChannel(channel)
-        }
-    }
 
-    private fun Context.createPendingIntent(recipeId: String): PendingIntent? {
-        val intent = Intent().apply {
-            action = Intent.ACTION_VIEW
-            data = "myapp://recipe/$recipeId".toUri()
-            setPackage(packageName)
+        private fun Context.createNotification(block: NotificationCompat.Builder.() -> Unit): Notification {
+            ensureChannelExists()
+            return NotificationCompat
+                .Builder(this, CHANNEL_ID)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .apply(block)
+                .build()
         }
-        return PendingIntent.getActivity(
-            this,
-            REQUEST_CODE,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+
+        private fun Context.ensureChannelExists() {
+            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                val channel =
+                    NotificationChannel(
+                        CHANNEL_ID,
+                        "Recettes quotidiennes",
+                        NotificationManager.IMPORTANCE_DEFAULT,
+                    ).apply {
+                        description = "Notification pour une recette aléatoire chaque jour"
+                    }
+                NotificationManagerCompat.from(this).createNotificationChannel(channel)
+            }
+        }
+
+        private fun Context.createPendingIntent(recipeId: String): PendingIntent? {
+            val intent =
+                Intent().apply {
+                    action = Intent.ACTION_VIEW
+                    data = "myapp://recipe/$recipeId".toUri()
+                    setPackage(packageName)
+                }
+            return PendingIntent.getActivity(
+                this,
+                REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
     }
-}
 
 interface Notifier {
     fun postRecipeNotification(recipe: Recipe)
@@ -117,7 +121,5 @@ interface Notifier {
 @InstallIn(SingletonComponent::class)
 abstract class NotificationsModule {
     @Binds
-    abstract fun bindNotifier(
-        notifier: RecipeNotifier,
-    ): Notifier
+    abstract fun bindNotifier(notifier: RecipeNotifier): Notifier
 }

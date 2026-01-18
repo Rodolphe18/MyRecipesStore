@@ -11,10 +11,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object FavoriteModule {
-
     @Singleton
     @Provides
-    fun provideFavoritesRepository(offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository, userDataRepository: UserDataRepository, favoriteManager: FavoriteManager): FavoritesRepository =
-        FavoritesRepositoryImpl(offlineFirstFavoritesRepository, favoriteManager, userDataRepository)
-
+    fun provideFavoritesRepository(
+        offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository,
+        userDataRepository: UserDataRepository,
+        favoriteManager: FavoriteManager,
+    ): FavoritesRepository = FavoritesRepositoryImpl(offlineFirstFavoritesRepository, favoriteManager, userDataRepository)
 }

@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace = "com.francotte.benchmark"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -18,11 +18,10 @@ android {
     testOptions.managedDevices.devices {
         create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel7Api35") {
             device = "Pixel 7"
-            apiLevel = 35
+            apiLevel = 36
             systemImageSource = "aosp"
         }
     }
-
 
     buildTypes {
         // This benchmark buildType is used for benchmarking, and should function like your
