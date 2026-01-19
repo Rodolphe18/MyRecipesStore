@@ -1,11 +1,8 @@
 package com.francotte.myrecipesstore.navigation
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.util.Log
 import android.view.Window
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
@@ -40,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.francotte.add_recipe.addRecipeEntry
@@ -116,36 +112,19 @@ fun FoodApp(
 
     val entryProvider = entryProvider {
         splashEntry(navigator)
-        homeEntry(navigator = navigator, onToggleFavorite = onToggleFavorite, windowSizeClass)
-        categoriesEntry(navigator = navigator, windowSizeClass)
-        categoryEntry(
-            navigator = navigator,
-            windowSizeClass = windowSizeClass,
-            onToggleFavorite = onToggleFavorite
-        )
+        homeEntry(navigator, onToggleFavorite, windowSizeClass)
+        categoriesEntry(navigator, windowSizeClass)
+        categoryEntry(navigator, windowSizeClass, onToggleFavorite)
         addRecipeEntry(navigator, isAuthenticated)
         searchModeEntry(navigator)
-        sectionEntry(
-            navigator,
-            windowSizeClass,
-            onToggleFavorite
-        )
-        searchRecipesEntry(
-            navigator,
-            windowSizeClass,
-            onToggleFavorite
-        )
+        sectionEntry(navigator, windowSizeClass, onToggleFavorite)
+        searchRecipesEntry(navigator, windowSizeClass, onToggleFavorite)
         searchEntry(navigator)
         loginEntry(navigator)
         registerEntry(navigator)
-        favoritesEntry(
-            navigator,
-            windowSizeClass,
-            onToggleFavorite,
-            customRecipeHasBeenUpdated
-        )
+        favoritesEntry(navigator, windowSizeClass, onToggleFavorite, customRecipeHasBeenUpdated)
         premiumEntry(navigator)
-        //  deepLinkRecipeScreen(navController::popBackStack, onToggleFavorite)
+      //  deepLinkRecipeScreen(navController::popBackStack, onToggleFavorite)
         detailRecipeEntry(navigator, onToggleFavorite)
         customRecipeEntry(navigator)
         videoEntry(window)
@@ -156,8 +135,6 @@ fun FoodApp(
 
     val entries = appState.navigationState.toEntries(entryProvider)
 
-    val isFullscreen = VideoNavKey in entries.map { it.contentKey }
-
 
     LaunchedEffect(Unit) {
         localFavoriteManager.goToLoginScreenEvent.collect {
@@ -165,17 +142,14 @@ fun FoodApp(
         }
     }
     LaunchedEffect(Unit) {
-        requestInAppReview(localActivity, localInAppRatingManager)
+        showInAppReview(localActivity, localInAppRatingManager)
     }
 
     LaunchedEffect(Unit) {
         DeepLinkBus.intents.collect { intent ->
-            Log.d("debug_deep_link1", "$intent")
+
             if (intent.action != Intent.ACTION_VIEW) return@collect
             val uri = intent.data ?: return@collect
-
-            Log.d("debug_deep_link2", "$uri")
-
             when (uri.toNavKeyOrNull()) {
                 FavoritesNavKey -> navigator.navigateToFavorites()
                 CategoriesNavKey -> navigator.navigateToCategories()
@@ -223,7 +197,7 @@ fun FoodApp(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         bottomBar = {
-            if (!isFullscreen && appState.navigationState.currentKey != SplashNavKey) {
+            if (appState.navigationState.currentKey != SplashNavKey && appState.navigationState.currentKey !is VideoNavKey) {
                 BottomBar(
                     modifier =
                         Modifier
@@ -272,7 +246,7 @@ fun FoodApp(
                     onActionClick = { showSettingsDialog = true },
                     navigationIconEnabled = isAuthenticated,
                     navigationIcon = Icons.Filled.AccountCircle,
-                    onNavigationClick = { navigator.navigateToProfile() },
+                    onNavigationClick = navigator::navigateToProfile,
                 )
             }
             Box(
@@ -324,7 +298,7 @@ private fun shareApp(context: Context) {
     context.startActivity(shareIntent)
 }
 
-private suspend fun requestInAppReview(
+private suspend fun showInAppReview(
     activity: Activity?,
     inAppRatingManager: InAppRatingManager,
 ) {
@@ -338,7 +312,7 @@ private suspend fun requestInAppReview(
     }
 }
 
-fun openPrivacyPolicy(context: Context) {
+private fun openPrivacyPolicy(context: Context) {
     val uri = "https://myrecipesstore18.com/privacy-policy.html".toUri()
     val intent =
         Intent(Intent.ACTION_VIEW, uri).apply {

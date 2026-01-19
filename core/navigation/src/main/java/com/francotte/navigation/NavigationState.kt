@@ -47,7 +47,7 @@ fun rememberNavigationState(
  */
 class NavigationState(
     val startKey: NavKey,
-    val rootStack: NavBackStack<NavKey>,              // <- NEW
+    val rootStack: NavBackStack<NavKey>,
     val topLevelStack: NavBackStack<NavKey>,
     val subStacks: Map<NavKey, NavBackStack<NavKey>>,
 ) {
