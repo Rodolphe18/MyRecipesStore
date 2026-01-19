@@ -1,0 +1,80 @@
+package com.francotte.home
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import com.francotte.api.navigateToDetail
+import com.francotte.common.counters.ScreenCounter
+import com.francotte.feature.home.api.HomeNavKey
+import com.francotte.feature.section.api.navigateToSection
+import com.francotte.feature.video.api.navigateToVideo
+import com.francotte.model.LikeableRecipe
+import com.francotte.navigation.Navigator
+import com.francotte.ui.LocalLaunchCounterManager
+
+const val HOME_ROUTE = "home"
+const val BASE_ROUTE = "base"
+
+
+
+fun EntryProviderScope<NavKey>.homeEntry(navigator: Navigator,onToggleFavorite: (LikeableRecipe) -> Unit,
+                                         windowSizeClass: WindowSizeClass,) {
+    entry<HomeNavKey> {
+        HomeRoute(
+            onRecipeClick = navigator::navigateToDetail,
+            onToggleFavorite = onToggleFavorite,
+            onOpenSection = navigator::navigateToSection,
+            onVideoButtonClick = navigator::navigateToVideo,
+            windowSizeClass = windowSizeClass,
+        )
+    }
+}
+
+
+
+@Composable
+fun HomeRoute(
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    onRecipeClick: (List<String>, Int, String) -> Unit,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
+    onOpenSection: (String) -> Unit,
+    onVideoButtonClick: (String) -> Unit,
+    windowSizeClass: WindowSizeClass,
+) {
+    val localLaunchCounter = LocalLaunchCounterManager.current
+    val latestRecipes by homeViewModel.latestRecipes.collectAsStateWithLifecycle()
+    val americanRecipes by homeViewModel.americanRecipes.collectAsStateWithLifecycle()
+    val areasRecipes by homeViewModel.areasRecipes.collectAsStateWithLifecycle()
+    val englishRecipes by homeViewModel.englishRecipes.collectAsStateWithLifecycle()
+    val isReloading by homeViewModel.isReloading.collectAsStateWithLifecycle()
+    val currentPage by homeViewModel.currentPage.collectAsStateWithLifecycle()
+
+    Box(Modifier.fillMaxSize()) {
+        HomeScreen(
+            latestRecipes = latestRecipes,
+            americanRecipes = americanRecipes,
+            areasRecipes = areasRecipes,
+            englishRecipes = englishRecipes,
+            onOpenRecipe = onRecipeClick,
+            onOpenSection = onOpenSection,
+            onToggleFavorite = onToggleFavorite,
+            onVideoButtonClick = onVideoButtonClick,
+            windowSizeClass = windowSizeClass,
+            isReloading = isReloading,
+            onReload = { homeViewModel.refresh() },
+            currentPage = currentPage,
+            onCurrentPageChange = homeViewModel::setCurrentPage,
+        )
+    }
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
+}

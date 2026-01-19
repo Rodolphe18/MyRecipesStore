@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="empty_recipes_screen">No recipes found !\nTry different ingredients and \ncook up something new ! 🍲🧑‍🍳</string>
+</resources>

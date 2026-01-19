@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_recipe">Add recipe</string>
+    <string name="add_recipe_access">Login to create new recipes !</string>
+</resources>
