@@ -44,6 +44,8 @@ dependencies {
     api(project(":core:billing"))
 
     implementation(libs.coil.compose)
+    api(libs.androidx.metrics)
+    implementation(libs.androidx.tracing.ktx)
     implementation("com.google.android.material:material:1.11.0")
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)

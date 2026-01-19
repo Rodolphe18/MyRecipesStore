@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.metrics.performance.JankStats
 import com.francotte.ads.BannerAdProvider
 import com.francotte.ads.InterstitialManager
 import com.francotte.billing.BillingController
@@ -37,6 +38,10 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var lazyStats: dagger.Lazy<JankStats>
+
     @Inject
     lateinit var authManager: AuthManager
 
@@ -110,6 +115,18 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         DeepLinkBus.intents.tryEmit(intent)
+    }
+
+
+
+    override fun onResume() {
+        super.onResume()
+        lazyStats.get().isTrackingEnabled = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        lazyStats.get().isTrackingEnabled = false
     }
 }
 

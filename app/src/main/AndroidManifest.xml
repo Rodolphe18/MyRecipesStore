@@ -1,103 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+  xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <application
-        android:name=".FoodApplication"
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_custom_launcher_foreground"
-        android:label="@string/app_launcher_name"
-        android:roundIcon="@mipmap/ic_custom_launcher_foreground"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.MyRecipesStore"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="31">
-        <profileable android:shell="true" tools:targetApi="q" />
-        <activity
-            android:name=".MainActivity"
-            android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="true">
+  <application
+    android:name=".FoodApplication"
+    android:allowBackup="true"
+    android:dataExtractionRules="@xml/data_extraction_rules"
+    android:fullBackupContent="@xml/backup_rules"
+    android:icon="@mipmap/ic_custom_launcher_foreground"
+    android:label="@string/app_launcher_name"
+    android:roundIcon="@mipmap/ic_custom_launcher_foreground"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.MyRecipesStore"
+    android:usesCleartextTraffic="true"
+    tools:targetApi="31">
+    <profileable
+      android:shell="true"
+      tools:targetApi="q" />
+    <activity
+      android:name=".MainActivity"
+      android:exported="true"
+      android:hardwareAccelerated="true"
+      android:windowSoftInputMode="adjustResize">
 
-            <!-- Deep links -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="recipe" android:pathPattern="/.*" android:scheme="myapp" />
-            </intent-filter>
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
+      <!-- Deep links -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:scheme="https"
-                    android:host="www.myrecipesstore18.com"
-                    android:pathPrefix="/home" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="myrecipesstore" android:host="home" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="myrecipesapp" android:host="reset-password" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+        <data
+          android:host="recipe"
+          android:pathPattern="/.*"
+          android:scheme="myapp" />
+      </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:scheme="myapp"
-                    android:host="favorites" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="myapp" android:host="categories" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="myapp" android:host="search" />
-            </intent-filter>
+        <data
+          android:host="www.myrecipesstore18.com"
+          android:pathPrefix="/home"
+          android:scheme="https" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
 
-            <!-- Launcher -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <meta-data
-                android:name="android.app.shortcuts"
-                android:resource="@xml/shortcuts" />
-        </activity>
-        <service
-            android:name=".notifications.MyFirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
 
-        <!-- Divers -->
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="1210330677148706" />
-        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="6532d330d63d15c5c97407ef7b06a79d" />
-        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8828725570000941~5726339437" />
+        <data
+          android:host="home"
+          android:scheme="myrecipesstore" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
 
-    </application>
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="reset-password"
+          android:scheme="myrecipesapp" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="favorites"
+          android:scheme="myapp" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="categories"
+          android:scheme="myapp" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="search"
+          android:scheme="myapp" />
+      </intent-filter>
+
+      <!-- Launcher -->
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <meta-data
+        android:name="android.app.shortcuts"
+        android:resource="@xml/shortcuts" />
+    </activity>
+    <service
+      android:name=".notifications.MyFirebaseMessagingService"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+      </intent-filter>
+    </service>
+
+    <!-- Divers -->
+    <meta-data
+      android:name="com.facebook.sdk.ApplicationId"
+      android:value="1210330677148706" />
+    <meta-data
+      android:name="com.facebook.sdk.ClientToken"
+      android:value="6532d330d63d15c5c97407ef7b06a79d" />
+    <meta-data
+      android:name="com.google.android.gms.ads.APPLICATION_ID"
+      android:value="ca-app-pub-8828725570000941~5726339437" />
+
+  </application>
 </manifest>

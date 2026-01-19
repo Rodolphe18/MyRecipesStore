@@ -18,16 +18,27 @@ import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import coil.size.Precision
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
@@ -39,26 +50,24 @@ fun RecipeItem(
     onOpenRecipe: () -> Unit,
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
+    val shape = RoundedCornerShape(16.dp)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier =
                 Modifier
                     .height(175.dp)
                     .aspectRatio(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable { onOpenRecipe() },
+                    .background(MaterialTheme.colorScheme.surfaceVariant,shape)
+                    .clickable(onClick = onOpenRecipe),
         ) {
-            Image(
-                painter =
-                    rememberAsyncImagePainter(
-                        model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb),
-                    ),
+
+            val pxSize = with(density) { 175.dp.roundToPx() }
+            AsyncImage(
+                model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb,pxSize,pxSize),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
-                modifier =
-                    Modifier
-                        .fillMaxSize(),
+                modifier = Modifier.fillMaxSize().clip(shape),
             )
             FavButton(
                 modifier =
@@ -129,25 +138,38 @@ fun BigRecipeItem(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var imageSizePx by remember { mutableStateOf<IntSize?>(null) }
+
     Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
         Box(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .aspectRatio(16 / 9f)
+                    .onSizeChanged { imageSizePx = it }
                     .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .clickable { onOpenRecipe() },
         ) {
-            Image(
-                painter =
-                    rememberAsyncImagePainter(
-                        model =
-                            imageRequestBuilder(
-                                LocalContext.current,
-                                likeableRecipe.recipe.strMealThumb,
-                            ),
-                    ),
+            val model = remember(likeableRecipe.recipe.strMealThumb, imageSizePx) {
+                val s = imageSizePx
+                if (s == null) {
+                    // pas encore mesuré : laisse Coil choisir (ou un placeholder)
+                    likeableRecipe.recipe.strMealThumb
+                } else {
+                    ImageRequest.Builder(context)
+                        .data(likeableRecipe.recipe.strMealThumb)
+                        .size(s.width, s.height)               // <- clé perf
+                        .precision(Precision.INEXACT)
+                        .crossfade(false)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build()
+                }
+            }
+            AsyncImage(
+                model = model,
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
                 modifier =

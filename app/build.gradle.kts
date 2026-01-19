@@ -179,6 +179,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.tracing.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
 

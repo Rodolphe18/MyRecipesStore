@@ -25,6 +25,7 @@ fun HorizontalRecipesList(
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     val listState = rememberLazyListState()
+    TrackScrollJank(scrollableState = listState, stateName = "section:row:list")
     Column(modifier = Modifier.padding(top = 10.dp)) {
         if (recipes.isNotEmpty()) {
             SectionTitle(

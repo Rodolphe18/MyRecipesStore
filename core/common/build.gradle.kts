@@ -42,6 +42,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
 
+    implementation(libs.androidx.tracing.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     ksp(libs.hilt.compiler)

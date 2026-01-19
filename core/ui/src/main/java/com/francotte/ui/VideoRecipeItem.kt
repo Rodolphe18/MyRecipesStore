@@ -19,12 +19,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.model.LikeableRecipe
@@ -37,6 +40,9 @@ fun VideoRecipeItem(
     onOpenRecipe: () -> Unit,
     onVideoButtonClick: () -> Unit,
 ) {
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier =
@@ -49,20 +55,19 @@ fun VideoRecipeItem(
                 .clickable { onOpenRecipe() },
     ) {
         Box {
-            Image(
-                painter =
-                    rememberAsyncImagePainter(
-                        model =
-                            imageRequestBuilder(
-                                LocalContext.current,
-                                likeableRecipe.recipe.strMealThumb,
-                            ),
+            val widthPx = with(density) { configuration.screenWidthDp.dp.roundToPx() }
+            val pxHeightSize = with(density) { 360.dp.roundToPx() }
+            AsyncImage(
+                model =
+                    imageRequestBuilder(
+                        LocalContext.current,
+                        likeableRecipe.recipe.strMealThumb,
+                        widthPx,
+                        pxHeightSize
                     ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
-                modifier =
-                    Modifier
-                        .fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
             )
             Text(
                 text = likeableRecipe.recipe.strMeal,

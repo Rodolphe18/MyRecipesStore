@@ -50,5 +50,6 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.retrofit.core)
+    implementation(libs.androidx.tracing.ktx)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 }

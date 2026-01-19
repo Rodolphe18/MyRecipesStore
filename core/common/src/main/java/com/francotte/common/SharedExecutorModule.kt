@@ -1,6 +1,7 @@
 package com.francotte.common
 
 import android.content.Context
+import androidx.tracing.trace
 import androidx.work.Configuration
 import coil.ImageLoader
 import dagger.Module
@@ -24,11 +25,12 @@ object SharedExecutorModule {
     fun provideImageLoader(
         context: Context,
         sharedExecutor: ExecutorService,
-    ): ImageLoader =
+    ): ImageLoader = trace("FoodImageLoader") {
         ImageLoader
             .Builder(context)
             .dispatcher(sharedExecutor.asCoroutineDispatcher())
             .build()
+    }
 
     @Provides
     @Singleton
