@@ -153,7 +153,6 @@ fun FoodApp(
 
     LaunchedEffect(Unit) {
         DeepLinkBus.intents.collect { intent ->
-            Log.d("Debug_shortcut", "collect action=${intent.action} data=${intent.data}")
             val uri = intent.data ?: return@collect
             val key = uri.toNavKeyOrNull() ?: return@collect
             pendingDeepLink.value = key
