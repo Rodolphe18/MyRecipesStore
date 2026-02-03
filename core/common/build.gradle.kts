@@ -41,7 +41,8 @@ dependencies {
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.androidx.tracing.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)

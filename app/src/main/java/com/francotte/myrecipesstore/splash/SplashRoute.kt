@@ -16,18 +16,18 @@ import com.francotte.ui.LocalInterstitialManager
 import kotlinx.serialization.Serializable
 
 
-fun Navigator.goToBaseAndClearSplash(homeKey: NavKey) {
+fun Navigator.goToBaseAndClearSplash(targetTopLevelKey: NavKey) {
     state.rootStack.clear()
-    navigate(homeKey)
+    navigate(targetTopLevelKey)
 }
 
 
 @Serializable
 object SplashNavKey : NavKey
 
-fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator) {
+fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator, resolveNextKey: () -> NavKey) {
     entry<SplashNavKey> {
-        SplashRoute({ navigator.goToBaseAndClearSplash(HomeNavKey) })
+        SplashRoute({ navigator.goToBaseAndClearSplash(resolveNextKey()) })
     }
 }
 

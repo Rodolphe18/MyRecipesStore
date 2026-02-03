@@ -1,6 +1,8 @@
 package com.francotte.testing
 
+import com.francotte.common.utils.DataResult
 import com.francotte.data.repository.HomeRepository
+import com.francotte.data.repository.SyncOutcome
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +28,9 @@ class FakeHomeRepository : HomeRepository {
         mutableMapOf<String, MutableSharedFlow<Result<List<LikeableRecipe>>>>()
 
     override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> = latestFlow
+    override suspend fun refreshLatestRecipes(force: Boolean): DataResult<SyncOutcome> {
+        TODO("Not yet implemented")
+    }
 
     override fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>> = englishFlow
 

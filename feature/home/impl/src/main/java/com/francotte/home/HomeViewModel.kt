@@ -3,7 +3,6 @@ package com.francotte.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.repository.HomeRepository
-import com.francotte.ui.HomeSyncer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,8 +15,7 @@ import javax.inject.Inject
 class HomeViewModel
     @Inject
     constructor(
-        repository: HomeRepository,
-        private val homeSyncer: HomeSyncer,
+       private val repository: HomeRepository
     ) : ViewModel() {
         private val _currentPage = MutableStateFlow(0)
         val currentPage = _currentPage.asStateFlow()
@@ -49,15 +47,15 @@ class HomeViewModel
                 .mapToAreasRecipes()
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AreasRecipes.Loading)
 
-        fun refresh() {
+        fun refreshLatestRecipes() {
             viewModelScope.launch {
                 _isReloading.value = true
-                runCatching { homeSyncer.syncLatest(true) }
+                runCatching { repository.refreshLatestRecipes(true) }
                 _isReloading.value = false
             }
         }
 
-        fun setCurrentPage(page: Int) {
+        fun setLatestRecipesCurrentPage(page: Int) {
             _currentPage.value = page
         }
     }

@@ -93,6 +93,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.ui.test.junit4)
+    //  implementation(libs.androidx.compose.runtime.tracing)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)

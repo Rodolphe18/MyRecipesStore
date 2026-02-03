@@ -3,6 +3,7 @@ package com.francotte.myrecipesstore.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.Window
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.francotte.add_recipe.addRecipeEntry
@@ -52,6 +54,7 @@ import com.francotte.designsystem.component.TopAppBar
 import com.francotte.detail.detailRecipeEntry
 import com.francotte.favorites.customRecipeEntry
 import com.francotte.favorites.favoritesEntry
+import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.feature.search.api.SearchNavKey
 import com.francotte.feature.search.api.navigateToSearch
@@ -64,6 +67,7 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.deeplink.toNavKeyOrNull
 import com.francotte.myrecipesstore.splash.SplashNavKey
+import com.francotte.myrecipesstore.splash.goToBaseAndClearSplash
 import com.francotte.myrecipesstore.splash.splashEntry
 import com.francotte.myrecipesstore.ui.AppState
 import com.francotte.navigation.Navigator
@@ -110,8 +114,10 @@ fun FoodApp(
 
     val navigator = remember { Navigator(appState.navigationState) }
 
+    val pendingDeepLink = rememberSaveable { mutableStateOf<NavKey?>(null) }
+
     val entryProvider = entryProvider {
-        splashEntry(navigator)
+        splashEntry(navigator) { pendingDeepLink.value?.also { pendingDeepLink.value = null } ?: HomeNavKey }
         homeEntry(navigator, onToggleFavorite, windowSizeClass)
         categoriesEntry(navigator, windowSizeClass)
         categoryEntry(navigator, windowSizeClass, onToggleFavorite)
@@ -147,16 +153,11 @@ fun FoodApp(
 
     LaunchedEffect(Unit) {
         DeepLinkBus.intents.collect { intent ->
-
-            if (intent.action != Intent.ACTION_VIEW) return@collect
+            Log.d("Debug_shortcut", "collect action=${intent.action} data=${intent.data}")
             val uri = intent.data ?: return@collect
-            when (uri.toNavKeyOrNull()) {
-                FavoritesNavKey -> navigator.navigateToFavorites()
-                CategoriesNavKey -> navigator.navigateToCategories()
-                SearchNavKey -> navigator.navigateToSearch()
-                else -> Unit
-            }
-        }
+            val key = uri.toNavKeyOrNull() ?: return@collect
+            pendingDeepLink.value = key
+           }
     }
 
 

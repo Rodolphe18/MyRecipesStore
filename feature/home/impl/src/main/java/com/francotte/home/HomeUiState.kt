@@ -1,16 +1,16 @@
 package com.francotte.home
 
 import com.francotte.model.LikeableRecipe
+import com.francotte.common.utils.AppError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 sealed interface LatestRecipes {
     data object Loading : LatestRecipes
-
-    data object Error : LatestRecipes
-
+    data object Empty : LatestRecipes
     data class Success(
         val latestRecipes: List<LikeableRecipe>,
+        val isReloading:Boolean
     ) : LatestRecipes
 }
 
@@ -47,9 +47,9 @@ sealed interface EnglishRecipes {
 internal fun Flow<Result<List<LikeableRecipe>>>.mapToLatestRecipes() =
     map {
         if (it.isSuccess) {
-            LatestRecipes.Success(it.getOrDefault(emptyList()))
+            LatestRecipes.Success(it.getOrDefault(emptyList()),false)
         } else {
-            LatestRecipes.Error
+            LatestRecipes.Empty
         }
     }
 

@@ -25,14 +25,12 @@ class HomeViewModelTest {
 
     private lateinit var repository: FakeHomeRepository
 
-    private lateinit var homeSyncer: FakeHomeSyncer
     private lateinit var viewModel: HomeViewModel
 
     @Before
     fun setup() {
         repository = FakeHomeRepository()
-        homeSyncer = FakeHomeSyncer()
-        viewModel = HomeViewModel(repository, homeSyncer)
+        viewModel = HomeViewModel(repository)
     }
 
     @Test
@@ -47,7 +45,7 @@ class HomeViewModelTest {
     @Test
     fun latestRecipesIsSuccessWhenRepositoryEmitsSuccess() =
         runTest {
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.latestRecipes.collect() }
+            backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.latestRecipes.collect() }
 
             val sample =
                 listOf(
@@ -55,16 +53,16 @@ class HomeViewModelTest {
                     LikeableRecipe(recipe = TestRecipe(idMeal = "2", strMeal = "B"), isFavorite = true),
                 )
 
-            repository.sendLatestRecipes(Result.success(sample))
+            repository.sendLatestRecipes(sample)
             advanceUntilIdle()
 
-            assertEquals(LatestRecipes.Success(sample), viewModel.latestRecipes.value)
+            assertEquals(LatestRecipes.Success(sample,false), viewModel.latestRecipes.value)
         }
 
     @Test
     fun englishRecipesIsErrorWhenRepositoryEmitsFailure() =
         runTest {
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.englishRecipes.collect() }
+            backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.englishRecipes.collect() }
 
             repository.sendEnglishRecipes(Result.failure(Throwable("boom")))
             advanceUntilIdle()
@@ -77,7 +75,7 @@ class HomeViewModelTest {
     @Test
     fun americanRecipes_isSuccess_whenRepositoryEmitsSuccess() =
         runTest {
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.americanRecipes.collect() }
+            backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.americanRecipes.collect() }
 
             val sample =
                 listOf(
@@ -93,7 +91,7 @@ class HomeViewModelTest {
     @Test
     fun areasRecipes_isSuccess_whenRepositoryEmitsSuccessMap() =
         runTest {
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.areasRecipes.collect() }
+            backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.areasRecipes.collect() }
 
             val map =
                 mapOf(
@@ -110,26 +108,26 @@ class HomeViewModelTest {
     @Test
     fun reload_togglesIsReloadingBackToFalse_andStillUpdatesStreams() =
         runTest {
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.latestRecipes.collect() }
+            backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.latestRecipes.collect() }
 
             // 1) premier état
             val first = listOf(LikeableRecipe(TestRecipe("1", "A"), false))
-            repository.sendLatestRecipes(Result.success(first))
+            repository.sendLatestRecipes(first)
             advanceUntilIdle()
-            assertEquals(LatestRecipes.Success(first), viewModel.latestRecipes.value)
+            assertEquals(LatestRecipes.Success(first, false), viewModel.latestRecipes.value)
 
             // 2) reload
-            viewModel.refresh()
+            viewModel.refreshLatestRecipes()
             advanceUntilIdle()
 
             // isReloading repasse à false à la fin
-            assertFalse(viewModel.isReloading.value)
+            assertFalse(viewModel.isReloadingLatestRecipes.value)
 
             // 3) nouvelle donnée après reload (le flatMapLatest est relancé)
             val second = listOf(LikeableRecipe(TestRecipe("2", "B"), true))
-            repository.sendLatestRecipes(Result.success(second))
+            repository.sendLatestRecipes(second)
             advanceUntilIdle()
 
-            assertEquals(LatestRecipes.Success(second), viewModel.latestRecipes.value)
+            assertEquals(LatestRecipes.Success(second,false), viewModel.latestRecipes.value)
         }
 }

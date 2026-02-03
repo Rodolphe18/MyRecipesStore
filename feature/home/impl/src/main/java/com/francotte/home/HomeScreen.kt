@@ -1,11 +1,16 @@
 package com.francotte.home
 
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,6 +20,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -25,13 +32,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.ads.BannerAd
@@ -48,8 +58,8 @@ import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
 import com.francotte.ui.VideoRecipeItem
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,13 +76,11 @@ fun HomeScreen(
     isReloading: Boolean,
     onReload: () -> Unit,
     currentPage: Int,
-    onCurrentPageChange: (Int) -> Unit,
-) {
+    onCurrentPageChange: (Int) -> Unit) {
     val localBannerProvider = LocalBannerProvider.current
     val spanSize = GridItemSpan(windowSizeClass.widthSizeClass.nbHomeColumns)
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
     val isDataReady =
         latestRecipes is LatestRecipes.Success && americanRecipes is AmericanRecipes.Success
     val areaSections =
@@ -97,11 +105,7 @@ fun HomeScreen(
                     },
                 ),
         isRefreshing = isReloading,
-        onRefresh = {
-            coroutineScope.launch {
-                onReload()
-            }
-        },
+        onRefresh = onReload,
         state = pullRefreshState,
     ) {
         if (latestRecipes == LatestRecipes.Loading) {
@@ -129,8 +133,8 @@ fun HomeScreen(
                             showNavIcon = false,
                         )
                         when (latestRecipes) {
-                            LatestRecipes.Error -> ErrorScreen { onReload() }
-                            LatestRecipes.Loading -> {}
+                            is LatestRecipes.Empty -> ErrorScreen { onReload() }
+                            is LatestRecipes.Loading -> {}
                             is LatestRecipes.Success -> {
                                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
                                     val pagerState =
@@ -138,11 +142,7 @@ fun HomeScreen(
                                             initialPage = currentPage,
                                             pageCount = { latestRecipes.latestRecipes.size },
                                         )
-                                    LaunchedEffect(currentPage) {
-                                        if (pagerState.currentPage != currentPage) {
-                                            pagerState.scrollToPage(currentPage)
-                                        }
-                                    }
+
                                     LaunchedEffect(pagerState) {
                                         snapshotFlow { pagerState.currentPage }
                                             .distinctUntilChanged()
@@ -154,7 +154,8 @@ fun HomeScreen(
                                                 Modifier
                                                     .testTag("VideoRecipeItem_$index")
                                                     .semantics {
-                                                        contentDescription = "VideoRecipeItem_$index"
+                                                        contentDescription =
+                                                            "VideoRecipeItem_$index"
                                                     },
                                             likeableRecipe = latestRecipes.latestRecipes[index],
                                             onOpenRecipe = {
@@ -278,3 +279,13 @@ fun HomeScreen(
         }
     }
 }
+
+
+@Composable
+fun Test(modifier: Modifier = Modifier) {
+    Box(contentAlignment = Alignment.Center) {
+
+    }
+    Text(modifier = Modifier, text = "", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+}
+

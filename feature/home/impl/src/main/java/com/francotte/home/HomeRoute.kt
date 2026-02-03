@@ -69,9 +69,9 @@ fun HomeRoute(
             onVideoButtonClick = onVideoButtonClick,
             windowSizeClass = windowSizeClass,
             isReloading = isReloading,
-            onReload = { homeViewModel.refresh() },
+            onReload = homeViewModel::refreshLatestRecipes,
             currentPage = currentPage,
-            onCurrentPageChange = homeViewModel::setCurrentPage,
+            onCurrentPageChange = homeViewModel::setLatestRecipesCurrentPage,
         )
     }
     LaunchedEffect(Unit) {

@@ -72,7 +72,9 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DeepLinkBus.intents.tryEmit(intent)
+        if (intent?.action == Intent.ACTION_VIEW) {
+            DeepLinkBus.intents.tryEmit(intent)
+        }
         enableEdgeToEdge(
             statusBarStyle =
                 SystemBarStyle.auto(
@@ -114,6 +116,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         DeepLinkBus.intents.tryEmit(intent)
     }
 

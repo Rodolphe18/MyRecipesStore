@@ -35,7 +35,9 @@ android {
 }
 
 dependencies {
+    api(project(":core:network"))
     api(project(":core:model"))
+    api(project(":core:common"))
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
