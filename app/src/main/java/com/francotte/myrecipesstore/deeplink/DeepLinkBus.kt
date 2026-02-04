@@ -17,6 +17,9 @@ fun Uri.toNavKeyOrNull(): NavKey? = when {
     scheme == "myapp" && host == "favorites" -> FavoritesNavKey
     scheme == "myapp" && host == "categories" -> CategoriesNavKey
     scheme == "myapp" && host == "search" -> SearchNavKey
-    scheme == "myapp" && host == "recipe" -> DetailRecipeNavKey(null,null,null)
+    scheme == "myapp" && host == "recipe" -> {
+        val id = pathSegments.firstOrNull()
+        if (!id.isNullOrBlank()) DetailRecipeNavKey(listOf(id),0,null) else null
+    }
     else -> null
 }

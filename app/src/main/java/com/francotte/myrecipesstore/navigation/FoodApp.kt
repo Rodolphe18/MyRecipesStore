@@ -3,14 +3,15 @@ package com.francotte.myrecipesstore.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.Window
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -25,7 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,22 +44,17 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.francotte.add_recipe.addRecipeEntry
-import com.francotte.api.CategoriesNavKey
-import com.francotte.api.FavoritesNavKey
-import com.francotte.api.navigateToCategories
-import com.francotte.api.navigateToFavorites
 import com.francotte.api.navigateToProfile
 import com.francotte.api.navigateToResetPassword
 import com.francotte.categories.categoriesEntry
 import com.francotte.categories.categoryEntry
+import com.francotte.designsystem.component.HideBottomSystemBar
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.detail.detailRecipeEntry
 import com.francotte.favorites.customRecipeEntry
 import com.francotte.favorites.favoritesEntry
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.feature.login.api.navigateToLogin
-import com.francotte.feature.search.api.SearchNavKey
-import com.francotte.feature.search.api.navigateToSearch
 import com.francotte.feature.settings.api.navigateToPremium
 import com.francotte.feature.video.api.VideoNavKey
 import com.francotte.home.homeEntry
@@ -67,7 +64,6 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.deeplink.toNavKeyOrNull
 import com.francotte.myrecipesstore.splash.SplashNavKey
-import com.francotte.myrecipesstore.splash.goToBaseAndClearSplash
 import com.francotte.myrecipesstore.splash.splashEntry
 import com.francotte.myrecipesstore.ui.AppState
 import com.francotte.navigation.Navigator
@@ -82,6 +78,7 @@ import com.francotte.search.searchEntry
 import com.francotte.section.sectionEntry
 import com.francotte.settings.SettingsBottomSheet
 import com.francotte.settings.premiumEntry
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalAuthManager
 import com.francotte.ui.LocalFavoriteManager
 import com.francotte.ui.LocalInAppRatingManager
@@ -94,10 +91,10 @@ import kotlinx.coroutines.launch
 fun FoodApp(
     @ApplicationContext context: Context,
     appState: AppState,
-    windowSizeClass: WindowSizeClass,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     window: Window,
 ) {
+    val mode = LocalAppLayout.current.mode
     val localActivity = LocalActivity.current
     val localAuthManager = LocalAuthManager.current
     val localFavoriteManager = LocalFavoriteManager.current
@@ -112,25 +109,33 @@ fun FoodApp(
         .customRecipeHasBeenUpdatedSuccessfully
         .collectAsStateWithLifecycle()
 
+    val useRail = mode.useNavigationRail()
+
+    val topBarScrollBehavior =
+        if (useRail) TopAppBarDefaults.enterAlwaysScrollBehavior()
+        else null
+
     val navigator = remember { Navigator(appState.navigationState) }
 
     val pendingDeepLink = rememberSaveable { mutableStateOf<NavKey?>(null) }
 
     val entryProvider = entryProvider {
-        splashEntry(navigator) { pendingDeepLink.value?.also { pendingDeepLink.value = null } ?: HomeNavKey }
-        homeEntry(navigator, onToggleFavorite, windowSizeClass)
-        categoriesEntry(navigator, windowSizeClass)
-        categoryEntry(navigator, windowSizeClass, onToggleFavorite)
+        splashEntry(navigator,window) {
+            pendingDeepLink.value?.also { pendingDeepLink.value = null } ?: HomeNavKey
+        }
+        homeEntry(navigator, onToggleFavorite)
+        categoriesEntry(navigator)
+        categoryEntry(navigator, onToggleFavorite)
         addRecipeEntry(navigator, isAuthenticated)
         searchModeEntry(navigator)
-        sectionEntry(navigator, windowSizeClass, onToggleFavorite)
-        searchRecipesEntry(navigator, windowSizeClass, onToggleFavorite)
+        sectionEntry(navigator, onToggleFavorite)
+        searchRecipesEntry(navigator, onToggleFavorite)
         searchEntry(navigator)
         loginEntry(navigator)
         registerEntry(navigator)
-        favoritesEntry(navigator, windowSizeClass, onToggleFavorite, customRecipeHasBeenUpdated)
+        favoritesEntry(navigator, onToggleFavorite, customRecipeHasBeenUpdated)
         premiumEntry(navigator)
-      //  deepLinkRecipeScreen(navController::popBackStack, onToggleFavorite)
+        //  deepLinkRecipeScreen(navController::popBackStack, onToggleFavorite)
         detailRecipeEntry(navigator, onToggleFavorite)
         customRecipeEntry(navigator)
         videoEntry(window)
@@ -156,7 +161,7 @@ fun FoodApp(
             val uri = intent.data ?: return@collect
             val key = uri.toNavKeyOrNull() ?: return@collect
             pendingDeepLink.value = key
-           }
+        }
     }
 
 
@@ -197,12 +202,15 @@ fun FoodApp(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         bottomBar = {
-            if (appState.navigationState.currentKey != SplashNavKey && appState.navigationState.currentKey !is VideoNavKey) {
+            val showChrome =
+                appState.navigationState.currentKey != SplashNavKey &&
+                    appState.navigationState.currentKey !is VideoNavKey
+
+            if (showChrome && !useRail) {
                 BottomBar(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 2.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp),
                     navigationState = appState.navigationState,
                     onNavigateToDestination = { navKey -> navigator.navigate(navKey) },
                     isAuthenticated = isAuthenticated,
@@ -210,76 +218,94 @@ fun FoodApp(
             }
         },
     ) { padding ->
-        Column(
+        val showChrome = appState.navigationState.currentKey != SplashNavKey &&
+                appState.navigationState.currentKey !is VideoNavKey
+        Row(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .consumeWindowInsets(padding)
-                .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(
-                        WindowInsetsSides.Horizontal,
-                    ),
-                ),
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
         ) {
-            var shouldShowTopAppBar = false
 
-            if (appState.navigationState.currentKey in appState.navigationState.topLevelKeys) {
-                shouldShowTopAppBar = true
+            if (showChrome && useRail) {
+                HideBottomSystemBar(window = window)
+                AppNavigationRail(
+                    modifier = Modifier
+                        .fillMaxHeight(),
+                    navigationState = appState.navigationState,
+                    onNavigateToDestination = { navKey -> navigator.navigate(navKey) },
+                    isAuthenticated = isAuthenticated,
+                )
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .then(
+                        if (topBarScrollBehavior != null) Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+                        else Modifier
+                    )
+            ) {
+                var shouldShowTopAppBar = false
 
-                val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
-                    ?: error("Top level nav item not found for ${appState.navigationState.currentTopLevelKey}")
+                if (appState.navigationState.currentKey in appState.navigationState.topLevelKeys) {
+                    shouldShowTopAppBar = true
 
-                val user by localAuthManager.user.collectAsStateWithLifecycle()
-                var image by remember { mutableStateOf("") }
-                LaunchedEffect(user?.image) { user?.image?.let { image = it } }
+                    val destination =
+                        TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
+                            ?: error("Top level nav item not found for ${appState.navigationState.currentTopLevelKey}")
 
+                    val user by localAuthManager.user.collectAsStateWithLifecycle()
+                    var image by remember { mutableStateOf("") }
+                    LaunchedEffect(user?.image) { user?.image?.let { image = it } }
 
-                TopAppBar(
-                    modifier =
-                        Modifier
+                    TopAppBar(
+                        modifier = Modifier
                             .statusBarsPadding()
                             .padding(horizontal = 4.dp),
-                    profileImage = image,
-                    titleRes = destination.titleTextId,
-                    actionIcon = Icons.Outlined.Settings,
-                    actionIconContentDescription = "settings",
-                    onActionClick = { showSettingsDialog = true },
-                    navigationIconEnabled = isAuthenticated,
-                    navigationIcon = Icons.Filled.AccountCircle,
-                    onNavigationClick = navigator::navigateToProfile,
-                )
-            }
-            Box(
-                modifier = Modifier.consumeWindowInsets(
-                    if (shouldShowTopAppBar) {
-                        WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
-                    } else {
-                        WindowInsets(0, 0, 0, 0)
-                    },
-                )
-            ) {
-                val alreadyNavigated = remember { mutableStateOf(false) }
-                LaunchedEffect(appState.resetPasswordToken) {
-                    val token = appState.resetPasswordToken
-                    if (token != null && !alreadyNavigated.value) {
-                        alreadyNavigated.value = true
-                        navigator.navigateToResetPassword(token)
-                    }
+                        profileImage = image,
+                        titleRes = destination.titleTextId,
+                        actionIcon = Icons.Outlined.Settings,
+                        actionIconContentDescription = "settings",
+                        onActionClick = { showSettingsDialog = true },
+                        navigationIconEnabled = isAuthenticated,
+                        navigationIcon = Icons.Filled.AccountCircle,
+                        onNavigationClick = navigator::navigateToProfile,
+                        scrollBehavior = topBarScrollBehavior
+                    )
                 }
 
+                Box(
+                    modifier = Modifier.consumeWindowInsets(
+                        if (shouldShowTopAppBar) {
+                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+                        } else {
+                            WindowInsets(0, 0, 0, 0)
+                        },
+                    )
+                ) {
+                    val alreadyNavigated = remember { mutableStateOf(false) }
+                    LaunchedEffect(appState.resetPasswordToken) {
+                        val token = appState.resetPasswordToken
+                        if (token != null && !alreadyNavigated.value) {
+                            alreadyNavigated.value = true
+                            navigator.navigateToResetPassword(token)
+                        }
+                    }
 
-                NavDisplay(
-                    entries = entries,
-                    onBack = navigator::goBack,
-                )
+                    NavDisplay(
+                        entries = entries,
+                        onBack = navigator::goBack,
+                    )
+                }
 
-            }
-
-            LaunchedEffect(Unit) {
-                localFavoriteManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
-            }
-            LaunchedEffect(Unit) {
-                localAuthManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
+                LaunchedEffect(Unit) {
+                    localFavoriteManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
+                }
+                LaunchedEffect(Unit) {
+                    localAuthManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
+                }
             }
         }
     }

@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,10 +33,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.designsystem.component.TopAppBar
+import com.francotte.ui.nbIngredientsColumns
 import com.francotte.designsystem.theme.SearchItemColor1
 import com.francotte.designsystem.theme.SearchItemColor2
 import com.francotte.designsystem.theme.SearchItemColor3
 import com.francotte.feature.search.api.SearchMode
+import com.francotte.ui.LocalAppLayout
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +49,7 @@ fun ItemSelectionGrid(
     onItemSelected: (String, SearchMode) -> Unit,
     onBack: () -> Unit,
 ) {
+    val mode = LocalAppLayout.current.mode
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -60,13 +64,10 @@ fun ItemSelectionGrid(
         },
     ) { padding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+            modifier = Modifier.fillMaxSize().padding(padding),
         ) {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Fixed(mode.nbIngredientsColumns),
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),

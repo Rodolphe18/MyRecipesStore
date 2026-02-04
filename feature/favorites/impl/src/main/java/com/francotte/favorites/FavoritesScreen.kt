@@ -64,9 +64,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
-import com.francotte.designsystem.component.nbSectionColumns
+import com.francotte.ui.nbSectionColumns
+import com.francotte.ui.nbSectionFavorites
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.ErrorScreen
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.TrackScrollJank
@@ -78,7 +80,6 @@ import kotlinx.coroutines.launch
 fun FavoritesScreen(
     viewModel: FavViewModel = hiltViewModel<FavViewModel>(),
     customRecipeDetailViewModel: CustomRecipeDetailViewModel = hiltViewModel<CustomRecipeDetailViewModel>(),
-    windowSizeClass: WindowSizeClass,
     favoriteUiState: FavoriteUiState,
     searchText: String,
     onSearchTextChanged: (String) -> Unit,
@@ -87,6 +88,7 @@ fun FavoritesScreen(
     onOpenCustomRecipe: (String) -> Unit,
     customRecipeHasBeenUpdated: Boolean,
 ) {
+    val mode = LocalAppLayout.current.mode
     val lazyGridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
     val pullRefreshState = rememberPullToRefreshState()
@@ -171,7 +173,7 @@ fun FavoritesScreen(
                         TrackScrollJank(scrollableState = lazyGridState, stateName = "favorites:grid")
                         LazyVerticalGrid(
                             state = lazyGridState,
-                            columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbSectionColumns),
+                            columns = GridCells.Fixed(mode.nbSectionFavorites),
                             reverseLayout = false,
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -181,7 +183,7 @@ fun FavoritesScreen(
                             val likeableRecipes = favoriteUiState.favoritesRecipes
                             val customRecipes = favoriteUiState.customRecipes
                             if (customRecipes.isNotEmpty()) {
-                                item(span = { GridItemSpan(windowSizeClass.widthSizeClass.nbSectionColumns) }) {
+                                item(span = { GridItemSpan(mode.nbSectionFavorites) }) {
                                     CustomRecipesSection(
                                         Modifier.layout { measurable, constraints ->
                                             val placeable =
@@ -198,7 +200,7 @@ fun FavoritesScreen(
                                         onOpenCustomRecipe,
                                     )
                                 }
-                                item(span = { GridItemSpan(windowSizeClass.widthSizeClass.nbSectionColumns) }) {
+                                item(span = { GridItemSpan(mode.nbSectionColumns) }) {
                                     SectionTitle(
                                         title = "Favorites",
                                         showNavIcon = false,

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -47,7 +48,7 @@ fun HorizontalRecipesList(
                     items = recipes,
                     key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal },
                 ) { index, likeableRecipe ->
-                    RecipeItem(
+                    HorizontalRecipeItem(
                         likeableRecipe = likeableRecipe,
                         onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
                         onToggleFavorite = onToggleFavorite,
@@ -77,10 +78,10 @@ fun SimpleHorizontalRecipesList(
                     items = recipes,
                     key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal },
                 ) { index, likeableRecipe ->
-                    RecipeItem(
+                    HorizontalRecipeItem(
                         likeableRecipe = likeableRecipe,
                         onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
-                        onToggleFavorite = onToggleFavorite,
+                        onToggleFavorite = onToggleFavorite
                     )
                 }
             }

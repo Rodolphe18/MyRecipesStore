@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +73,7 @@ import com.francotte.designsystem.component.TopAppBar
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.ui.FavButton
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -85,6 +87,7 @@ fun DetailRecipeScreen(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBackCLick: () -> Unit,
 ) {
+    val mode = LocalAppLayout.current.mode
     val localBannerProvider = LocalBannerProvider.current
     val scope = rememberCoroutineScope()
     val topAppBarScrollBehavior =

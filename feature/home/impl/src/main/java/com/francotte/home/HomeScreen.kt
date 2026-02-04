@@ -1,16 +1,11 @@
 package com.francotte.home
 
-import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,51 +15,43 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
-import com.francotte.designsystem.component.nbHomeColumns
+import com.francotte.ui.nbHomeColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.testing.util.HomeTags
 import com.francotte.ui.BigRecipeItem
 import com.francotte.ui.ErrorScreen
 import com.francotte.ui.HorizontalRecipesList
+import com.francotte.ui.DeviceMode
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
 import com.francotte.ui.VideoRecipeItem
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    windowSizeClass: WindowSizeClass,
     latestRecipes: LatestRecipes,
     americanRecipes: AmericanRecipes,
     areasRecipes: AreasRecipes,
@@ -76,9 +63,11 @@ fun HomeScreen(
     isReloading: Boolean,
     onReload: () -> Unit,
     currentPage: Int,
-    onCurrentPageChange: (Int) -> Unit) {
+    onCurrentPageChange: (Int) -> Unit
+) {
+    val mode = LocalAppLayout.current.mode
     val localBannerProvider = LocalBannerProvider.current
-    val spanSize = GridItemSpan(windowSizeClass.widthSizeClass.nbHomeColumns)
+    val spanSize = GridItemSpan(mode.nbHomeColumns)
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
     val isDataReady =
@@ -123,7 +112,7 @@ fun HomeScreen(
                         .semantics { contentDescription = "feed" },
                 state = scrollState,
                 contentPadding = PaddingValues(bottom = 16.dp),
-                columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbHomeColumns),
+                columns = GridCells.Fixed(mode.nbHomeColumns),
             ) {
                 item(key = "latest_section", contentType = "section", span = { spanSize }) {
                     Column {
@@ -136,7 +125,7 @@ fun HomeScreen(
                             is LatestRecipes.Empty -> ErrorScreen { onReload() }
                             is LatestRecipes.Loading -> {}
                             is LatestRecipes.Success -> {
-                                if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+                                if (mode == DeviceMode.PhonePortrait) {
                                     val pagerState =
                                         rememberPagerState(
                                             initialPage = currentPage,
@@ -173,7 +162,7 @@ fun HomeScreen(
                                     }
                                 } else {
                                     SimpleHorizontalRecipesList(
-                                        latestRecipes.latestRecipes,
+                                        recipes = latestRecipes.latestRecipes,
                                         onOpenRecipe = onOpenRecipe,
                                         onToggleFavorite = onToggleFavorite,
                                     )
@@ -182,13 +171,15 @@ fun HomeScreen(
                         }
                     }
                 }
-                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
-                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                    BannerAd(
-                        placement = BannerPlacement.HOME_POS_1,
-                        provider = localBannerProvider,
-                        horizontalPadding = 16.dp,
-                    )
+                if (mode != DeviceMode.PhoneLandscape) {
+                    item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
+                    item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+                        BannerAd(
+                            placement = BannerPlacement.HOME_POS_1,
+                            provider = localBannerProvider,
+                            horizontalPadding = 16.dp,
+                        )
+                    }
                 }
                 item(
                     key = "american_section",
@@ -261,8 +252,7 @@ fun HomeScreen(
                             key = { it.recipe.idMeal },
                             contentType = { "recipe_big" },
                         ) { recipe ->
-                            BigRecipeItem(
-                                recipe,
+                            BigRecipeItem(recipe,
                                 onToggleFavorite = onToggleFavorite,
                                 onOpenRecipe = {
                                     onOpenRecipe(
@@ -280,12 +270,4 @@ fun HomeScreen(
     }
 }
 
-
-@Composable
-fun Test(modifier: Modifier = Modifier) {
-    Box(contentAlignment = Alignment.Center) {
-
-    }
-    Text(modifier = Modifier, text = "", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-}
 

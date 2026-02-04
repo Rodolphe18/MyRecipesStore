@@ -23,9 +23,10 @@ import com.francotte.ads.BannerPlacement
 import com.francotte.ads.LazyGridWithBanners
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.TopAppBar
-import com.francotte.designsystem.component.nbSectionColumns
+import com.francotte.ui.nbSectionColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.ErrorScreen
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.TrackScrollJank
@@ -35,13 +36,13 @@ import com.francotte.ui.TrackScrollJank
 @Composable
 fun VerticalSectionScreen(
     sectionUiState: SectionUiState,
-    windowSizeClass: WindowSizeClass,
     titleRes: String,
     onReload: () -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onBack: () -> Unit,
 ) {
+    val mode = LocalAppLayout.current.mode
     val localBannerProvider = LocalBannerProvider.current
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -72,7 +73,7 @@ fun VerticalSectionScreen(
                             .testTag("full_section_screen")
                             .semantics { contentDescription = "full_section_screen" },
                     totalItemCount = likeableRecipes.size,
-                    columns = windowSizeClass.widthSizeClass.nbSectionColumns,
+                    columns = mode.nbSectionColumns,
                     state = gridState,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),

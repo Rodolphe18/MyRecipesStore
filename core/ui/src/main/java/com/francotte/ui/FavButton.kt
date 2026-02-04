@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,10 +28,10 @@ import androidx.compose.ui.unit.dp
 fun FavButton(
     modifier: Modifier = Modifier,
     isFavorite: Boolean,
-    buttonSize: Dp = 45.dp,
-    iconSize: Dp = 25.dp,
     onToggleFavorite: () -> Unit,
 ) {
+    val mode = LocalAppLayout.current.mode
+    val dimension = remember(mode) { favButtonDimension(mode) }
     val transition = updateTransition(label = "favorite", targetState = isFavorite)
     val backgroundColor by transition.animateColor(
         label = "backgroundColor",
@@ -38,10 +39,11 @@ fun FavButton(
     val iconColor by transition.animateColor(
         label = "iconColor",
     ) { isFav -> if (isFav) Color.White else MaterialTheme.colorScheme.onTertiary }
+
     Box(
         modifier =
             modifier
-                .size(buttonSize)
+                .size(dimension.buttonSize)
                 .background(backgroundColor, CircleShape)
                 .clip(CircleShape)
                 .toggleable(
@@ -57,8 +59,21 @@ fun FavButton(
             modifier =
                 Modifier
                     .align(Alignment.Center)
-                    .size(iconSize),
+                    .size(dimension.iconSize),
             tint = iconColor,
         )
     }
+}
+
+@Immutable
+data class FavButtonDimension(
+    val buttonSize: Dp,
+    val iconSize: Dp,
+)
+
+fun favButtonDimension(mode: DeviceMode): FavButtonDimension = when (mode) {
+    DeviceMode.PhonePortrait -> FavButtonDimension(buttonSize = 45.dp, iconSize = 25.dp)
+    DeviceMode.PhoneLandscape -> FavButtonDimension(buttonSize = 35.dp, iconSize = 20.dp)
+    DeviceMode.TabletPortrait -> FavButtonDimension(buttonSize = 50.dp, iconSize = 30.dp)
+    DeviceMode.TabletLandscape -> FavButtonDimension(buttonSize = 55.dp, iconSize = 35.dp)
 }

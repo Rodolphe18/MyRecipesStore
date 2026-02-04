@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.splash
 
 import android.util.Log
+import android.view.Window
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -9,6 +10,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.francotte.api.DetailRecipeNavKey
+import com.francotte.designsystem.component.HideNavigationBar
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalConsentManager
@@ -16,23 +19,32 @@ import com.francotte.ui.LocalInterstitialManager
 import kotlinx.serialization.Serializable
 
 
-fun Navigator.goToBaseAndClearSplash(targetTopLevelKey: NavKey) {
+fun Navigator.goToBaseAndClearSplash(key: NavKey) {
     state.rootStack.clear()
-    navigate(targetTopLevelKey)
+    when (key) {
+        is DetailRecipeNavKey -> {
+            navigate(HomeNavKey)
+            navigate(key)
+        }
+        else -> {
+            navigate(key)
+        }
+    }
 }
 
 
 @Serializable
 object SplashNavKey : NavKey
 
-fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator, resolveNextKey: () -> NavKey) {
+fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator,window: Window, resolveNextKey: () -> NavKey) {
     entry<SplashNavKey> {
-        SplashRoute({ navigator.goToBaseAndClearSplash(resolveNextKey()) })
+        SplashRoute(window,{ navigator.goToBaseAndClearSplash(resolveNextKey()) })
     }
 }
 
 @Composable
 fun SplashRoute(
+    window: Window,
     onDone: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
@@ -43,6 +55,7 @@ fun SplashRoute(
     val step by viewModel.step.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    HideNavigationBar(window)
     LaunchedEffect(step) {
         when (step) {
             SplashStep.Consent -> {
@@ -67,6 +80,5 @@ fun SplashRoute(
         if (uiState is SplashUiState.GoHome) onDone()
     }
 
-    ApplyAdSystemBarsFix(uiState.isAdShowing)
     SplashScreen()
 }

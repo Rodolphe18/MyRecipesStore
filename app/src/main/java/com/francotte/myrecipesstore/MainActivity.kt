@@ -8,7 +8,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.metrics.performance.JankStats
 import com.francotte.ads.BannerAdProvider
@@ -32,6 +31,7 @@ import com.francotte.ui.LocalFavoriteManager
 import com.francotte.ui.LocalInAppRatingManager
 import com.francotte.ui.LocalInterstitialManager
 import com.francotte.ui.LocalLaunchCounterManager
+import com.francotte.ui.ProvideDeviceMode
 import com.google.android.play.core.appupdate.AppUpdateManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -98,17 +98,18 @@ class MainActivity : ComponentActivity() {
                 LocalInAppRatingManager provides inAppRatingManager,
                 LocalBannerProvider provides bannerAdProvider,
             ) {
-                val data: Uri? = intent?.data
-                val appState = rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
-                FoodTheme {
-                    FoodApp(
-                        context = this,
-                        appState = appState,
-                        windowSizeClass = calculateWindowSizeClass(this),
-                        window = window,
-                        onToggleFavorite = favoriteManager::toggleRecipeFavorite
-                    )
-                    NotificationPermissionEffect()
+                ProvideDeviceMode {
+                    val data: Uri? = intent?.data
+                    val appState = rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
+                    FoodTheme {
+                        FoodApp(
+                            context = this,
+                            appState = appState,
+                            window = window,
+                            onToggleFavorite = favoriteManager::toggleRecipeFavorite
+                        )
+                        NotificationPermissionEffect()
+                    }
                 }
             }
         }
@@ -119,7 +120,6 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         DeepLinkBus.intents.tryEmit(intent)
     }
-
 
 
     override fun onResume() {

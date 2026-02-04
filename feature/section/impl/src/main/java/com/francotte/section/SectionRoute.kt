@@ -1,6 +1,5 @@
 package com.francotte.section
 
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,7 +14,7 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 
 
-fun EntryProviderScope<NavKey>.sectionEntry(navigator: Navigator,windowSizeClass: WindowSizeClass,
+fun EntryProviderScope<NavKey>.sectionEntry(navigator: Navigator,
                                          onToggleFavorite: (LikeableRecipe) -> Unit) {
     entry<SectionNavKey> {key ->
         SectionRoute(
@@ -25,7 +24,6 @@ fun EntryProviderScope<NavKey>.sectionEntry(navigator: Navigator,windowSizeClass
                 factory.create(key.sectionName)
             },
             onToggleFavorite = onToggleFavorite,
-            windowSizeClass = windowSizeClass,
             onOpenRecipe = navigator::navigateToDetail,
             onBackClick = navigator::goBack,
         )
@@ -36,14 +34,13 @@ fun EntryProviderScope<NavKey>.sectionEntry(navigator: Navigator,windowSizeClass
 @Composable
 fun SectionRoute(
     sectionViewModel: SectionViewModel = hiltViewModel(),
-    windowSizeClass: WindowSizeClass,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onBackClick: () -> Unit,
 ) {
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
     val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()
-    VerticalSectionScreen(uiState, windowSizeClass, sectionTitle, {}, onToggleFavorite, onOpenRecipe, onBackClick)
+    VerticalSectionScreen(uiState, sectionTitle, {}, onToggleFavorite, onOpenRecipe, onBackClick)
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

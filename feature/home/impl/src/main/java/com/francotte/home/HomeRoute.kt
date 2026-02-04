@@ -20,20 +20,15 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalLaunchCounterManager
 
-const val HOME_ROUTE = "home"
-const val BASE_ROUTE = "base"
-
-
 
 fun EntryProviderScope<NavKey>.homeEntry(navigator: Navigator,onToggleFavorite: (LikeableRecipe) -> Unit,
-                                         windowSizeClass: WindowSizeClass,) {
+                                         ) {
     entry<HomeNavKey> {
         HomeRoute(
             onRecipeClick = navigator::navigateToDetail,
             onToggleFavorite = onToggleFavorite,
             onOpenSection = navigator::navigateToSection,
-            onVideoButtonClick = navigator::navigateToVideo,
-            windowSizeClass = windowSizeClass,
+            onVideoButtonClick = navigator::navigateToVideo
         )
     }
 }
@@ -46,8 +41,7 @@ fun HomeRoute(
     onRecipeClick: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenSection: (String) -> Unit,
-    onVideoButtonClick: (String) -> Unit,
-    windowSizeClass: WindowSizeClass,
+    onVideoButtonClick: (String) -> Unit
 ) {
     val localLaunchCounter = LocalLaunchCounterManager.current
     val latestRecipes by homeViewModel.latestRecipes.collectAsStateWithLifecycle()
@@ -67,7 +61,6 @@ fun HomeRoute(
             onOpenSection = onOpenSection,
             onToggleFavorite = onToggleFavorite,
             onVideoButtonClick = onVideoButtonClick,
-            windowSizeClass = windowSizeClass,
             isReloading = isReloading,
             onReload = homeViewModel::refreshLatestRecipes,
             currentPage = currentPage,

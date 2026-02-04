@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
 
 
 fun EntryProviderScope<NavKey>.categoryEntry(
-    navigator: Navigator, windowSizeClass: WindowSizeClass,
+    navigator: Navigator,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     entry<CategoryNavKey> { key ->
@@ -32,7 +32,6 @@ fun EntryProviderScope<NavKey>.categoryEntry(
             ) { factory ->
                 factory.create(key.category)
             },
-            windowSizeClass = windowSizeClass,
             onOpenRecipe = navigator::navigateToDetail,
             onToggleFavorite = onToggleFavorite,
             onBack = navigator::goBack
@@ -44,7 +43,6 @@ fun EntryProviderScope<NavKey>.categoryEntry(
 @Composable
 fun CategoryRoute(
     viewModel: CategoryViewModel = hiltViewModel(),
-    windowSizeClass: WindowSizeClass,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
@@ -54,7 +52,6 @@ fun CategoryRoute(
 
     CategoryScreen(
         categoryUiState = uiState,
-        windowSizeClass = windowSizeClass,
         title = title,
         onReload = {
             viewModel.refresh()

@@ -46,3 +46,7 @@ val LocalBannerProvider =
     staticCompositionLocalOf<BannerAdProvider> {
         error("BannerAdProvider not provided")
     }
+
+val LocalAppLayout = staticCompositionLocalOf<AppLayoutInfo> {
+    error("LocalAppLayout not provided. Wrap your app with ProvideAppLayout().")
+}

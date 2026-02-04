@@ -22,11 +22,10 @@ import com.francotte.navigation.Navigator
 
 
 fun EntryProviderScope<NavKey>.categoriesEntry(
-    navigator: Navigator,
-    windowSizeClass: WindowSizeClass
+    navigator: Navigator
 ) {
     entry<CategoriesNavKey> {
-        CategoriesRoute(windowSizeClass = windowSizeClass, onOpenCategory = { category -> navigator.navigateToCategory(category.strCategory)})
+        CategoriesRoute(onOpenCategory = { category -> navigator.navigateToCategory(category.strCategory)})
     }
 }
 
@@ -34,13 +33,11 @@ fun EntryProviderScope<NavKey>.categoriesEntry(
 @Composable
 fun CategoriesRoute(
     viewModel: CategoriesViewModel = hiltViewModel(),
-    windowSizeClass: WindowSizeClass,
     onOpenCategory: (AbstractCategory) -> Unit,
 ) {
     val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
     CategoriesScreen(
         categoryUiState = homeUiState,
-        windowSizeClass = windowSizeClass,
         onOpenCategory = onOpenCategory,
         onReload = {
             viewModel.refresh()

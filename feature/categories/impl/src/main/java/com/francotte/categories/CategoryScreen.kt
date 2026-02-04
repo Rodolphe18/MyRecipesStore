@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
@@ -20,9 +19,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.TopAppBar
-import com.francotte.designsystem.component.nbSectionColumns
+import com.francotte.ui.nbSectionColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.ErrorScreen
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.TrackScrollJank
 
@@ -31,13 +31,13 @@ import com.francotte.ui.TrackScrollJank
 @Composable
 fun CategoryScreen(
     categoryUiState: CategoryUiState,
-    windowSizeClass: WindowSizeClass,
     title: String,
     onReload: () -> Unit,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
 ) {
+    val mode = LocalAppLayout.current.mode
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -54,7 +54,7 @@ fun CategoryScreen(
                 TrackScrollJank(scrollableState = scrollableState, stateName = "categories:grid")
                 LazyVerticalGrid(
                     state = scrollableState,
-                    columns = GridCells.Fixed(windowSizeClass.widthSizeClass.nbSectionColumns),
+                    columns = GridCells.Fixed(mode.nbSectionColumns),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     flingBehavior = ScrollableDefaults.flingBehavior(),

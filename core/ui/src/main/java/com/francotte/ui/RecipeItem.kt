@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -196,4 +197,67 @@ fun BigRecipeItem(
             maxLines = 2,
         )
     }
+}
+
+@Composable
+fun HorizontalRecipeItem(
+    likeableRecipe: LikeableRecipe,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
+    onOpenRecipe: () -> Unit,
+) {
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val shape = RoundedCornerShape(16.dp)
+
+    val mode = LocalAppLayout.current.mode
+    val dimension = remember(mode) { horizontalRecipeItemDimension(mode) }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier =
+                Modifier
+                    .height(dimension.boxHeight)
+                    .aspectRatio(1f)
+                    .background(MaterialTheme.colorScheme.surfaceVariant,shape)
+                    .clickable(onClick = onOpenRecipe),
+        ) {
+
+            val pxSize = with(density) { dimension.boxHeight.roundToPx() }
+            AsyncImage(
+                model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb,pxSize,pxSize),
+                contentDescription = likeableRecipe.recipe.strMeal,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().clip(shape),
+            )
+            FavButton(
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .align(Alignment.BottomEnd),
+                onToggleFavorite = { onToggleFavorite(likeableRecipe) },
+                isFavorite = likeableRecipe.isFavorite,
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = likeableRecipe.recipe.strMeal,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            modifier = Modifier.width(dimension.textWidth),
+        )
+    }
+}
+
+data class HorizontalRecipeItemDims(
+    val boxHeight: Dp,
+    val textWidth: Dp,
+)
+
+fun horizontalRecipeItemDimension(mode: DeviceMode): HorizontalRecipeItemDims = when (mode) {
+    DeviceMode.PhonePortrait -> HorizontalRecipeItemDims(boxHeight = 180.dp, textWidth = 180.dp)
+    DeviceMode.PhoneLandscape -> HorizontalRecipeItemDims(boxHeight = 100.dp, textWidth = 100.dp)
+    DeviceMode.TabletPortrait -> HorizontalRecipeItemDims(boxHeight = 200.dp, textWidth = 200.dp)
+    DeviceMode.TabletLandscape -> HorizontalRecipeItemDims(boxHeight = 250.dp, textWidth = 250.dp)
 }
