@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -39,6 +40,7 @@ import com.francotte.ui.LocalBannerProvider
 @Composable
 fun SearchModeSelectionScreen(onSearchModeSelected: (SearchMode) -> Unit) {
     val mode = LocalAppLayout.current.mode
+    val dimension = remember(mode) { searchModeButtonDimension(mode) }
     val scrollState = rememberScrollState()
     val localBannerProvider = LocalBannerProvider.current
         Column(
@@ -53,30 +55,30 @@ fun SearchModeSelectionScreen(onSearchModeSelected: (SearchMode) -> Unit) {
                 provider = localBannerProvider,
                 horizontalPadding = 16.dp,
             )
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(dimension.spacer1))
             Text(
-                "How would you like to \n search recipes ?",
+                stringResource(R.string.search_recipes_question),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(32.dp))
-            if (mode != DeviceMode.PhoneLandscape) {
+            if (mode == DeviceMode.PhoneLandscape) {
                 Row {
-                    SearchModeButton("By ingredients", Icons.Default.ThumbUp) {
+                    SearchModeButton(stringResource(R.string.by_ingredients), Icons.Default.ThumbUp, dimension) {
                         onSearchModeSelected(SearchMode.INGREDIENTS)
                     }
                     Spacer(Modifier.width(60.dp))
-                    SearchModeButton("By country", Icons.Default.Notifications) {
+                    SearchModeButton(stringResource(R.string.by_country), Icons.Default.Notifications,dimension) {
                         onSearchModeSelected(SearchMode.COUNTRY)
                     }
                 }
             } else {
-            SearchModeButton("By ingredients", Icons.Default.ThumbUp) {
+            SearchModeButton(stringResource(R.string.by_ingredients), Icons.Default.ThumbUp,dimension) {
                 onSearchModeSelected(SearchMode.INGREDIENTS)
             }
-            Spacer(Modifier.height(32.dp))
-            SearchModeButton("By country", Icons.Default.Notifications) {
+            Spacer(Modifier.height(dimension.spacer2))
+            SearchModeButton(stringResource(R.string.by_ingredients), Icons.Default.Notifications,dimension) {
                 onSearchModeSelected(SearchMode.COUNTRY)
             }
         }
@@ -87,13 +89,14 @@ fun SearchModeSelectionScreen(onSearchModeSelected: (SearchMode) -> Unit) {
 fun SearchModeButton(
     label: String,
     icon: ImageVector,
+    searchModeButtonDimension: SearchModeButtonDimension,
     onClick: () -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
-    val dimension = remember(mode) { searchModeButtonDimension(mode) }
     Button(
         onClick = onClick,
-        modifier = Modifier.width(dimension.width).aspectRatio(dimension.ratio),
+        modifier = Modifier
+            .width(searchModeButtonDimension.width)
+            .aspectRatio(searchModeButtonDimension.ratio),
         shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA000)),
         elevation = ButtonDefaults.buttonElevation(8.dp),
@@ -108,11 +111,13 @@ fun SearchModeButton(
 data class SearchModeButtonDimension(
     val width: Dp,
     val ratio: Float,
+    val spacer1:Dp,
+    val spacer2:Dp
 )
 
 fun searchModeButtonDimension(mode: DeviceMode):SearchModeButtonDimension= when (mode) {
-    DeviceMode.PhonePortrait -> SearchModeButtonDimension(width= 280.dp, ratio = 4f)
-    DeviceMode.PhoneLandscape -> SearchModeButtonDimension(width = 200.dp, ratio = 2f)
-    DeviceMode.TabletPortrait -> SearchModeButtonDimension(width = 200.dp, ratio  = 2f)
-    DeviceMode.TabletLandscape -> SearchModeButtonDimension(width = 250.dp, ratio  = 2f)
+    DeviceMode.PhonePortrait -> SearchModeButtonDimension(width= 280.dp, ratio = 4f, spacer1 = 32.dp, spacer2 = 32.dp)
+    DeviceMode.PhoneLandscape -> SearchModeButtonDimension(width = 200.dp, ratio = 2.5f,spacer1 = 12.dp, spacer2 = 8.dp)
+    DeviceMode.TabletPortrait -> SearchModeButtonDimension(width = 200.dp, ratio  = 3f,spacer1 = 32.dp, spacer2 = 32.dp)
+    DeviceMode.TabletLandscape -> SearchModeButtonDimension(width = 250.dp, ratio  = 3f,spacer1 = 40.dp, spacer2 = 40.dp)
 }

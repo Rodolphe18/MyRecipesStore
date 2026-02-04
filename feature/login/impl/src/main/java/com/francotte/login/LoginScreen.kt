@@ -5,8 +5,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,19 +43,23 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.theme.Orange
 import com.francotte.ui.CustomTextField
+import com.francotte.ui.DeviceMode
+import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.PasswordField
+import com.francotte.ui.favButtonDimension
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = hiltViewModel(),
     onRegister: () -> Unit,
+    onLogin:(String?,String?)->Unit,
     onOpenResetPassword: () -> Unit,
     doGoogleLogin: () -> Unit,
 ) {
+    val mode = LocalAppLayout.current.mode
+    val dimension = remember(mode) { googleButtonDimension(mode) }
     var loginUserNameOrMail by remember { mutableStateOf("") }
     var loginPassword by remember { mutableStateOf("") }
     val canConnect by remember { derivedStateOf { loginUserNameOrMail.isNotEmpty() && loginPassword.isNotEmpty() } }
@@ -64,61 +71,83 @@ fun LoginScreen(
                 .padding(top = 8.dp, bottom = 30.dp, start = 16.dp, end = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = stringResource(id = R.string.club_login_page_join_description),
-            textAlign = TextAlign.Center,
-            fontSize = 22.sp,
-            lineHeight = 30.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ButtonGoogle(
-            onClick = doGoogleLogin,
-            modifier = Modifier.fillMaxWidth(),
-            text = "Google",
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HorizontalDivider(
-                modifier = Modifier.weight(1f),
-                color = Color(0xFFE0E0E0),
-                thickness = 1.dp,
-            )
+        if (mode == DeviceMode.PhonePortrait) {
             Text(
-                text = "or",
-                modifier = Modifier.padding(horizontal = 12.dp),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF888888),
-                    ),
+                text = stringResource(id = R.string.club_login_page_join_description),
+                textAlign = TextAlign.Center,
+                fontSize = 22.sp,
+                lineHeight = 30.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        if (mode == DeviceMode.PhonePortrait) {
+            ButtonGoogle(
+                modifier = Modifier.fillMaxWidth(),
+                dimension = dimension,
+                onClick = doGoogleLogin
             )
 
-            HorizontalDivider(
-                modifier = Modifier.weight(1f),
-                color = Color(0xFFE0E0E0),
-                thickness = 1.dp,
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = Color(0xFFE0E0E0),
+                    thickness = 1.dp,
+                )
+                Text(
+                    text = "or",
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF888888),
+                        ),
+                )
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = Color(0xFFE0E0E0),
+                    thickness = 1.dp,
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CustomTextField(
+                loginUserNameOrMail,
+                { loginUserNameOrMail = it },
+                label = "Username or Email",
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            PasswordField(password = loginPassword, onPasswordChange = { loginPassword = it })
+        } else {
+            Row(Modifier.height(IntrinsicSize.Max),verticalAlignment = Alignment.CenterVertically) {
+                ButtonGoogle(
+                    modifier = Modifier.weight(1f),
+                    dimension = dimension,
+                    onClick = doGoogleLogin
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column (Modifier.weight(1f)){
+                    CustomTextField(
+                        loginUserNameOrMail,
+                        { loginUserNameOrMail = it },
+                        label = "Username or Email",
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PasswordField(password = loginPassword, onPasswordChange = { loginPassword = it })
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        CustomTextField(
-            loginUserNameOrMail,
-            { loginUserNameOrMail = it },
-            label = "Username or Email",
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        PasswordField(loginPassword, { loginPassword = it })
         Text(
             text = stringResource(id = R.string.sign_in_forgotten_password),
             modifier =
@@ -131,9 +160,7 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         CustomButton(
-            onClick = {
-                viewModel.loginWithMailAndPassword(loginUserNameOrMail, loginPassword)
-            },
+            onClick = { onLogin(loginUserNameOrMail, loginPassword) },
             enabled = canConnect,
             contentText = R.string.sign_in_connexion_button,
         )
@@ -159,14 +186,15 @@ fun LoginScreen(
 
 @Composable
 fun ButtonGoogle(
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    text: String,
+    dimension: GoogleButtonDimension,
+    onClick: () -> Unit
 ) {
     Row(
         modifier =
             modifier
-                .height(56.dp)
+                .height(dimension.height)
+                .aspectRatio(dimension.ratio)
                 .border(Dp.Hairline, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(12.dp))
                 .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
@@ -175,9 +203,23 @@ fun ButtonGoogle(
         Image(
             painter = painterResource(id = R.drawable.ic_logo_google),
             contentDescription = "Google",
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(dimension.imageSize),
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = "Google", color = MaterialTheme.colorScheme.onSurface)
     }
+}
+
+@Immutable
+data class GoogleButtonDimension(
+    val imageSize:Dp,
+    val height: Dp,
+    val ratio: Float,
+)
+
+fun googleButtonDimension(mode: DeviceMode): GoogleButtonDimension = when (mode) {
+    DeviceMode.PhonePortrait -> GoogleButtonDimension(imageSize = 28.dp, height = 56.dp, ratio = 5f)
+    DeviceMode.PhoneLandscape -> GoogleButtonDimension(imageSize = 40.dp,height = 65.dp, ratio = 2.5f)
+    DeviceMode.TabletPortrait -> GoogleButtonDimension(imageSize = 40.dp,height = 100.dp, ratio = 5f)
+    DeviceMode.TabletLandscape -> GoogleButtonDimension(imageSize = 40.dp,height = 120.dp, ratio = 1f)
 }

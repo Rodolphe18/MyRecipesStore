@@ -63,7 +63,7 @@ fun LoginRoute(
         rememberLauncherForActivityResult(GoogleSignInContract()) { task ->
             viewModel.doGoogleLogin(task)
         }
-    LoginScreen(viewModel, onOpenResetPassword = onOpenResetPassword, onRegister = onRegister) {
+    LoginScreen( onOpenResetPassword = onOpenResetPassword, onLogin = viewModel::loginWithMailAndPassword,onRegister = onRegister) {
         googleSignIn.launch(viewModel.googleSignInIntent)
     }
     if (authSuccess) {

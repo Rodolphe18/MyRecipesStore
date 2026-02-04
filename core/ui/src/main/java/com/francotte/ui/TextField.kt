@@ -107,6 +107,7 @@ fun CustomTextField(
 
 @Composable
 fun PasswordField(
+    modifier: Modifier= Modifier,
     password: String,
     onPasswordChange: (String) -> Unit,
 ) {
@@ -115,7 +116,7 @@ fun PasswordField(
     val borderColor = if (isFocused) Color(0xFF6D4C41) else Color.Transparent
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = modifier.fillMaxWidth()) {
         BasicTextField(
             value = password,
             onValueChange = onPasswordChange,

@@ -14,76 +14,73 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel
-    @Inject
-    constructor(
-        private val authManager: AuthManager,
-    ) : ViewModel() {
-        val loading = MutableStateFlow(false)
+class LoginViewModel @Inject constructor(private val authManager: AuthManager) : ViewModel() {
 
-        val googleSignInIntent = authManager.googleSignInIntent
+    val loading = MutableStateFlow(false)
 
-        val authSuccess = MutableStateFlow(false)
+    val googleSignInIntent = authManager.googleSignInIntent
 
-        val resetState = MutableStateFlow<Result<Unit>?>(null)
+    val authSuccess = MutableStateFlow(false)
 
-        fun requestReset(email: String) {
-            viewModelScope.launch(Dispatchers.IO) {
-                resetState.value = authManager.requestPasswordReset(email)
-            }
-        }
+    val resetState = MutableStateFlow<Result<Unit>?>(null)
 
-        fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
-            viewModelScope.launch(Dispatchers.IO) {
-                try {
-                    authManager.doGoogleLogin(signInTask)
-                    onSuccess()
-                } catch (e: Exception) {
-                    onError()
-                    Log.e("debug_google", "Erreur récupération compte Google", e)
-                }
-            }
-        }
-
-        fun createUserWithMailAndPassword(
-            username: String,
-            email: String,
-            password: String,
-            imageUri: Uri?,
-        ) {
-            viewModelScope.launch {
-                authManager.createUser(username, email, password, imageUri)
-                if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
-            }
-        }
-
-        fun loginWithMailAndPassword(
-            userNameOrMail: String?,
-            password: String?,
-        ) {
-            if (!loading.value) {
-                val nameOrMail = userNameOrMail?.takeUnless(CharSequence::isBlank) ?: return
-                val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
-                viewModelScope.launch(Dispatchers.Default) {
-                    loading.value = true
-                    try {
-                        authManager.loginByUserNamePassword(nameOrMail, pwd)
-                        if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
-                    } catch (e: Exception) {
-                        Log.d("debug_email", "$e")
-                    }
-                }
-            }
-        }
-
-        fun onSuccess() {
-            loading.value = false
-            authSuccess.value = true
-        }
-
-        private fun onError() {
-            loading.value = false
-            authSuccess.value = false
-            onCleared()
+    fun requestReset(email: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            resetState.value = authManager.requestPasswordReset(email)
         }
     }
+
+    fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                authManager.doGoogleLogin(signInTask)
+                onSuccess()
+            } catch (e: Exception) {
+                onError()
+                Log.e("debug_google", "Erreur récupération compte Google", e)
+            }
+        }
+    }
+
+    fun createUserWithMailAndPassword(
+        username: String,
+        email: String,
+        password: String,
+        imageUri: Uri?,
+    ) {
+        viewModelScope.launch {
+            authManager.createUser(username, email, password, imageUri)
+            if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
+        }
+    }
+
+    fun loginWithMailAndPassword(
+        userNameOrMail: String?,
+        password: String?,
+    ) {
+        if (!loading.value) {
+            val nameOrMail = userNameOrMail?.takeUnless(CharSequence::isBlank) ?: return
+            val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
+            viewModelScope.launch(Dispatchers.Default) {
+                loading.value = true
+                try {
+                    authManager.loginByUserNamePassword(nameOrMail, pwd)
+                    if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
+                } catch (e: Exception) {
+                    Log.d("debug_email", "$e")
+                }
+            }
+        }
+    }
+
+    fun onSuccess() {
+        loading.value = false
+        authSuccess.value = true
+    }
+
+    private fun onError() {
+        loading.value = false
+        authSuccess.value = false
+        onCleared()
+    }
+}
