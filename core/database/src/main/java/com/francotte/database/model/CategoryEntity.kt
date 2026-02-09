@@ -18,12 +18,4 @@ data class CategoryEntity(
     val strCategoryDescription: String,
 )
 
-fun LightCategoryEntity.asExternalModel() = LightCategory(strCategory = strCategory)
 
-fun CategoryEntity.asExternalModel() =
-    Category(
-        idCategory = idCategory,
-        strCategory = strCategory,
-        strCategoryThumb = strCategoryThumb,
-        strCategoryDescription = strCategoryDescription,
-    )

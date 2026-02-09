@@ -2,7 +2,7 @@ package com.francotte.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.HomeRepository
+import com.francotte.data.repository.UserHomeRepository
 import com.francotte.model.LikeableRecipe
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = CategoryViewModel.Factory::class)
 class CategoryViewModel @AssistedInject constructor(
     @Assisted val category: String,
-    repository: HomeRepository,
+    repository: UserHomeRepository,
 ) : ViewModel() {
 
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)

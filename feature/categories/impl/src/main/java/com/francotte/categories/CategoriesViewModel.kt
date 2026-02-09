@@ -11,42 +11,44 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CategoriesViewModel
-    @Inject
-    constructor(
-        repository: CategoriesRepository,
-    ) : ViewModel() {
-        private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
+class CategoriesViewModel @Inject constructor(repository: CategoriesRepository):ViewModel() {
 
-        @OptIn(ExperimentalCoroutinesApi::class)
-        val categories =
-            refreshTrigger
-                .flatMapLatest { repository.observeAllMealCategories() }
-                .map(::mapToUiState)
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoriesUiState.Loading)
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
-        private fun mapToUiState(result: Result<List<Category>>): CategoriesUiState =
-            if (result.isSuccess) {
-                CategoriesUiState.Success(result.getOrDefault(emptyList()))
-            } else {
-                CategoriesUiState.Error
-            }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val categoriesFlow = refreshTrigger
+        .onStart { emit(Unit) }
+        .flatMapLatest { repository.observeAllMealCategories() }
 
-        init {
-            refresh()
-        }
 
-        fun refresh() {
-            viewModelScope.launch {
-                refreshTrigger.emit(Unit)
-            }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val categories = categoriesFlow
+            .map(::mapToUiState)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                CategoriesUiState.Loading
+            )
+
+    private fun mapToUiState(result: Result<List<Category>>): CategoriesUiState {
+        return result.fold(
+            onSuccess = { CategoriesUiState.Success(it) },
+            onFailure = { CategoriesUiState.Error }
+        )
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            refreshTrigger.emit(Unit)
         }
     }
+}
 
 sealed interface CategoriesUiState {
     data object Loading : CategoriesUiState
