@@ -1,14 +1,14 @@
 package com.francotte.testing
 
 import com.francotte.common.utils.DataResult
-import com.francotte.data.repository.HomeRepository
+import com.francotte.data.repository.UserHomeRepository
 import com.francotte.data.repository.SyncOutcome
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class FakeHomeRepository : HomeRepository {
+class FakeUserHomeRepository : UserHomeRepository {
     private val latestFlow =
         MutableSharedFlow<Result<List<LikeableRecipe>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 

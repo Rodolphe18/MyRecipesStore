@@ -1,4 +1,4 @@
-package com.francotte.data.mapper
+package com.francotte.data.mapper.dto
 
 import com.francotte.database.model.CategoryEntity
 import com.francotte.network.model.NetworkCategory

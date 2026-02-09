@@ -9,12 +9,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FullRecipeRepositoryImpl
+class CompositeUserFullRecipeRepository
     @Inject
     constructor(
         private val offlineFullRecipeData: OfflineFirstFullRecipeRepository,
-        private val userDataRepository: UserDataRepository,
-    ) : FullRecipeRepository {
+        private val userDataRepository: UserDataRepository
+    ) : UserFullRecipeRepository {
         override fun observeFullRecipe(id: Long): Flow<Result<LikeableRecipe>> =
             combine(
                 userDataRepository.userData,
@@ -29,6 +29,6 @@ class FullRecipeRepositoryImpl
             }
     }
 
-interface FullRecipeRepository {
+interface UserFullRecipeRepository {
     fun observeFullRecipe(id: Long): Flow<Result<LikeableRecipe>>
 }

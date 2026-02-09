@@ -6,19 +6,18 @@ import com.francotte.model.mapToLikeableFullRecipes
 import com.francotte.model.mapToLikeableLightRecipes
 import com.francotte.common.utils.DataResult
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HomeRepositoryImpl
+class CompositeUserHomeRepository
 @Inject
 constructor(
     private val offlineFirstHomeRepository: OfflineFirstHomeRepository,
     private val userDataRepository: UserDataRepository,
-) : HomeRepository {
+) : UserHomeRepository {
 
     override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
@@ -112,7 +111,7 @@ constructor(
         }
 }
 
-interface HomeRepository {
+interface UserHomeRepository {
     fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>>
 
     suspend fun refreshLatestRecipes(force: Boolean): DataResult<SyncOutcome>

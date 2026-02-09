@@ -1,4 +1,4 @@
-package com.francotte.data.mapper
+package com.francotte.data.mapper.dto
 
 import com.francotte.database.model.FullRecipeEntity
 import com.francotte.database.model.LightRecipeEntity

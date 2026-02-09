@@ -1,4 +1,4 @@
-package com.francotte.myrecipesstore.navigation
+package com.francotte.myrecipesstore
 
 import android.app.Activity
 import android.content.Context
@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -48,6 +47,7 @@ import com.francotte.api.navigateToProfile
 import com.francotte.api.navigateToResetPassword
 import com.francotte.categories.categoriesEntry
 import com.francotte.categories.categoryEntry
+import com.francotte.designsystem.component.FoodSnackbarHost
 import com.francotte.designsystem.component.HideBottomSystemBar
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.detail.detailRecipeEntry
@@ -63,6 +63,10 @@ import com.francotte.login.loginEntry
 import com.francotte.model.LikeableRecipe
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.deeplink.toNavKeyOrNull
+import com.francotte.myrecipesstore.navigation.AppNavigationRail
+import com.francotte.myrecipesstore.navigation.BottomBar
+import com.francotte.myrecipesstore.navigation.TOP_LEVEL_NAV_ITEMS
+import com.francotte.myrecipesstore.navigation.useNavigationRail
 import com.francotte.myrecipesstore.splash.SplashNavKey
 import com.francotte.myrecipesstore.splash.splashEntry
 import com.francotte.myrecipesstore.ui.AppState
@@ -200,7 +204,7 @@ fun FoodApp(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        snackbarHost = { SnackbarHost(snackBarHostState) },
+        snackbarHost = { FoodSnackbarHost(snackBarHostState) },
         bottomBar = {
             val showChrome =
                 appState.navigationState.currentKey != SplashNavKey &&
