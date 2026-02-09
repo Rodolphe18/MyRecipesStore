@@ -1,19 +1,25 @@
 package com.francotte.database.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.francotte.model.LightRecipe
 import com.francotte.model.Recipe
+import java.time.Instant
 
-@Entity(tableName = "light_recipe_entity")
+@Entity(tableName = "light_recipe_entity",indices = [
+    Index(value = ["area", "savedTimestamp"]),
+    Index(value = ["category", "savedTimestamp"]),
+    Index(value = ["isLatest", "savedTimestamp"]),
+])
 data class LightRecipeEntity(
-    @PrimaryKey val strMeal: String,
+    @PrimaryKey val idMeal: String,
+    val strMeal: String,
     val strMealThumb: String,
-    val idMeal: String,
     var category: String? = null,
     var area: String? = null,
     var isLatest: Boolean = false,
-    var lastUpdated: Long? = null,
+    var savedTimestamp: Instant? = null,
 )
 
 @Entity(tableName = "full_recipe_entity")
@@ -72,70 +78,7 @@ data class FullRecipeEntity(
     val strImageSource: String?,
     val strCreativeCommonsConfirmed: String?,
     val dateModified: String?,
-    var lastUpdated: Long? = null,
+    var savedTimestamp: Instant? = null,
     var isLatest: Boolean = false,
 )
 
-fun LightRecipeEntity.asExternalModel() =
-    LightRecipe(
-        strMeal = strMeal,
-        idMeal = idMeal,
-        strMealThumb = strMealThumb,
-    )
-
-fun FullRecipeEntity.asExternalModel() =
-    Recipe(
-        idMeal = idMeal,
-        strMeal = strMeal,
-        strMealAlternate = strMealAlternate,
-        strCategory = strCategory,
-        strArea = strArea,
-        strInstructions = strInstructions,
-        strMealThumb = strMealThumb,
-        strTags = strTags,
-        strYoutube = strYoutube,
-        strIngredient1 = strIngredient1,
-        strIngredient2 = strIngredient2,
-        strIngredient3 = strIngredient3,
-        strIngredient4 = strIngredient4,
-        strIngredient5 = strIngredient5,
-        strIngredient6 = strIngredient6,
-        strIngredient7 = strIngredient7,
-        strIngredient8 = strIngredient8,
-        strIngredient9 = strIngredient9,
-        strIngredient10 = strIngredient10,
-        strIngredient11 = strIngredient11,
-        strIngredient12 = strIngredient12,
-        strIngredient13 = strIngredient13,
-        strIngredient14 = strIngredient14,
-        strIngredient15 = strIngredient15,
-        strIngredient16 = strIngredient16,
-        strIngredient17 = strIngredient17,
-        strIngredient18 = strIngredient18,
-        strIngredient19 = strIngredient19,
-        strIngredient20 = strIngredient20,
-        strMeasure1 = strMeasure1,
-        strMeasure2 = strMeasure2,
-        strMeasure3 = strMeasure3,
-        strMeasure4 = strMeasure4,
-        strMeasure5 = strMeasure5,
-        strMeasure6 = strMeasure6,
-        strMeasure7 = strMeasure7,
-        strMeasure8 = strMeasure8,
-        strMeasure9 = strMeasure9,
-        strMeasure10 = strMeasure10,
-        strMeasure11 = strMeasure11,
-        strMeasure12 = strMeasure12,
-        strMeasure13 = strMeasure13,
-        strMeasure14 = strMeasure14,
-        strMeasure15 = strMeasure15,
-        strMeasure16 = strMeasure16,
-        strMeasure17 = strMeasure17,
-        strMeasure18 = strMeasure18,
-        strMeasure19 = strMeasure19,
-        strMeasure20 = strMeasure20,
-        strSource = strSource,
-        strImageSource = strImageSource,
-        strCreativeCommonsConfirmed = strCreativeCommonsConfirmed,
-        dateModified = dateModified,
-    )
