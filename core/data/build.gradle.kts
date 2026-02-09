@@ -41,7 +41,6 @@ dependencies {
     api(project(":core:datastore"))
     api(project(":core:network"))
     api(project(":core:model"))
-    api(project(":sync"))
 
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
