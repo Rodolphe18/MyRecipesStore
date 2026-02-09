@@ -1,5 +1,6 @@
 package com.francotte.favorites
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -38,7 +39,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    viewModel: FavViewModel = hiltViewModel<FavViewModel>(),
+    viewModel: FavoritesViewModel = hiltViewModel<FavoritesViewModel>(),
     customRecipeDetailViewModel: CustomRecipeDetailViewModel = hiltViewModel<CustomRecipeDetailViewModel>(),
     favoriteUiState: FavoriteUiState,
     searchText: String,
@@ -153,7 +153,7 @@ fun FavoritesScreen(
             is FavoriteUiState.Success -> {
                 LaunchedEffect(favoriteUiState.favoritesRecipes.isEmpty()) {
                     if (favoriteUiState.favoritesRecipes.isEmpty()) {
-                        viewModel.favoriteManager.initFavorites()
+                        viewModel.reload()
                     }
                 }
                 if (favoriteUiState.favoritesRecipes.isEmpty() && favoriteUiState.customRecipes.isEmpty()) {

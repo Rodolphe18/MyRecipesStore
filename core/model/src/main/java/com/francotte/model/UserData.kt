@@ -11,6 +11,7 @@ data class UserData(
     val isConnected: Boolean,
     val token: String? = null,
     val favoriteRecipesIds: Set<String>,
+    val pendingFavorites: Map<String, Boolean>
 )
 
 enum class ConnectionMethod {

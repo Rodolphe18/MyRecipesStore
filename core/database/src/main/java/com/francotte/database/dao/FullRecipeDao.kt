@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.francotte.database.model.FullRecipeEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Instant
 
 @Dao
 interface FullRecipeDao {
@@ -23,8 +24,14 @@ interface FullRecipeDao {
     @Query("SELECT * FROM full_recipe_entity WHERE idMeal = :id")
     fun getFullRecipeById(id: String): Flow<FullRecipeEntity?>
 
+    @Query("SELECT idMeal FROM full_recipe_entity WHERE idMeal IN (:ids)")
+    suspend fun getExistingIds(ids: List<String>): List<String>
+
     @Query("SELECT * FROM full_recipe_entity WHERE idMeal IN (:ids)")
-    fun getFullRecipesByIds(ids: List<String>): Flow<List<FullRecipeEntity>>
+    fun observeFullRecipesByIds(ids: List<String>): Flow<List<FullRecipeEntity>>
+
+    @Query("SELECT * FROM full_recipe_entity WHERE idMeal IN (:ids)")
+    suspend fun getFullRecipesByIdsSnapshot(ids: List<String>): List<FullRecipeEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFullRecipe(recipe: FullRecipeEntity)
@@ -35,11 +42,8 @@ interface FullRecipeDao {
     @Upsert
     suspend fun upsertAllFullRecipes(recipes: List<FullRecipeEntity>)
 
-    @Query("SELECT MAX(lastUpdated) FROM full_recipe_entity WHERE idMeal = :id")
-    suspend fun getFullRecipeLastUpdated(id: String): Long?
-
-    @Query("SELECT MAX(lastUpdated) FROM full_recipe_entity WHERE isLatest = 1")
-    suspend fun getLastUpdatedForLatest(): Long?
+    @Query("SELECT MAX(savedTimestamp) FROM full_recipe_entity WHERE isLatest = 1")
+    suspend fun getLastUpdatedForLatest(): java.time.Instant?
 
     @Query("DELETE FROM full_recipe_entity WHERE isLatest = 1")
     suspend fun deleteOldLatestRecipes()

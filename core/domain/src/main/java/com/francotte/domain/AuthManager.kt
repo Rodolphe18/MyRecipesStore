@@ -185,7 +185,8 @@ class AuthManager
                         snackBarMessage.tryEmit("Welcome back ${response.user.username}")
                     }
                 }
-                FavoritesSyncScheduler.enqueue(context)
+                Log.d("debug_fav_enqueue_for_login", "")
+                FavoritesSyncScheduler.enqueueForLogin(context)
             } else if (apiResponse.code() == 413) {
                 loginIsSuccessFull.value = false
                 snackBarMessage.tryEmit("Payload Too Large")

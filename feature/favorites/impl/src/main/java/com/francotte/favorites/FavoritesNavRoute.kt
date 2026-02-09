@@ -32,7 +32,7 @@ fun EntryProviderScope<NavKey>.favoritesEntry(
 
 @Composable
 fun FavoriteRoute(
-    viewModel: FavViewModel = hiltViewModel(),
+    viewModel: FavoritesViewModel = hiltViewModel(),
     onRecipeClick: (List<String>, Int, String) -> Unit,
     onCustomRecipeClick: (String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,

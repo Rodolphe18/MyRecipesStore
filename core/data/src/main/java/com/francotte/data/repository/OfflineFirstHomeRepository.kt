@@ -1,9 +1,10 @@
 package com.francotte.data.repository
 
-import com.francotte.data.mapper.asEntity
+import com.francotte.common.utils.DataResult
+import com.francotte.data.mapper.dto.asEntity
+import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.FullRecipeDao
 import com.francotte.database.dao.LightRecipeDao
-import com.francotte.database.model.asExternalModel
 import com.francotte.database.util.safeDbCall
 import com.francotte.model.LightRecipe
 import com.francotte.model.Recipe
@@ -11,7 +12,6 @@ import com.francotte.network.api.RecipeApi
 import com.francotte.network.model.NetworkLightRecipe
 import com.francotte.network.model.NetworkRecipe
 import com.francotte.network.model.asExternalModel
-import com.francotte.common.utils.DataResult
 import com.francotte.network.utils.safeNetworkCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import java.time.Duration
+import java.time.Instant
 import javax.inject.Inject
 
 
@@ -39,10 +41,10 @@ class OfflineFirstHomeRepository @Inject constructor(
             is DataResult.Failure -> return lastUpdatedResult
         }
 
-        val now = System.currentTimeMillis()
-        val ttl = 24 * 60 * 60 * 1000
+        val now = Instant.now()
+        val ttl = Duration.ofDays(3)
 
-        val shouldRefresh = force || lastUpdated == null || now - lastUpdated > ttl
+        val shouldRefresh = force || lastUpdated == null || lastUpdated.isBefore(now.minus(ttl))
         if (!shouldRefresh) return DataResult.Success(SyncOutcome.Skipped)
 
         val networkResult = safeNetworkCall(Dispatchers.IO) { network.getLatestMeals() }
@@ -62,7 +64,7 @@ class OfflineFirstHomeRepository @Inject constructor(
         val entities = networkData.map {
             it.asEntity().apply {
                 this.isLatest = true
-                this.lastUpdated = now
+                this.savedTimestamp = now
             }
         }
 
@@ -80,16 +82,16 @@ class OfflineFirstHomeRepository @Inject constructor(
     override fun getRecipesListByArea(area: String): Flow<List<LightRecipe>> =
         flow {
             val lastUpdated = lightRecipeDao.getLastUpdatedForArea(area)
-            val now = System.currentTimeMillis()
-            val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
-            if (lastUpdated == null || now - lastUpdated > ttl) {
+            val now = Instant.now()
+            val ttl = Duration.ofDays(3)
+            if (lastUpdated == null || lastUpdated.isBefore(now.minus(ttl))) {
                 val networkData =
                     network.getRecipesListByArea(area).meals.filterIsInstance<NetworkLightRecipe>()
                 val entities =
                     networkData.map {
                         it.asEntity().apply {
                             this.area = area
-                            this.lastUpdated = now
+                            this.savedTimestamp = now
                         }
                     }
                 lightRecipeDao.upsertAllLightRecipes(entities)
@@ -104,16 +106,16 @@ class OfflineFirstHomeRepository @Inject constructor(
     override fun getRecipesByCategory(category: String): Flow<List<LightRecipe>> =
         flow {
             val lastUpdated = lightRecipeDao.getLastUpdatedForCategory(category)
-            val now = System.currentTimeMillis()
-            val ttl = 3 * 24 * 60 * 60 * 1000 // 3 jours
-            if (lastUpdated == null || now - lastUpdated > ttl) {
+            val now = Instant.now()
+            val ttl = Duration.ofDays(3)
+            if (lastUpdated == null || lastUpdated.isBefore(now.minus(ttl))) {
                 val networkData =
                     network.getRecipesListByCategory(category).meals.filterIsInstance<NetworkLightRecipe>()
                 val entities =
                     networkData.map {
                         it.asEntity().apply {
                             this.category = category
-                            this.lastUpdated = now
+                            this.savedTimestamp = now
                         }
                     }
                 lightRecipeDao.upsertAllLightRecipes(entities)

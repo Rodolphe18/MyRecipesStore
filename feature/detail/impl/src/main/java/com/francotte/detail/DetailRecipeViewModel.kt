@@ -5,12 +5,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.francotte.api.DetailRecipeNavKey
-import com.francotte.data.repository.FullRecipeRepositoryImpl
+import com.francotte.data.repository.CompositeUserFullRecipeRepository
 import com.francotte.model.LikeableRecipe
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -20,11 +17,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = DetailRecipeViewModel.Factory::class)
 class DetailRecipeViewModel @AssistedInject constructor(
-    private val detailRecipeRepository: FullRecipeRepositoryImpl,
+    private val detailRecipeRepository: CompositeUserFullRecipeRepository,
     @Assisted val ids:List<String>?,
     @Assisted val index:Int?,
     @Assisted val recipeTitle:String?

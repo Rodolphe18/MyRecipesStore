@@ -9,19 +9,17 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.francotte.data.repository.OfflineFirstHomeRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 
-interface HomeSyncer {
-    suspend fun syncLatest(force: Boolean = false)
-}
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface HomeSyncEntryPoint {
-    fun homeSyncer(): HomeSyncer
+    fun latestRecipes(): OfflineFirstHomeRepository
 }
 
 class HomeSyncWorker(
@@ -35,9 +33,9 @@ class HomeSyncWorker(
                     applicationContext,
                     HomeSyncEntryPoint::class.java,
                 )
-            val syncer = entryPoint.homeSyncer()
+            val syncer = entryPoint.latestRecipes()
             // force=false => ton TTL décide si on refresh ou non
-            syncer.syncLatest(force = false)
+            syncer.refreshLatestRecipes(force = false)
             Log.d("home_sync", "WORKER SUCCESS")
             Result.success()
         } catch (t: Throwable) {

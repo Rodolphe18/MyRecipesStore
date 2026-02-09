@@ -35,16 +35,17 @@ class FoodPreferencesDataRepository
     ) : UserDataRepository {
         override val userData =
             userPreferences.data
-                .map {
+                .map { prefs ->
                     UserData(
-                        userId = it.userInfo.user.id,
-                        userName = it.userInfo.user.userName,
-                        connectionMethod = it.toConnectionMethod(),
-                        email = it.userInfo.user.email,
-                        image = it.userInfo.user.image,
-                        isConnected = it.userInfo.connected,
-                        token = it.userInfo.token,
-                        favoriteRecipesIds = it.favoritesIdsMap.keys,
+                        userId = prefs.userInfo.user.id,
+                        userName = prefs.userInfo.user.userName,
+                        connectionMethod = prefs.toConnectionMethod(),
+                        email = prefs.userInfo.user.email,
+                        image = prefs.userInfo.user.image,
+                        isConnected = prefs.userInfo.connected,
+                        token = prefs.userInfo.token,
+                        favoriteRecipesIds = prefs.favoritesIdsMap.keys,
+                        pendingFavorites = prefs.pendingFavoritesMap.mapValues { it.value.desiredFavorite }
                     )
                 }
 

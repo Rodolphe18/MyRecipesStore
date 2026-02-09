@@ -76,7 +76,7 @@ fun RecipeItem(
                         .padding(8.dp)
                         .align(Alignment.BottomEnd),
                 onToggleFavorite = { onToggleFavorite(likeableRecipe) },
-                isFavorite = likeableRecipe.isFavorite,
+                syncState = likeableRecipe.favoriteState,
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -183,7 +183,7 @@ fun BigRecipeItem(
                         .padding(8.dp)
                         .align(Alignment.BottomEnd),
                 onToggleFavorite = { onToggleFavorite(likeableRecipe) },
-                isFavorite = likeableRecipe.isFavorite,
+                syncState = likeableRecipe.favoriteState,
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
@@ -234,7 +234,7 @@ fun HorizontalRecipeItem(
                         .padding(8.dp)
                         .align(Alignment.BottomEnd),
                 onToggleFavorite = { onToggleFavorite(likeableRecipe) },
-                isFavorite = likeableRecipe.isFavorite,
+                syncState = likeableRecipe.favoriteState
             )
         }
         Spacer(modifier = Modifier.height(4.dp))

@@ -98,7 +98,7 @@ fun VideoRecipeItem(
                         .padding(12.dp)
                         .align(Alignment.BottomEnd),
                 onToggleFavorite = { onToggleFavorite(likeableRecipe) },
-                isFavorite = likeableRecipe.isFavorite,
+                syncState = likeableRecipe.favoriteState,
             )
         }
     }

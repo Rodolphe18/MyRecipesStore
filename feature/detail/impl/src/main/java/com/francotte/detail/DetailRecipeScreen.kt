@@ -489,7 +489,7 @@ fun DetailScreenMainSectionTitle(
                     likeableRecipe
                 )
             },
-            isFavorite = likeableRecipe.isFavorite,
+            syncState = likeableRecipe.favoriteState
         )
     }
 }

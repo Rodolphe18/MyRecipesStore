@@ -2,7 +2,7 @@ package com.francotte.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.HomeRepository
+import com.francotte.data.repository.UserHomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,7 +15,7 @@ import javax.inject.Inject
 class HomeViewModel
     @Inject
     constructor(
-       private val repository: HomeRepository
+       private val repository: UserHomeRepository
     ) : ViewModel() {
         private val _currentPage = MutableStateFlow(0)
         val currentPage = _currentPage.asStateFlow()

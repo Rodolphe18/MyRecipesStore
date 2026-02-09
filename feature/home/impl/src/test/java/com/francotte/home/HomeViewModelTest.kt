@@ -2,8 +2,7 @@ package com.francotte.home
 
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.TestRecipe
-import com.francotte.testing.FakeHomeRepository
-import com.francotte.testing.FakeHomeSyncer
+import com.francotte.testing.FakeUserHomeRepository
 import com.francotte.testing.util.MainDispatcherRule
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
@@ -23,13 +22,13 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private lateinit var repository: FakeHomeRepository
+    private lateinit var repository: FakeUserHomeRepository
 
     private lateinit var viewModel: HomeViewModel
 
     @Before
     fun setup() {
-        repository = FakeHomeRepository()
+        repository = FakeUserHomeRepository()
         viewModel = HomeViewModel(repository)
     }
 

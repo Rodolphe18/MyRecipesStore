@@ -9,8 +9,13 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import com.francotte.data.mapper.dto.asEntity
+import com.francotte.database.dao.FullRecipeDao
 import com.francotte.datastore.FoodPreferencesDataRepository
 import com.francotte.network.api.FavoriteApi
+import com.francotte.network.api.RecipeApi
+import com.francotte.network.model.NetworkRecipe
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -35,11 +40,15 @@ class FavoritesSyncWorker(
         val user = repo.userData.first()
         val token = user.token
 
+        val reason = inputData.getString(KEY_REASON) ?: REASON_TOGGLE
+        val isReasonLogin = reason == REASON_LOGIN
+
         if (!user.isConnected || token.isNullOrBlank()) {
             return Result.failure()
         }
 
         val pending = repo.getPendingFavorites()
+
         if (pending.isEmpty()) return Result.success()
 
         val maxAttemptsBeforeReconcile = 3
@@ -57,6 +66,14 @@ class FavoritesSyncWorker(
                     ItemSyncResult.Reconcile -> return reconcileFromServer(api, repo, token)
                     ItemSyncResult.Retry -> return Result.retry()
                 }
+            }
+            if (isReasonLogin) {
+                val recipeApi = entryPoint.recipeApi()
+                val dao = entryPoint.fullRecipeDao()
+                val prefetchResult = prefetchMissingFavoriteRecipes(repo, dao, recipeApi)
+
+                // si tu veux être strict : si prefetch network fail => retry
+                if (!prefetchResult) return Result.retry()
             }
 
             return Result.success()
@@ -125,6 +142,37 @@ class FavoritesSyncWorker(
         }
     }
 
+    private suspend fun prefetchMissingFavoriteRecipes(
+        repo: FoodPreferencesDataRepository,
+        dao: FullRecipeDao,
+        api: RecipeApi,
+    ): Boolean {
+        val ids = repo.userData.first().favoriteRecipesIds.distinct()
+        if (ids.isEmpty()) return true
+
+        // ⚠️ Ça marche même si Room ne stocke pas l'état favori : c'est juste "est-ce que le détail existe"
+        val existing = dao.getExistingIds(ids).toSet()
+        val missing = ids.filterNot(existing::contains)
+        if (missing.isEmpty()) return true
+
+        return try {
+            for (idStr in missing) {
+                val id = idStr.toLongOrNull() ?: continue
+                val network = api.getMealDetail(id)
+                    .meals
+                    .filterIsInstance<NetworkRecipe>()
+                    .firstOrNull() ?: continue
+
+                dao.insertFullRecipe(network.asEntity())
+            }
+            true
+        } catch (_: IOException) {
+            false
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     private enum class ItemSyncResult {
         Synced,
         StopNoLogin,
@@ -134,7 +182,18 @@ class FavoritesSyncWorker(
 }
 
 object FavoritesSyncScheduler {
-    fun enqueue(context: Context) {
+
+    fun enqueueForToggle(context: Context) {
+        enqueue(context, REASON_TOGGLE, ExistingWorkPolicy.KEEP)
+    }
+
+    fun enqueueForLogin(context: Context) {
+        enqueue(context, REASON_LOGIN, ExistingWorkPolicy.REPLACE)
+    }
+
+    private fun enqueue(context: Context,
+                        reason: String,
+                        policy: ExistingWorkPolicy) {
         val constraints =
             Constraints
                 .Builder()
@@ -148,34 +207,32 @@ object FavoritesSyncScheduler {
                     BackoffPolicy.EXPONENTIAL,
                     30_000,
                     java.util.concurrent.TimeUnit.MILLISECONDS,
-                ).build()
+                )
+                .setInputData(
+                    workDataOf(KEY_REASON to reason)
+                )
+                .build()
 
         WorkManager
             .getInstance(context)
             .enqueueUniqueWork(
                 "favorites-sync",
-                ExistingWorkPolicy.KEEP,
+                policy,
                 request,
             )
 
-        //        val wm = WorkManager.getInstance(context.applicationContext)
-//        wm.getWorkInfosForUniqueWorkLiveData("favorites-sync")
-//            .observeForever { infos ->
-//                infos.forEach { info ->
-//                    Log.d(
-//                        "fav_sync",
-//                        "state=${info.state} attempt=${info.runAttemptCount} " +
-//                                "tags=${info.tags} id=${info.id}"
-//                    )
-//                }
-//            }
     }
 }
+
+private const val KEY_REASON = "reason"
+private const val REASON_TOGGLE = "toggle"
+private const val REASON_LOGIN = "login"
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface FavoritesSyncEntryPoint {
     fun favoriteApi(): FavoriteApi
-
     fun foodPreferencesRepo(): FoodPreferencesDataRepository
+    fun recipeApi(): RecipeApi
+    fun fullRecipeDao(): FullRecipeDao
 }

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworkIngredients(
-    val meals: List<NetworkIngredient>,
+    val ingredients: List<NetworkIngredient>,
 )
 
 @Serializable

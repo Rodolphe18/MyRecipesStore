@@ -18,6 +18,7 @@ val emptyUserData =
         isConnected = false,
         token = null,
         favoriteRecipesIds = emptySet(),
+        pendingFavorites = emptyMap()
     )
 
 class TestUserDataRepository : UserDataRepository {

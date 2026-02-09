@@ -20,7 +20,6 @@ import com.francotte.domain.AuthManager
 import com.francotte.domain.FavoriteManager
 import com.francotte.inapp_rating.InAppRatingManager
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
-import com.francotte.myrecipesstore.navigation.FoodApp
 import com.francotte.myrecipesstore.permissions.NotificationPermissionEffect
 import com.francotte.myrecipesstore.ui.rememberAppState
 import com.francotte.ui.LocalAuthManager
