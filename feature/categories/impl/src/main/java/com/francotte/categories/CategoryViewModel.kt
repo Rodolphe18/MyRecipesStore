@@ -9,8 +9,10 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -19,21 +21,19 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = CategoryViewModel.Factory::class)
 class CategoryViewModel @AssistedInject constructor(
     @Assisted val category: String,
-    repository: UserHomeRepository,
+    private val repository: UserHomeRepository,
 ) : ViewModel() {
 
-    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
-
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val categoryUiState =
-        refreshTrigger
-            .flatMapLatest { repository.observeRecipesByCategory(category) }
+        repository.observeRecipesByCategory(category)
             .map(::mapToUiState)
+            .debounce(250)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoryUiState.Loading)
 
-    fun mapToUiState(result: Result<List<LikeableRecipe>>): CategoryUiState =
+    fun mapToUiState(result: Result<List<LikeableRecipe>?>): CategoryUiState =
         if (result.isSuccess) {
-            CategoryUiState.Success(recipes = result.getOrDefault(emptyList()))
+            CategoryUiState.Success(recipes = result.getOrDefault(emptyList()).orEmpty())
         } else {
             CategoryUiState.Error
         }
@@ -44,7 +44,7 @@ class CategoryViewModel @AssistedInject constructor(
 
     fun refresh() {
         viewModelScope.launch {
-            refreshTrigger.emit(Unit)
+            repository.refreshRecipesByCategory(category,true)
         }
     }
 

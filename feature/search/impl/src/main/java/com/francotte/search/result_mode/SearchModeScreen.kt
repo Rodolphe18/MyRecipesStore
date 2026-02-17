@@ -18,8 +18,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,18 +28,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.designsystem.component.TopAppBar
-import com.francotte.ui.nbIngredientsColumns
 import com.francotte.designsystem.theme.SearchItemColor1
 import com.francotte.designsystem.theme.SearchItemColor2
 import com.francotte.designsystem.theme.SearchItemColor3
 import com.francotte.feature.search.api.SearchMode
 import com.francotte.ui.LocalAppLayout
+import com.francotte.ui.nbIngredientsColumns
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,14 +46,16 @@ import kotlin.math.absoluteValue
 fun ItemSelectionGrid(
     searchMode: SearchMode,
     items: List<String>,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     onItemSelected: (String, SearchMode) -> Unit,
     onBack: () -> Unit,
 ) {
     val mode = LocalAppLayout.current.mode
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val pullToRefreshState = rememberPullToRefreshState()
     Scaffold(
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = searchMode.title,
@@ -64,16 +66,25 @@ fun ItemSelectionGrid(
         },
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(mode.nbIngredientsColumns),
-                contentPadding = PaddingValues(8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            PullToRefreshBox(
+                modifier = Modifier.fillMaxSize(),
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+                state = pullToRefreshState
             ) {
-                items(items) { item ->
-                    SelectableChip(item, onClick = { onItemSelected(item, searchMode) })
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(mode.nbIngredientsColumns),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(items) { item ->
+                        SelectableChip(Modifier.fillMaxWidth(),item, onClick = { onItemSelected(item, searchMode) })
+                    }
                 }
             }
         }
@@ -82,6 +93,7 @@ fun ItemSelectionGrid(
 
 @Composable
 fun SelectableChip(
+    modifier: Modifier,
     label: String,
     onClick: () -> Unit,
 ) {
@@ -96,9 +108,8 @@ fun SelectableChip(
 
     Box(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
-                .aspectRatio(2f)
                 .clip(RoundedCornerShape(14.dp))
                 .clickable { onClick() }
                 .shadow(4.dp, RoundedCornerShape(14.dp))

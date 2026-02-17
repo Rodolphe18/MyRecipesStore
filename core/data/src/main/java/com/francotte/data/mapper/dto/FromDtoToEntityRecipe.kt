@@ -4,12 +4,13 @@ import com.francotte.database.model.FullRecipeEntity
 import com.francotte.database.model.LightRecipeEntity
 import com.francotte.network.model.NetworkLightRecipe
 import com.francotte.network.model.NetworkRecipe
+import java.time.Instant
 
 fun NetworkLightRecipe.asEntity(): LightRecipeEntity =
     LightRecipeEntity(
         idMeal = idMeal,
         strMeal = strMeal,
-        strMealThumb = strMealThumb ?: "",
+        strMealThumb = strMealThumb.orEmpty()
     )
 
 fun NetworkRecipe.asEntity(): FullRecipeEntity =

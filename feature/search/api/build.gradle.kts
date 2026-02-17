@@ -35,6 +35,11 @@ android {
 
 dependencies {
     api(project(":core:navigation"))
+
+    api(project(":feature:categories:api"))
+    api(project(":core:navigation"))
+    api(project(":core:navigation"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

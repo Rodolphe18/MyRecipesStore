@@ -1,10 +1,11 @@
 package com.francotte.network.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworkAreas(
-    val meals: List<NetworkArea>,
+    @SerialName("meals") val areas: List<NetworkArea>,
 )
 
 @Serializable

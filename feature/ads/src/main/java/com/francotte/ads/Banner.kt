@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,12 +33,13 @@ fun BannerAd(
     val isPremium by localBilling.isPremium.collectAsStateWithLifecycle()
     if (isPremium) return
 
-    provider.Banner(
+    Row(Modifier.height(100.dp)) { provider.Banner(
         placement = placement,
         useAdaptiveSize = true,
         horizontalPadding = horizontalPadding,
         heightFallback = 100.dp,
-    )
+    ) }
+
 }
 
 @Composable

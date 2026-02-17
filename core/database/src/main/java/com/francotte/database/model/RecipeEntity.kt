@@ -1,26 +1,26 @@
 package com.francotte.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Index
+import androidx.room.Fts4
 import androidx.room.PrimaryKey
-import com.francotte.model.LightRecipe
-import com.francotte.model.Recipe
 import java.time.Instant
 
-@Entity(tableName = "light_recipe_entity",indices = [
-    Index(value = ["area", "savedTimestamp"]),
-    Index(value = ["category", "savedTimestamp"]),
-    Index(value = ["isLatest", "savedTimestamp"]),
-])
+@Entity(tableName = "light_recipe_entity")
 data class LightRecipeEntity(
     @PrimaryKey val idMeal: String,
     val strMeal: String,
     val strMealThumb: String,
-    var category: String? = null,
-    var area: String? = null,
-    var isLatest: Boolean = false,
-    var savedTimestamp: Instant? = null,
 )
+
+@Entity(tableName = "recipesFts")
+@Fts4
+data class RecipeFtsEntity(
+    @ColumnInfo(name = "idMeal") val idMeal: String,
+    @ColumnInfo(name = "name") val name: String
+)
+
+fun LightRecipeEntity.asFtsEntity() = RecipeFtsEntity(idMeal = idMeal, name = strMeal)
 
 @Entity(tableName = "full_recipe_entity")
 data class FullRecipeEntity(

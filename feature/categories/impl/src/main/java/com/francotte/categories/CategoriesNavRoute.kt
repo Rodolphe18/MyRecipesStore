@@ -12,6 +12,7 @@ import com.francotte.api.navigateToCategory
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.model.AbstractCategory
 import com.francotte.navigation.Navigator
+import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.categoriesEntry(
@@ -29,13 +30,20 @@ fun CategoriesRoute(
     onOpenCategory: (AbstractCategory) -> Unit,
 ) {
     val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
-    CategoriesScreen(
-        categoryUiState = homeUiState,
-        onOpenCategory = onOpenCategory,
-        onReload = {
-            viewModel.refresh()
-        })
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val snackBarHost = LocalSnackbarHostState.current
+    LaunchedEffect(viewModel) {
+            viewModel.snackBarMessage.collect {message ->
+                snackBarHost.showSnackbar(message)
+            }
+    }
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }
+    CategoriesScreen(
+        categoryUiState = homeUiState,
+        onOpenCategory = onOpenCategory,
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.refresh() }
+    )
 }

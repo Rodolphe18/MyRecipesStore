@@ -24,10 +24,8 @@ import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import java.io.IOException
 
-class FavoritesSyncWorker(
-    ctx: Context,
-    params: WorkerParameters,
-) : CoroutineWorker(ctx, params) {
+class FavoritesSyncWorker(ctx: Context, params: WorkerParameters): CoroutineWorker(ctx, params) {
+
     override suspend fun doWork(): Result {
         val entryPoint =
             EntryPointAccessors.fromApplication(
@@ -57,7 +55,6 @@ class FavoritesSyncWorker(
         }
 
         try {
-            // On traite item par item pour éviter qu’un seul item “fatal” bloque tout
             for ((recipeId, desiredFav) in pending) {
                 val itemResult = trySyncOne(api, repo, token, recipeId, desiredFav)
                 when (itemResult) {

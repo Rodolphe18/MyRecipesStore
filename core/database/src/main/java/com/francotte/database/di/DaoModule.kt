@@ -17,10 +17,17 @@
 package com.francotte.database.di
 
 import com.francotte.database.FoodDatabase
+import com.francotte.database.dao.AreaDao
 import com.francotte.database.dao.FullCategoryDao
 import com.francotte.database.dao.FullRecipeDao
+import com.francotte.database.dao.IngredientDao
 import com.francotte.database.dao.LightCategoryDao
 import com.francotte.database.dao.LightRecipeDao
+import com.francotte.database.dao.fts.AreaFtsDao
+import com.francotte.database.dao.fts.CategoryFtsDao
+import com.francotte.database.dao.fts.IngredientFtsDao
+import com.francotte.database.dao.fts.RecipeFtsDao
+import com.francotte.database.dao.fts.SearchIndexStateDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,4 +47,25 @@ object DaoModule {
 
     @Provides
     fun providesFullCategoryDao(database: FoodDatabase): FullCategoryDao = database.fullCategoryDao()
+
+    @Provides
+    fun providesIngredientsDao(database: FoodDatabase): IngredientDao = database.ingredientsDao()
+
+    @Provides
+    fun providesAreasDao(database: FoodDatabase): AreaDao = database.areasDao()
+
+    @Provides
+    fun providesFtsAreaDao(database: FoodDatabase): AreaFtsDao = database.areaFtsDao()
+
+    @Provides
+    fun providesFtsIngredientDao(database: FoodDatabase): IngredientFtsDao = database.ingredientFtsDao()
+
+    @Provides
+    fun providesFtsCategoryDao(database: FoodDatabase): CategoryFtsDao = database.categoryFtsDao()
+
+    @Provides
+    fun providesRecipeFtsDao(database: FoodDatabase): RecipeFtsDao = database.recipeFtsDao()
+
+    @Provides
+    fun providesSearchIndexStateDao(database: FoodDatabase): SearchIndexStateDao = database.searchIndexStateDao()
 }

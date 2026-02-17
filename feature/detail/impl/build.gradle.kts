@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.navigation3.ui)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)

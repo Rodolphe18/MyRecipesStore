@@ -1,5 +1,8 @@
 [versions]
 androidGradlePlugin = "8.13.1"
+android-googleid = "1.1.1"
+kotlinCoroutinesOkhttp = "1.0"
+credentials = "1.5.0"
 didomi = "2.33.0"
 appUpdate = "2.1.0"
 apsSdk = "9.10.2"
@@ -73,8 +76,13 @@ androidxHiltLifecycleViewModelCompose = "1.3.0"
 androidxMetrics = "1.0.0"
 androidxTracing = "1.3.0"
 uiTestJunit4Version = "1.10.1"
+navigation3Ui = "1.0.1"
 
 [libraries]
+kotlin-coroutines-okhttp = { module = "ru.gildor.coroutines:kotlin-coroutines-okhttp", version.ref = "kotlinCoroutinesOkhttp" }
+android-identity-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "android-googleid" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "androidxNavigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "androidxNavigation3" }
 androidx-lifecycle-viewModel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycleViewModelNavigation3" }
@@ -170,6 +178,7 @@ review = { module = "com.google.android.play:review", version.ref = "review" }
 review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "reviewKtx" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "uiTestJunit4Version" }
+navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Ui" }
 
 [plugins]
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark"}

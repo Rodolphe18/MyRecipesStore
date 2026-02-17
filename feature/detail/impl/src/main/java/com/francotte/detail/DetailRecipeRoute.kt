@@ -1,5 +1,9 @@
 package com.francotte.detail
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +24,7 @@ import kotlinx.serialization.Serializable
 import kotlin.String
 import kotlin.collections.List
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.ui.NavDisplay
 
 @Serializable
 data class DetailRecipeRoute(
@@ -33,7 +38,24 @@ fun EntryProviderScope<NavKey>.detailRecipeEntry(
     navigator: Navigator,
     onToggleFavorite: (LikeableRecipe) -> Unit
 ) {
-    entry<DetailRecipeNavKey> { key ->
+    entry<DetailRecipeNavKey>(metadata = NavDisplay.transitionSpec {
+        slideInHorizontally(
+            initialOffsetX = { fullWidth -> fullWidth },
+            animationSpec = tween(250)
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { fullWidth -> -fullWidth },
+            animationSpec = tween(250)
+        )
+    } + NavDisplay.popTransitionSpec {
+        // Back: inverse (optionnel mais conseillé)
+        slideInHorizontally(
+            initialOffsetX = { fullWidth -> -fullWidth },
+            animationSpec = tween(220)
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { fullWidth -> fullWidth },
+            animationSpec = tween(220)
+        )
+    }) { key ->
         DetailRecipeRoute(
             viewModel = hiltViewModel<DetailRecipeViewModel, DetailRecipeViewModel.Factory>(
                 key = key.title,

@@ -29,11 +29,9 @@ constructor(
         repository
             .observeFoodAreaSection(sectionName)
             .map { result ->
-                if (result.isSuccess) {
-                    SectionUiState.Success(result.getOrDefault(emptyList()))
-                } else {
-                    SectionUiState.Error
-                }
+                result.fold(
+                    onSuccess = { SectionUiState.Success(it) },
+                    onFailure = { SectionUiState.Error })
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SectionUiState.Loading)
 
     @AssistedFactory

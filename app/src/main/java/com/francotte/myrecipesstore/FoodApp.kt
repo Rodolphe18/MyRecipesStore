@@ -86,6 +86,7 @@ import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalAuthManager
 import com.francotte.ui.LocalFavoriteManager
 import com.francotte.ui.LocalInAppRatingManager
+import com.francotte.ui.LocalSnackbarHostState
 import com.francotte.video.videoEntry
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
@@ -106,7 +107,7 @@ fun FoodApp(
 
     val isAuthenticated by localAuthManager.isAuthenticated.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val snackBarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = LocalSnackbarHostState.current
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     val customRecipeHasBeenUpdated by localFavoriteManager
@@ -134,7 +135,7 @@ fun FoodApp(
         searchModeEntry(navigator)
         sectionEntry(navigator, onToggleFavorite)
         searchRecipesEntry(navigator, onToggleFavorite)
-        searchEntry(navigator)
+        searchEntry(navigator,onToggleFavorite)
         loginEntry(navigator)
         registerEntry(navigator)
         favoritesEntry(navigator, onToggleFavorite, customRecipeHasBeenUpdated)

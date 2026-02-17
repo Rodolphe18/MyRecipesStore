@@ -1,6 +1,6 @@
 package com.francotte.ui
+
 import android.content.Context
-import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -9,6 +9,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.francotte.data.repository.CompositeUserHomeRepository
 import com.francotte.data.repository.OfflineFirstHomeRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -20,6 +21,7 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 interface HomeSyncEntryPoint {
     fun latestRecipes(): OfflineFirstHomeRepository
+    fun areasRecipes(): CompositeUserHomeRepository
 }
 
 class HomeSyncWorker(
@@ -33,14 +35,18 @@ class HomeSyncWorker(
                     applicationContext,
                     HomeSyncEntryPoint::class.java,
                 )
-            val syncer = entryPoint.latestRecipes()
-            // force=false => ton TTL décide si on refresh ou non
-            syncer.refreshLatestRecipes(force = false)
-            Log.d("home_sync", "WORKER SUCCESS")
+            val latestRecipes = entryPoint.latestRecipes()
+            val areas = entryPoint.areasRecipes()
+            latestRecipes.refreshLatestRecipes(force = false)
+            areas.refreshAllFoodAreaSection(true)
             Result.success()
         } catch (t: Throwable) {
-            Log.e("home_sync", "WORKER ERROR", t)
-            Result.retry()
+            val maxAttempts = 3
+            if (runAttemptCount + 1 >= maxAttempts) {
+                Result.failure()
+            } else {
+                Result.retry()
+            }
         }
 }
 

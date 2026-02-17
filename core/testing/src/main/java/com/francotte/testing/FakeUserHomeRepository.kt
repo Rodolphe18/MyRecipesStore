@@ -1,8 +1,6 @@
 package com.francotte.testing
 
-import com.francotte.common.utils.DataResult
 import com.francotte.data.repository.UserHomeRepository
-import com.francotte.data.repository.SyncOutcome
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +26,7 @@ class FakeUserHomeRepository : UserHomeRepository {
         mutableMapOf<String, MutableSharedFlow<Result<List<LikeableRecipe>>>>()
 
     override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> = latestFlow
-    override suspend fun refreshLatestRecipes(force: Boolean): DataResult<SyncOutcome> {
+    override suspend fun refreshLatestRecipes(force: Boolean): String? {
         TODO("Not yet implemented")
     }
 
@@ -37,8 +35,25 @@ class FakeUserHomeRepository : UserHomeRepository {
     override fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>> = americanFlow
 
     override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> = areasSectionsFlow
+    override suspend fun refreshFoodAreaSection(
+        area: String,
+        force: Boolean
+    ): String? {
+        return null
+    }
+
+    override suspend fun refreshAllFoodAreaSection(force: Boolean): Boolean {
+        TODO("Not yet implemented")
+    }
+
 
     override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> = sectionFlow(sectionName)
+    override suspend fun refreshRecipesByCategory(
+        category: String,
+        force: Boolean
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
 
     override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> = categoryFlow(category)
 

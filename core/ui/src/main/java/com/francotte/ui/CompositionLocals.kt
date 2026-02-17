@@ -1,5 +1,7 @@
 package com.francotte.ui
 
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.francotte.ads.BannerAdProvider
 import com.francotte.ads.InterstitialManager
@@ -49,4 +51,8 @@ val LocalBannerProvider =
 
 val LocalAppLayout = staticCompositionLocalOf<AppLayoutInfo> {
     error("LocalAppLayout not provided. Wrap your app with ProvideAppLayout().")
+}
+
+val LocalSnackbarHostState = staticCompositionLocalOf<SnackbarHostState> {
+    error("SnackbarHostState state should be initialized at runtime")
 }

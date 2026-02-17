@@ -6,6 +6,5 @@ import kotlinx.serialization.Serializable
 enum class SearchMode(
     val title: String,
 ) {
-    INGREDIENTS("Ingredients"),
-    COUNTRY("Countries"),
+    INGREDIENTS("Ingredients"), COUNTRY("Countries"), CATEGORIES("Categories")
 }

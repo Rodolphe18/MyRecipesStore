@@ -49,6 +49,8 @@ fun RecipeItem(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: () -> Unit,
+    aspectRatio:Float=1f,
+    height:Dp = 175.dp
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -57,8 +59,8 @@ fun RecipeItem(
         Box(
             modifier =
                 Modifier
-                    .height(175.dp)
-                    .aspectRatio(1f)
+                    .height(height)
+                    .aspectRatio(aspectRatio)
                     .background(MaterialTheme.colorScheme.surfaceVariant,shape)
                     .clickable(onClick = onOpenRecipe),
         ) {

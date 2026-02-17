@@ -1,6 +1,9 @@
 package com.francotte.search.result_mode
 
+import android.util.Log
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -10,6 +13,7 @@ import com.francotte.feature.search.api.SearchMode
 import com.francotte.feature.search.api.SearchModeNavKey
 import com.francotte.feature.search.api.navigateToSearchRecipes
 import com.francotte.navigation.Navigator
+import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.searchModeEntry(navigator: Navigator) {
@@ -31,5 +35,12 @@ fun SearchModeRoute(
     onBack: () -> Unit,
 ) {
     val items by viewModel.items.collectAsStateWithLifecycle()
-    ItemSelectionGrid(searchMode = viewModel.searchMode, items = items, onItemSelected = onItemSelected, onBack = onBack)
+    val snackBarHost = LocalSnackbarHostState.current
+    val isReloading by viewModel.isReloading.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+            viewModel.snackBarMessage.collect {
+                snackBarHost.showSnackbar(it)
+        }
+    }
+    ItemSelectionGrid(searchMode = viewModel.searchMode, items = items, isRefreshing = isReloading, onRefresh = viewModel::onRefresh, onItemSelected = onItemSelected, onBack = onBack)
 }

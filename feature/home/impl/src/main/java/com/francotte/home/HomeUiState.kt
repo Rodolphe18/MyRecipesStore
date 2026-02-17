@@ -1,9 +1,16 @@
 package com.francotte.home
 
 import com.francotte.model.LikeableRecipe
-import com.francotte.common.utils.AppError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+
+data class HomeUiState(
+    val latest: LatestRecipes = LatestRecipes.Loading,
+    val american: AmericanRecipes = AmericanRecipes.Loading,
+    val areas: AreasRecipes = AreasRecipes.Loading,
+    val english: EnglishRecipes = EnglishRecipes.Loading,
+)
 
 sealed interface LatestRecipes {
     data object Loading : LatestRecipes

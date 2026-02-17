@@ -34,28 +34,25 @@ import androidx.compose.ui.unit.sp
 import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
-import com.francotte.ui.nbHomeColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.testing.util.HomeTags
 import com.francotte.ui.BigRecipeItem
+import com.francotte.ui.DeviceMode
 import com.francotte.ui.ErrorScreen
 import com.francotte.ui.HorizontalRecipesList
-import com.francotte.ui.DeviceMode
 import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
 import com.francotte.ui.VideoRecipeItem
+import com.francotte.ui.nbHomeColumns
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    latestRecipes: LatestRecipes,
-    americanRecipes: AmericanRecipes,
-    areasRecipes: AreasRecipes,
-    englishRecipes: EnglishRecipes,
+    uiState: HomeUiState,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenSection: (String) -> Unit,
@@ -71,10 +68,10 @@ fun HomeScreen(
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
     val isDataReady =
-        latestRecipes is LatestRecipes.Success && americanRecipes is AmericanRecipes.Success
+        uiState.latest is LatestRecipes.Success && uiState.american is AmericanRecipes.Success
     val areaSections =
-        remember(areasRecipes) {
-            (areasRecipes as? AreasRecipes.Success)
+        remember(uiState.areas) {
+            (uiState.areas as? AreasRecipes.Success)
                 ?.areasRecipes
                 ?.toList()
                 ?.sortedBy { it.first }
@@ -97,7 +94,7 @@ fun HomeScreen(
         onRefresh = onReload,
         state = pullRefreshState,
     ) {
-        if (latestRecipes == LatestRecipes.Loading) {
+        if (uiState.latest == LatestRecipes.Loading) {
             CustomCircularProgressIndicator(
                 Modifier.semantics {
                     testTag = HomeTags.LOADING
@@ -121,7 +118,7 @@ fun HomeScreen(
                             count = null,
                             showNavIcon = false,
                         )
-                        when (latestRecipes) {
+                        when (uiState.latest) {
                             is LatestRecipes.Empty -> ErrorScreen { onReload() }
                             is LatestRecipes.Loading -> {}
                             is LatestRecipes.Success -> {
@@ -129,7 +126,7 @@ fun HomeScreen(
                                     val pagerState =
                                         rememberPagerState(
                                             initialPage = currentPage,
-                                            pageCount = { latestRecipes.latestRecipes.size },
+                                            pageCount = {uiState.latest.latestRecipes.size },
                                         )
 
                                     LaunchedEffect(pagerState) {
@@ -146,23 +143,23 @@ fun HomeScreen(
                                                         contentDescription =
                                                             "VideoRecipeItem_$index"
                                                     },
-                                            likeableRecipe = latestRecipes.latestRecipes[index],
+                                            likeableRecipe = uiState.latest.latestRecipes[index],
                                             onOpenRecipe = {
                                                 onOpenRecipe(
-                                                    latestRecipes.latestRecipes.map { it.recipe.idMeal },
+                                                    uiState.latest.latestRecipes.map { it.recipe.idMeal },
                                                     index,
-                                                    latestRecipes.latestRecipes[index].recipe.strMeal,
+                                                    uiState.latest.latestRecipes[index].recipe.strMeal,
                                                 )
                                             },
                                             onToggleFavorite = onToggleFavorite,
                                             onVideoButtonClick = {
-                                                onVideoButtonClick((latestRecipes.latestRecipes[index].recipe as Recipe).strYoutube)
+                                                onVideoButtonClick((uiState.latest.latestRecipes[index].recipe as Recipe).strYoutube)
                                             },
                                         )
                                     }
                                 } else {
                                     SimpleHorizontalRecipesList(
-                                        recipes = latestRecipes.latestRecipes,
+                                        recipes = uiState.latest.latestRecipes,
                                         onOpenRecipe = onOpenRecipe,
                                         onToggleFavorite = onToggleFavorite,
                                     )
@@ -186,13 +183,13 @@ fun HomeScreen(
                     contentType = "section",
                     span = { spanSize },
                 ) {
-                    when (americanRecipes) {
+                    when (uiState.american) {
                         AmericanRecipes.Error -> ErrorScreen { }
                         AmericanRecipes.Loading -> {}
                         is AmericanRecipes.Success -> {
                             HorizontalRecipesList(
                                 "American",
-                                americanRecipes.americanRecipes,
+                                uiState.american.americanRecipes,
                                 onOpenRecipe = onOpenRecipe,
                                 onOpenSection = onOpenSection,
                                 onToggleFavorite = onToggleFavorite,
@@ -201,7 +198,7 @@ fun HomeScreen(
                     }
                 }
 
-                when (areasRecipes) {
+                when (uiState.areas) {
                     AreasRecipes.Error -> item { ErrorScreen { } }
                     AreasRecipes.Loading -> item { }
                     is AreasRecipes.Success -> {
@@ -243,12 +240,12 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                when (englishRecipes) {
+                when (uiState.english) {
                     EnglishRecipes.Error -> item { ErrorScreen { } }
                     EnglishRecipes.Loading -> item { }
                     is EnglishRecipes.Success -> {
                         items(
-                            items = englishRecipes.englishRecipes,
+                            items = uiState.english.englishRecipes,
                             key = { it.recipe.idMeal },
                             contentType = { "recipe_big" },
                         ) { recipe ->
@@ -256,8 +253,8 @@ fun HomeScreen(
                                 onToggleFavorite = onToggleFavorite,
                                 onOpenRecipe = {
                                     onOpenRecipe(
-                                        englishRecipes.englishRecipes.map { it.recipe.idMeal },
-                                        englishRecipes.englishRecipes.indexOf(recipe),
+                                        uiState.english.englishRecipes.map { it.recipe.idMeal },
+                                        uiState.english.englishRecipes.indexOf(recipe),
                                         recipe.recipe.strMeal,
                                     )
                                 },

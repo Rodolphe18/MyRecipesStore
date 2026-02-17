@@ -7,8 +7,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.metrics.performance.JankStats
 import com.francotte.ads.BannerAdProvider
 import com.francotte.ads.InterstitialManager
@@ -30,6 +33,7 @@ import com.francotte.ui.LocalFavoriteManager
 import com.francotte.ui.LocalInAppRatingManager
 import com.francotte.ui.LocalInterstitialManager
 import com.francotte.ui.LocalLaunchCounterManager
+import com.francotte.ui.LocalSnackbarHostState
 import com.francotte.ui.ProvideDeviceMode
 import com.google.android.play.core.appupdate.AppUpdateManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -87,6 +91,8 @@ class MainActivity : ComponentActivity() {
                 ),
         )
         setContent {
+            val snackbarHostState = remember { SnackbarHostState() }
+
             CompositionLocalProvider(
                 LocalBillingController provides billingController,
                 LocalConsentManager provides consentManager,
@@ -96,10 +102,12 @@ class MainActivity : ComponentActivity() {
                 LocalLaunchCounterManager provides launchCounterManager,
                 LocalInAppRatingManager provides inAppRatingManager,
                 LocalBannerProvider provides bannerAdProvider,
+                LocalSnackbarHostState provides snackbarHostState
             ) {
                 ProvideDeviceMode {
                     val data: Uri? = intent?.data
-                    val appState = rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
+                    val appState =
+                        rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
                     FoodTheme {
                         FoodApp(
                             context = this,
@@ -112,7 +120,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
     }
+
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -134,3 +144,4 @@ class MainActivity : ComponentActivity() {
 
 private val lightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
 private val darkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
+

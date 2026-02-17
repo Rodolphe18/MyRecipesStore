@@ -12,9 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CompositeUserHomeRepository
-@Inject
-constructor(
+class CompositeUserHomeRepository @Inject constructor(
     private val offlineFirstHomeRepository: OfflineFirstHomeRepository,
     private val userDataRepository: UserDataRepository,
 ) : UserHomeRepository {
@@ -25,21 +23,21 @@ constructor(
             offlineFirstHomeRepository.observeLatestRecipes()
         ) { userData, latest ->
             try {
-                Result.success( latest.mapToLikeableFullRecipes(userData))
+                Result.success(latest.mapToLikeableFullRecipes(userData))
 
             } catch (e: Exception) {
                 Result.failure(e)
             }
-          }
+        }
 
-    override suspend fun refreshLatestRecipes(force: Boolean): DataResult<SyncOutcome> {
+    override suspend fun refreshLatestRecipes(force: Boolean): String? {
         return offlineFirstHomeRepository.refreshLatestRecipes(force)
     }
 
     override fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
             userDataRepository.userData,
-            offlineFirstHomeRepository.getRecipesListByArea("British"),
+            offlineFirstHomeRepository.observeRecipesListByArea("British"),
         ) { userData, latestRecipes ->
             try {
                 val likeable = latestRecipes.mapToLikeableLightRecipes(userData)
@@ -52,7 +50,7 @@ constructor(
     override fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
         combine(
             userDataRepository.userData,
-            offlineFirstHomeRepository.getRecipesListByArea("American"),
+            offlineFirstHomeRepository.observeRecipesListByArea("American"),
         ) { userData, latestRecipes ->
             try {
                 val likeable = latestRecipes.mapToLikeableLightRecipes(userData).take(10)
@@ -62,13 +60,28 @@ constructor(
             }
         }
 
+    override suspend fun refreshAllFoodAreaSection(force: Boolean): Boolean {
+        enumValues<FoodAreaSection>().map { section ->
+            offlineFirstHomeRepository
+                .refreshRecipesListByArea(section.title, force)
+        }
+        offlineFirstHomeRepository.refreshRecipesListByArea("British", force)
+        offlineFirstHomeRepository.refreshRecipesListByArea("American", force)
+        return true
+    }
+
+    override suspend fun refreshFoodAreaSection(area: String, force: Boolean): String? {
+        return offlineFirstHomeRepository.refreshRecipesListByArea(area, force)
+    }
+
+
     override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> =
         combine(
             userDataRepository.userData,
             combine(
                 enumValues<FoodAreaSection>().map { section ->
                     offlineFirstHomeRepository
-                        .getRecipesListByArea(section.title)
+                        .observeRecipesListByArea(section.title)
                         .map { recipeList -> section.title to recipeList }
                 },
             ) { it.toMap() },
@@ -84,10 +97,26 @@ constructor(
             }
         }
 
+
     override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> =
         combine(
             userDataRepository.userData,
-            offlineFirstHomeRepository.getRecipesByCategory(category),
+            offlineFirstHomeRepository.observeRecipesByCategory(category),
+        ) { userData, recipes ->
+            try {
+                val recipesNotNull = recipes ?: emptyList()
+                val likeable = recipesNotNull.mapToLikeableLightRecipes(userData)
+                Result.success(likeable)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
+
+    override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> =
+        combine(
+            userDataRepository.userData,
+            offlineFirstHomeRepository.observeRecipesListByArea(sectionName),
         ) { userData, recipes ->
             try {
                 val likeable = recipes.mapToLikeableLightRecipes(userData)
@@ -97,33 +126,29 @@ constructor(
             }
         }
 
-    override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> =
-        combine(
-            userDataRepository.userData,
-            offlineFirstHomeRepository.getRecipesListByArea(sectionName),
-        ) { userData, recipes ->
-            try {
-                val likeable = recipes.mapToLikeableLightRecipes(userData)
-                Result.success(likeable)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
+    override suspend fun refreshRecipesByCategory(
+        category: String,
+        force: Boolean
+    ): Boolean {
+        return offlineFirstHomeRepository.refreshRecipesByCategory(category, force)
+    }
 }
 
 interface UserHomeRepository {
     fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>>
 
-    suspend fun refreshLatestRecipes(force: Boolean): DataResult<SyncOutcome>
+    suspend fun refreshLatestRecipes(force: Boolean): String?
 
     fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
 
     fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
 
     fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>>
-
+    suspend fun refreshFoodAreaSection(area: String, force: Boolean): String?
+    suspend fun refreshAllFoodAreaSection(force: Boolean): Boolean
     fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>>
 
+    suspend fun refreshRecipesByCategory(category: String, force: Boolean): Boolean
     fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>>
 }
 

@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,59 +50,67 @@ import com.francotte.ui.LocalBannerProvider
 @Composable
 fun CategoriesScreen(
     categoryUiState: CategoriesUiState,
-    onReload: () -> Unit,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     onOpenCategory: (AbstractCategory) -> Unit,
 ) {
     val mode = LocalAppLayout.current.mode
     val lazyListState = rememberLazyGridState()
     val localBannerProvider = LocalBannerProvider.current
     val spanSize = GridItemSpan(mode.nbCategoriesColumns)
-    when (categoryUiState) {
-        CategoriesUiState.Loading -> CustomCircularProgressIndicator()
-        CategoriesUiState.Error -> ErrorScreen { onReload() }
-        is CategoriesUiState.Success -> {
-            categoryUiState.categories.let { categories ->
-                LazyVerticalGrid(
-                    state = lazyListState,
-                    columns = GridCells.Fixed(mode.nbCategoriesColumns),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                ) {
-                    if (mode != DeviceMode.PhoneLandscape) {
-                        item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                            Box(
-                                modifier =
-                                    Modifier.layout { measurable, constraints ->
-                                        val placeable =
-                                            measurable.measure(
-                                                constraints.copy(
-                                                    maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
-                                                ),
-                                            )
-                                        layout(placeable.width, placeable.height) {
-                                            placeable.place(0, 0)
-                                        }
-                                    },
-                            ) {
-                                BannerAd(
-                                    placement = BannerPlacement.FOOD_LIST,
-                                    provider = localBannerProvider,
-                                    horizontalPadding = 16.dp,
-                                )
+    val pullToRefreshState = rememberPullToRefreshState()
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = pullToRefreshState
+    ) {
+        when (categoryUiState) {
+            CategoriesUiState.Loading -> CustomCircularProgressIndicator()
+            CategoriesUiState.Empty -> ErrorScreen { onRefresh() }
+            is CategoriesUiState.Success -> {
+                categoryUiState.categories.let { categories ->
+                    LazyVerticalGrid(
+                        state = lazyListState,
+                        columns = GridCells.Fixed(mode.nbCategoriesColumns),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        if (mode != DeviceMode.PhoneLandscape) {
+                            item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+                                Box(
+                                    modifier =
+                                        Modifier.layout { measurable, constraints ->
+                                            val placeable =
+                                                measurable.measure(
+                                                    constraints.copy(
+                                                        maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
+                                                    ),
+                                                )
+                                            layout(placeable.width, placeable.height) {
+                                                placeable.place(0, 0)
+                                            }
+                                        },
+                                ) {
+                                    BannerAd(
+                                        placement = BannerPlacement.FOOD_LIST,
+                                        provider = localBannerProvider,
+                                        horizontalPadding = 16.dp,
+                                    )
+                                }
                             }
                         }
-                    }
-                    items(
-                        key = { it.strCategory },
-                        contentType = { "categories" },
-                        items = categories,
-                    ) { category ->
-                        CategoryItem(
-                            imageUrl = (category as Category).strCategoryThumb,
-                            title = category.strCategory,
-                        ) {
-                            onOpenCategory(category)
+                        items(
+                            key = { it.strCategory },
+                            contentType = { "categories" },
+                            items = categories,
+                        ) { category ->
+                            CategoryItem(
+                                imageUrl = (category as Category).strCategoryThumb,
+                                title = category.strCategory,
+                            ) {
+                                onOpenCategory(category)
+                            }
                         }
                     }
                 }
