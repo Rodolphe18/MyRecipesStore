@@ -11,3 +11,10 @@ object LoginNavKey : NavKey
 fun Navigator.navigateToLogin() {
     navigate(LoginNavKey)
 }
+
+fun Navigator.navigateToLoginOnLogout() {
+    state.topLevelStack.apply {
+        clear()
+        add(LoginNavKey)
+    }
+}

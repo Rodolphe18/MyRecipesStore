@@ -2,9 +2,8 @@ package com.francotte.login
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -58,16 +57,14 @@ fun LoginRoute(
     navigateToFavoriteScreen: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    val authSuccess by viewModel.authSuccess.collectAsStateWithLifecycle()
-    val googleSignIn =
-        rememberLauncherForActivityResult(GoogleSignInContract()) { task ->
+    val googleSignIn = rememberLauncherForActivityResult(GoogleSignInContract()) { task ->
             viewModel.doGoogleLogin(task)
         }
-    LoginScreen( onOpenResetPassword = onOpenResetPassword, onLogin = viewModel::loginWithMailAndPassword,onRegister = onRegister) {
-        googleSignIn.launch(viewModel.googleSignInIntent)
+    LaunchedEffect(Unit) {
+        viewModel.authSuccess.collect { navigateToFavoriteScreen() }
     }
-    if (authSuccess) {
-        navigateToFavoriteScreen()
+    LoginScreen(onOpenResetPassword = onOpenResetPassword, onLogin = viewModel::loginWithMailAndPassword, onRegister = onRegister) {
+        googleSignIn.launch(viewModel.googleSignInIntent)
     }
     ScreenCounter.increment()
 }

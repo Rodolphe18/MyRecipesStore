@@ -19,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,20 +33,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.feature.settings.api.PremiumNavKey
-import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalBillingController
 
 fun EntryProviderScope<NavKey>.premiumEntry(navigator: Navigator) {
-    entry<PremiumNavKey> { key ->
+    entry<PremiumNavKey> {
         PremiumRoute(onBack = navigator::goBack)
     }
 }
@@ -67,10 +61,7 @@ fun PremiumRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 is PremiumEffect.LaunchPurchase -> {
-                    val safeActivity = currentActivity
-                    if (safeActivity == null) {
-                        return@collect
-                    }
+                    val safeActivity = currentActivity ?: return@collect
                     billingController.launchPurchase(
                         activity = safeActivity,
                         offerToken = effect.offerToken,

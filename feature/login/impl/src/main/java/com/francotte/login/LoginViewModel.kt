@@ -9,7 +9,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,7 +23,8 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager) :
 
     val googleSignInIntent = authManager.googleSignInIntent
 
-    val authSuccess = MutableStateFlow(false)
+    private val _authSuccess = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val authSuccess: SharedFlow<Unit> = _authSuccess.asSharedFlow()
 
     val resetState = MutableStateFlow<Result<Unit>?>(null)
 
@@ -75,12 +79,11 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager) :
 
     fun onSuccess() {
         loading.value = false
-        authSuccess.value = true
+        _authSuccess.tryEmit(Unit)
     }
 
     private fun onError() {
         loading.value = false
-        authSuccess.value = false
         onCleared()
     }
 }

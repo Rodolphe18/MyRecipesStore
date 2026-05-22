@@ -248,7 +248,6 @@ class AuthManager
                     }
                     preferences.updateUserInfo(false)
                     preferences.deleteFavoriteIds()
-                    // facebook - LoginManager.getInstance().logOut()
                     // google
                     signOutGoogleUser()
                     dao.deleteAllFavoritesRecipes()

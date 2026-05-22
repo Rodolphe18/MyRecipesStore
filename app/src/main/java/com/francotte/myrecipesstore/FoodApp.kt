@@ -56,6 +56,7 @@ import com.francotte.favorites.customRecipeEntry
 import com.francotte.favorites.favoritesEntry
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.feature.login.api.navigateToLogin
+import com.francotte.feature.login.api.navigateToLoginOnLogout
 import com.francotte.feature.settings.api.navigateToPremium
 import com.francotte.feature.video.api.VideoNavKey
 import com.francotte.home.homeEntry
@@ -141,7 +142,6 @@ fun FoodApp(
         registerEntry(navigator)
         favoritesEntry(navigator, onToggleFavorite, customRecipeHasBeenUpdated)
         premiumEntry(navigator)
-        //  deepLinkRecipeScreen(navController::popBackStack, onToggleFavorite)
         detailRecipeEntry(navigator, onToggleFavorite)
         customRecipeEntry(navigator)
         videoEntry(window)
@@ -185,7 +185,7 @@ fun FoodApp(
             onLogout = {
                 scope.launch {
                     localAuthManager.logout()
-                    navigator.navigateToLogin()
+                    navigator.navigateToLoginOnLogout()
                     showSettingsDialog = false
                 }
             },
@@ -200,7 +200,7 @@ fun FoodApp(
             onDeleteClick = {
                 scope.launch {
                     localAuthManager.deleteUser()
-                    navigator.navigateToLogin()
+                    navigator.navigateToLoginOnLogout()
                     showSettingsDialog = false
                 }
             },

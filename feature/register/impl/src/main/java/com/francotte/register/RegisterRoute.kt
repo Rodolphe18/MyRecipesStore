@@ -1,9 +1,8 @@
 package com.francotte.register
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -15,15 +14,16 @@ import com.francotte.api.navigateToFavorites
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.login.LoginViewModel
 import com.francotte.navigation.Navigator
-import kotlinx.serialization.Serializable
 
 const val REGISTER_ROUTE = "register_route"
 
 
-
 fun EntryProviderScope<NavKey>.registerEntry(navigator: Navigator) {
     entry<RegisterNavKey> {
-        RegisterRoute(onBackPressed = navigator::goBack, navigateToFavoriteScreen = navigator::navigateToFavorites)
+        RegisterRoute(
+            onBackPressed = navigator::goBack,
+            navigateToFavoriteScreen = navigator::navigateToFavorites
+        )
     }
 }
 
@@ -36,7 +36,9 @@ fun NavGraphBuilder.registerScreen(
     navigateToFavoriteScreen: () -> Unit,
 ) {
     composable(route = REGISTER_ROUTE) {
-        RegisterRoute(onBackPressed = onBackPressed, navigateToFavoriteScreen = { navigateToFavoriteScreen() })
+        RegisterRoute(
+            onBackPressed = onBackPressed,
+            navigateToFavoriteScreen = { navigateToFavoriteScreen() })
     }
 }
 
@@ -46,8 +48,11 @@ fun RegisterRoute(
     navigateToFavoriteScreen: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    val authSuccess by viewModel.authSuccess.collectAsStateWithLifecycle()
     RegisterScreen(onBackPressed, viewModel)
-    if (authSuccess) navigateToFavoriteScreen()
+    LaunchedEffect(Unit) {
+        viewModel.authSuccess.collect {
+            navigateToFavoriteScreen()
+        }
+    }
     ScreenCounter.increment()
 }
