@@ -46,7 +46,7 @@ class VideosScreenRobolectricTests {
         val homeScreen: @Composable () -> Unit = {
             HomeScreen(
                 latestRecipes = LatestRecipes.Loading,
-                americanRecipes = AmericanRecipes.Loading,
+                americanRecipes = JapaneseRecipes.Loading,
                 areasRecipes = AreasRecipes.Loading,
                 englishRecipes = EnglishRecipes.Loading,
                 windowSizeClass = RobolectricTestWindowSizes.compactPhone(),

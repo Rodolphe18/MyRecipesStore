@@ -237,7 +237,7 @@ private fun SearchResultBody(
             }
         }
         itemsIndexed(likeableRecipes) { index, likeableRecipe ->
-            RecipeItem(likeableRecipe, onToggleFavorite, { onOpenRecipe(recipeIds,index,likeableRecipe.recipe.strMeal) }, height = 120.dp)
+            RecipeItem(likeableRecipe, onToggleFavorite, { onOpenRecipe(recipeIds,index,likeableRecipe.recipe.strMeal) }, size = 120.dp)
         }
     }
 }

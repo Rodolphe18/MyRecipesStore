@@ -14,6 +14,7 @@ import com.francotte.network.model.NetworkIngredient
 import com.francotte.network.utils.safeNetworkCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.time.Duration
@@ -102,12 +103,10 @@ class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
             userDataRepository.userData,
             homeRepository.observeRecipesListByArea(area),
         ) { userData, recipes ->
-            try {
-                val likeable = recipes.mapToLikeableLightRecipes(userData)
+            val likeable = recipes.mapToLikeableLightRecipes(userData)
                 Result.success(likeable)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+            }.catch {
+                emit(Result.failure(it))
         }
 
     override suspend fun refreshRecipesByArea(area: String,force:Boolean): String? {

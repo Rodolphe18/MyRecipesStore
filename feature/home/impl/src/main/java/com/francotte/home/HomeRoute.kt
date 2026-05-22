@@ -49,8 +49,6 @@ fun HomeRoute(
 ) {
     val localLaunchCounter = LocalLaunchCounterManager.current
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val isReloading by homeViewModel.isReloading.collectAsStateWithLifecycle()
-    val currentPage by homeViewModel.currentPage.collectAsStateWithLifecycle()
 
     val snackBarHostState = LocalSnackbarHostState.current
     LaunchedEffect(homeViewModel) {
@@ -69,9 +67,11 @@ fun HomeRoute(
             onOpenSection = onOpenSection,
             onToggleFavorite = onToggleFavorite,
             onVideoButtonClick = onVideoButtonClick,
-            isReloading = isReloading,
-            onReload = homeViewModel::refreshLatestRecipes,
-            currentPage = currentPage,
+            onRefreshAll = homeViewModel::refreshAll,
+            onRetryLatest = homeViewModel::retryLatestRecipes,
+            onRetryJapanese = homeViewModel::retryJapaneseRecipes,
+            onRetryAreas = homeViewModel::retryAreasRecipes,
+            onRetryEnglish = homeViewModel::retryEnglishRecipes,
             onCurrentPageChange = homeViewModel::setLatestRecipesCurrentPage,
         )
     }

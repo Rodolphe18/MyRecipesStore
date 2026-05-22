@@ -19,6 +19,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import com.francotte.api.AddRecipeNavKey
 import com.francotte.api.CategoriesNavKey
+import com.francotte.api.DetailRecipeNavKey
 import com.francotte.api.FavoritesNavKey
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.feature.login.api.LoginNavKey
@@ -81,5 +82,5 @@ val TOP_LEVEL_NAV_ITEMS = mapOf(
     AddRecipeNavKey to ADD,
     SearchNavKey to SEARCH,
     FavoritesNavKey to FAVORITES,
-    LoginNavKey to LOGIN,
+    LoginNavKey to LOGIN
 )

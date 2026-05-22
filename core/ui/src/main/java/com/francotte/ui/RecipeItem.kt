@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +43,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.size.Precision
 import com.francotte.common.extension.imageRequestBuilder
+import com.francotte.designsystem.component.DesignAsyncImage
 import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
 
@@ -49,28 +52,25 @@ fun RecipeItem(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: () -> Unit,
-    aspectRatio:Float=1f,
-    height:Dp = 175.dp
+    size: Dp = 175.dp
 ) {
-    val context = LocalContext.current
-    val density = LocalDensity.current
     val shape = RoundedCornerShape(16.dp)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier =
                 Modifier
-                    .height(height)
-                    .aspectRatio(aspectRatio)
-                    .background(MaterialTheme.colorScheme.surfaceVariant,shape)
+                    .size(size)
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, shape)
                     .clickable(onClick = onOpenRecipe),
         ) {
-
-            val pxSize = with(density) { 175.dp.roundToPx() }
-            AsyncImage(
-                model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb,pxSize,pxSize),
+            DesignAsyncImage(
+                model = likeableRecipe.recipe.strMealThumb,
                 contentDescription = likeableRecipe.recipe.strMeal,
+                width = size,
+                height = size,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().clip(shape),
+                modifier = Modifier.fillMaxSize()
             )
             FavButton(
                 modifier =
@@ -111,16 +111,19 @@ fun CustomRecipeItem(
                     .clickable { onOpenRecipe() },
         ) {
             if (image != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = image),
+                DesignAsyncImage(
+                    model = image,
+                    width = 175.dp,
+                    height = 175.dp,
                     contentDescription = image,
-                    contentScale = ContentScale.Crop,
-                    modifier =
-                        Modifier
-                            .fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             } else {
-                Image(imageVector = Icons.Default.Photo, contentDescription = null, modifier = Modifier.fillMaxSize())
+                Image(
+                    imageVector = Icons.Default.Photo,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -219,16 +222,23 @@ fun HorizontalRecipeItem(
                 Modifier
                     .height(dimension.boxHeight)
                     .aspectRatio(1f)
-                    .background(MaterialTheme.colorScheme.surfaceVariant,shape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, shape)
                     .clickable(onClick = onOpenRecipe),
         ) {
 
             val pxSize = with(density) { dimension.boxHeight.roundToPx() }
             AsyncImage(
-                model = imageRequestBuilder(context, likeableRecipe.recipe.strMealThumb,pxSize,pxSize),
+                model = imageRequestBuilder(
+                    context,
+                    likeableRecipe.recipe.strMealThumb,
+                    pxSize,
+                    pxSize
+                ),
                 contentDescription = likeableRecipe.recipe.strMeal,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().clip(shape),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape),
             )
             FavButton(
                 modifier =

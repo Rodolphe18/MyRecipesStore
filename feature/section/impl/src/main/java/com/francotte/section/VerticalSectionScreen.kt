@@ -37,10 +37,7 @@ import com.francotte.ui.TrackScrollJank
 fun VerticalSectionScreen(
     sectionUiState: SectionUiState,
     titleRes: String,
-    onReload: () -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onBack: () -> Unit,
+    onAction: (SectionAction) -> Unit
 ) {
     val mode = LocalAppLayout.current.mode
     val localBannerProvider = LocalBannerProvider.current
@@ -53,14 +50,16 @@ fun VerticalSectionScreen(
                 title = titleRes,
                 scrollBehavior = topAppBarScrollBehavior,
                 navigationIconEnabled = true,
-                onNavigationClick = onBack,
+                onNavigationClick = {
+                    onAction(SectionAction.BackClick)
+                },
             )
         },
     ) { padding ->
-        when (sectionUiState) {
-            SectionUiState.Loading -> CustomCircularProgressIndicator()
-            SectionUiState.Error -> ErrorScreen { onReload() }
-            is SectionUiState.Success -> {
+        when  {
+            sectionUiState.loading -> CustomCircularProgressIndicator()
+            sectionUiState.error != null -> ErrorScreen { onAction(SectionAction.Reload) }
+            sectionUiState.recipes.isNotEmpty() -> {
                 val gridState = rememberLazyGridState()
                 TrackScrollJank(scrollableState = gridState, stateName = "section:grid")
                 val likeableRecipes = sectionUiState.recipes
@@ -96,13 +95,15 @@ fun VerticalSectionScreen(
                     val likeableRecipe = likeableRecipes[index]
                     RecipeItem(
                         likeableRecipe = likeableRecipe,
-                        onToggleFavorite = onToggleFavorite,
+                        onToggleFavorite = {
+                            onAction(SectionAction.ToggleFavorite(likeableRecipe))
+                        },
                         onOpenRecipe = {
-                            onOpenRecipe(
-                                recipeIds,
-                                index,
-                                likeableRecipe.recipe.strMeal,
-                            )
+                            onAction(SectionAction.RecipeClick(
+                                recipeIds = recipeIds,
+                                index = index,
+                                title = likeableRecipe.recipe.strMeal,
+                            ))
                         },
                     )
                 }

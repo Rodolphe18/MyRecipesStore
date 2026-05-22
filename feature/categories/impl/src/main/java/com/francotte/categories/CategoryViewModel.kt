@@ -31,9 +31,9 @@ class CategoryViewModel @AssistedInject constructor(
             .debounce(250)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoryUiState.Loading)
 
-    fun mapToUiState(result: Result<List<LikeableRecipe>?>): CategoryUiState =
-        if (result.isSuccess) {
-            CategoryUiState.Success(recipes = result.getOrDefault(emptyList()).orEmpty())
+    fun mapToUiState(recipes: List<LikeableRecipe>?): CategoryUiState =
+        if (!recipes.isNullOrEmpty()) {
+            CategoryUiState.Success(recipes = recipes)
         } else {
             CategoryUiState.Error
         }

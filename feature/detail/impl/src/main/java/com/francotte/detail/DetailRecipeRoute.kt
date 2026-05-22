@@ -39,21 +39,22 @@ fun EntryProviderScope<NavKey>.detailRecipeEntry(
     onToggleFavorite: (LikeableRecipe) -> Unit
 ) {
     entry<DetailRecipeNavKey>(metadata = NavDisplay.transitionSpec {
-        slideInHorizontally(
-            initialOffsetX = { fullWidth -> fullWidth },
+        (slideInHorizontally(
+            initialOffsetX = { it }, // arrive depuis la droite
+            animationSpec = tween(250))
+            togetherWith slideOutHorizontally(
+            targetOffsetX = { -it }, // sort vers la gauche
             animationSpec = tween(250)
-        ) togetherWith slideOutHorizontally(
-            targetOffsetX = { fullWidth -> -fullWidth },
-            animationSpec = tween(250)
-        )
+            )
+        ).using(sizeTransform = null)
     } + NavDisplay.popTransitionSpec {
         // Back: inverse (optionnel mais conseillé)
         slideInHorizontally(
             initialOffsetX = { fullWidth -> -fullWidth },
-            animationSpec = tween(220)
+            animationSpec = tween(500)
         ) togetherWith slideOutHorizontally(
             targetOffsetX = { fullWidth -> fullWidth },
-            animationSpec = tween(220)
+            animationSpec = tween(500)
         )
     }) { key ->
         DetailRecipeRoute(

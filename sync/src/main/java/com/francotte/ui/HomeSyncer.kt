@@ -37,8 +37,8 @@ class HomeSyncWorker(
                 )
             val latestRecipes = entryPoint.latestRecipes()
             val areas = entryPoint.areasRecipes()
-            latestRecipes.refreshLatestRecipes(force = false)
-            areas.refreshAllFoodAreaSection(true)
+         //   latestRecipes.refreshLatestRecipes(force = false)
+         //   areas.refreshFoodAreaSection(force = false)
             Result.success()
         } catch (t: Throwable) {
             val maxAttempts = 3

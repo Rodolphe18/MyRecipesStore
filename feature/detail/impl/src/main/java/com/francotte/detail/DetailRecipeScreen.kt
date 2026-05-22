@@ -18,6 +18,7 @@ import android.webkit.WebViewClient
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -69,6 +70,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.common.extension.imageRequestBuilder
+import com.francotte.designsystem.component.DesignAsyncImage
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
@@ -91,7 +93,7 @@ fun DetailRecipeScreen(
     val localBannerProvider = LocalBannerProvider.current
     val scope = rememberCoroutineScope()
     val topAppBarScrollBehavior =
-        TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+        TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val title by viewModel.title.collectAsStateWithLifecycle()
     val pageCount = viewModel.pageCount
     val pagerState =
@@ -396,19 +398,17 @@ private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
             },
         )
     } else {
-        AsyncImage(
-            model =
-                imageRequestBuilder(
-                    LocalContext.current,
-                    likeableRecipe.recipe.strMealThumb,
-                ),
-            contentDescription = "Image de ${likeableRecipe.recipe.strMeal}",
-            contentScale = ContentScale.Crop,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-        )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            DesignAsyncImage(
+                model = likeableRecipe.recipe.strMealThumb,
+                width = maxWidth,
+                height = 200.dp,
+                contentDescription = "Image de ${likeableRecipe.recipe.strMeal}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
     }
 }
 

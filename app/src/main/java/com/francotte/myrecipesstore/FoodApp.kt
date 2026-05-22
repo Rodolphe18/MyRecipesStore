@@ -26,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -117,7 +118,7 @@ fun FoodApp(
     val useRail = mode.useNavigationRail()
 
     val topBarScrollBehavior =
-        if (useRail) TopAppBarDefaults.enterAlwaysScrollBehavior()
+        if (useRail) TopAppBarDefaults.pinnedScrollBehavior()
         else null
 
     val navigator = remember { Navigator(appState.navigationState) }
@@ -165,7 +166,11 @@ fun FoodApp(
         DeepLinkBus.intents.collect { intent ->
             val uri = intent.data ?: return@collect
             val key = uri.toNavKeyOrNull() ?: return@collect
-            pendingDeepLink.value = key
+            if (appState.navigationState.currentKey == SplashNavKey) {
+                pendingDeepLink.value = key
+            } else {
+                navigator.navigate(key)
+            }
         }
     }
 

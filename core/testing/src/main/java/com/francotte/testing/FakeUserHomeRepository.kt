@@ -8,33 +8,33 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 
 class FakeUserHomeRepository : UserHomeRepository {
     private val latestFlow =
-        MutableSharedFlow<Result<List<LikeableRecipe>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        MutableSharedFlow<List<LikeableRecipe>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val englishFlow =
-        MutableSharedFlow<Result<List<LikeableRecipe>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        MutableSharedFlow<List<LikeableRecipe>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val americanFlow =
-        MutableSharedFlow<Result<List<LikeableRecipe>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        MutableSharedFlow<List<LikeableRecipe>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val areasSectionsFlow =
-        MutableSharedFlow<Result<Map<String, List<LikeableRecipe>>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        MutableSharedFlow<Map<String, List<LikeableRecipe>>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val sectionFlows =
-        mutableMapOf<String, MutableSharedFlow<Result<List<LikeableRecipe>>>>()
+        mutableMapOf<String, MutableSharedFlow<List<LikeableRecipe>>>()
 
     private val categoryFlows =
-        mutableMapOf<String, MutableSharedFlow<Result<List<LikeableRecipe>>>>()
+        mutableMapOf<String, MutableSharedFlow<List<LikeableRecipe>>>()
 
-    override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> = latestFlow
+    override fun observeLatestRecipes(): Flow<List<LikeableRecipe>> = latestFlow
     override suspend fun refreshLatestRecipes(force: Boolean): String? {
         TODO("Not yet implemented")
     }
 
-    override fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>> = englishFlow
+    override fun observeEnglishAreaRecipes(): Flow<List<LikeableRecipe>> = englishFlow
 
-    override fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>> = americanFlow
+    override fun observeJapaneseAreaRecipes(): Flow<List<LikeableRecipe>> = americanFlow
 
-    override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> = areasSectionsFlow
+    override fun observeFoodAreaSections(): Flow<Map<String, List<LikeableRecipe>>> = areasSectionsFlow
     override suspend fun refreshFoodAreaSection(
         area: String,
         force: Boolean
@@ -42,12 +42,12 @@ class FakeUserHomeRepository : UserHomeRepository {
         return null
     }
 
-    override suspend fun refreshAllFoodAreaSection(force: Boolean): Boolean {
+    override suspend fun refreshFoodAreaSection(force: Boolean): Boolean {
         TODO("Not yet implemented")
     }
 
 
-    override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> = sectionFlow(sectionName)
+    override fun observeFoodAreaSection(sectionName: String): Flow<List<LikeableRecipe>> = sectionFlow(sectionName)
     override suspend fun refreshRecipesByCategory(
         category: String,
         force: Boolean
@@ -55,44 +55,44 @@ class FakeUserHomeRepository : UserHomeRepository {
         TODO("Not yet implemented")
     }
 
-    override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> = categoryFlow(category)
+    override fun observeRecipesByCategory(category: String): Flow<List<LikeableRecipe>> = categoryFlow(category)
 
-    fun sendLatestRecipes(result: Result<List<LikeableRecipe>>) {
+    fun sendLatestRecipes(result: List<LikeableRecipe>) {
         latestFlow.tryEmit(result)
     }
 
-    fun sendEnglishRecipes(result: Result<List<LikeableRecipe>>) {
+    fun sendEnglishRecipes(result: List<LikeableRecipe>) {
         englishFlow.tryEmit(result)
     }
 
-    fun sendAmericanRecipes(result: Result<List<LikeableRecipe>>) {
+    fun sendAmericanRecipes(result: List<LikeableRecipe>) {
         americanFlow.tryEmit(result)
     }
 
-    fun sendAreasSections(result: Result<Map<String, List<LikeableRecipe>>>) {
+    fun sendAreasSections(result: Map<String, List<LikeableRecipe>>) {
         areasSectionsFlow.tryEmit(result)
     }
 
     fun sendSection(
         sectionName: String,
-        result: Result<List<LikeableRecipe>>,
+        result: List<LikeableRecipe>,
     ) {
         sectionFlow(sectionName).tryEmit(result)
     }
 
     fun sendCategory(
         category: String,
-        result: Result<List<LikeableRecipe>>,
+        result: List<LikeableRecipe>,
     ) {
         categoryFlow(category).tryEmit(result)
     }
 
-    private fun sectionFlow(sectionName: String): MutableSharedFlow<Result<List<LikeableRecipe>>> =
+    private fun sectionFlow(sectionName: String): MutableSharedFlow<List<LikeableRecipe>> =
         sectionFlows.getOrPut(sectionName) {
             MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
         }
 
-    private fun categoryFlow(category: String): MutableSharedFlow<Result<List<LikeableRecipe>>> =
+    private fun categoryFlow(category: String): MutableSharedFlow<List<LikeableRecipe>> =
         categoryFlows.getOrPut(category) {
             MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
         }

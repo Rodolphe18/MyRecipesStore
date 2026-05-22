@@ -40,11 +40,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RecipeNotifier
-    @Inject
-    constructor(
-        @ApplicationContext private val context: Context,
-    ) : Notifier {
+class RecipeNotifier @Inject constructor(@ApplicationContext private val context: Context) : Notifier {
         companion object {
             private const val CHANNEL_ID = "recipe_notification_channel"
             private const val GROUP_KEY_RECIPES = "DAILY_RECIPE_NOTIFICATIONS"
@@ -108,7 +104,7 @@ class RecipeNotifier
                 this,
                 REQUEST_CODE,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                PendingIntent.FLAG_IMMUTABLE,
             )
         }
     }

@@ -3,6 +3,7 @@ package com.francotte.myrecipesstore.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import com.francotte.api.DetailRecipeNavKey
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.myrecipesstore.navigation.TOP_LEVEL_NAV_ITEMS
 import com.francotte.myrecipesstore.splash.SplashNavKey
@@ -12,7 +13,7 @@ import com.francotte.ui.TrackDisposableJank
 
 @Composable
 fun rememberAppState(resetPasswordToken: String? = null): AppState {
-    val navigationState = rememberNavigationState(SplashNavKey,HomeNavKey, TOP_LEVEL_NAV_ITEMS.keys)
+    val navigationState = rememberNavigationState(SplashNavKey,HomeNavKey, TOP_LEVEL_NAV_ITEMS.keys+ DetailRecipeNavKey())
     NavigationTrackingSideEffect(navigationState)
 
     return remember {

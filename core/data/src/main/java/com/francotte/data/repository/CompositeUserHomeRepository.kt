@@ -4,7 +4,6 @@ import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableFullRecipes
 import com.francotte.model.mapToLikeableLightRecipes
-import com.francotte.common.utils.DataResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -17,56 +16,39 @@ class CompositeUserHomeRepository @Inject constructor(
     private val userDataRepository: UserDataRepository,
 ) : UserHomeRepository {
 
-    override fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>> =
+    override fun observeLatestRecipes(): Flow<List<LikeableRecipe>> =
         combine(
             userDataRepository.userData,
             offlineFirstHomeRepository.observeLatestRecipes()
         ) { userData, latest ->
-            try {
-                Result.success(latest.mapToLikeableFullRecipes(userData))
-
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+            latest.mapToLikeableFullRecipes(userData)
         }
 
     override suspend fun refreshLatestRecipes(force: Boolean): String? {
         return offlineFirstHomeRepository.refreshLatestRecipes(force)
     }
 
-    override fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
+    override fun observeEnglishAreaRecipes(): Flow<List<LikeableRecipe>> =
         combine(
             userDataRepository.userData,
             offlineFirstHomeRepository.observeRecipesListByArea("British"),
         ) { userData, latestRecipes ->
-            try {
-                val likeable = latestRecipes.mapToLikeableLightRecipes(userData)
-                Result.success(likeable)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+            latestRecipes.mapToLikeableLightRecipes(userData)
         }
 
-    override fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>> =
+    override fun observeJapaneseAreaRecipes(): Flow<List<LikeableRecipe>> =
         combine(
             userDataRepository.userData,
-            offlineFirstHomeRepository.observeRecipesListByArea("American"),
+            offlineFirstHomeRepository.observeRecipesListByArea("Japanese"),
         ) { userData, latestRecipes ->
-            try {
-                val likeable = latestRecipes.mapToLikeableLightRecipes(userData).take(10)
-                Result.success(likeable)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+            latestRecipes.mapToLikeableLightRecipes(userData).take(10)
         }
 
-    override suspend fun refreshAllFoodAreaSection(force: Boolean): Boolean {
+    override suspend fun refreshFoodAreaSection(force: Boolean): Boolean {
         enumValues<FoodAreaSection>().map { section ->
             offlineFirstHomeRepository
                 .refreshRecipesListByArea(section.title, force)
         }
-        offlineFirstHomeRepository.refreshRecipesListByArea("British", force)
-        offlineFirstHomeRepository.refreshRecipesListByArea("American", force)
         return true
     }
 
@@ -75,7 +57,7 @@ class CompositeUserHomeRepository @Inject constructor(
     }
 
 
-    override fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>> =
+    override fun observeFoodAreaSections(): Flow<Map<String, List<LikeableRecipe>>> =
         combine(
             userDataRepository.userData,
             combine(
@@ -86,44 +68,28 @@ class CompositeUserHomeRepository @Inject constructor(
                 },
             ) { it.toMap() },
         ) { userData, recipesMap ->
-            try {
-                val likeableRecipesMap =
-                    recipesMap.mapValues { (_, recipes) ->
-                        recipes.mapToLikeableLightRecipes(userData)
-                    }
-                Result.success(likeableRecipesMap)
-            } catch (e: Exception) {
-                Result.failure(e)
+            recipesMap.mapValues { (_, recipes) ->
+                recipes.mapToLikeableLightRecipes(userData)
             }
         }
 
 
-    override fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>> =
+    override fun observeRecipesByCategory(category: String): Flow<List<LikeableRecipe>> =
         combine(
             userDataRepository.userData,
             offlineFirstHomeRepository.observeRecipesByCategory(category),
         ) { userData, recipes ->
-            try {
-                val recipesNotNull = recipes ?: emptyList()
-                val likeable = recipesNotNull.mapToLikeableLightRecipes(userData)
-                Result.success(likeable)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+           val recipesNotNull = recipes ?: emptyList()
+            recipesNotNull.mapToLikeableLightRecipes(userData)
         }
 
 
-    override fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>> =
+    override fun observeFoodAreaSection(sectionName: String): Flow<List<LikeableRecipe>> =
         combine(
             userDataRepository.userData,
             offlineFirstHomeRepository.observeRecipesListByArea(sectionName),
         ) { userData, recipes ->
-            try {
-                val likeable = recipes.mapToLikeableLightRecipes(userData)
-                Result.success(likeable)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+            recipes.mapToLikeableLightRecipes(userData)
         }
 
     override suspend fun refreshRecipesByCategory(
@@ -135,27 +101,27 @@ class CompositeUserHomeRepository @Inject constructor(
 }
 
 interface UserHomeRepository {
-    fun observeLatestRecipes(): Flow<Result<List<LikeableRecipe>>>
+    fun observeLatestRecipes(): Flow<List<LikeableRecipe>>
 
     suspend fun refreshLatestRecipes(force: Boolean): String?
 
-    fun observeEnglishAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
+    fun observeEnglishAreaRecipes(): Flow<List<LikeableRecipe>>
 
-    fun observeAmericanAreaRecipes(): Flow<Result<List<LikeableRecipe>>>
+    fun observeJapaneseAreaRecipes(): Flow<List<LikeableRecipe>>
 
-    fun observeFoodAreaSections(): Flow<Result<Map<String, List<LikeableRecipe>>>>
+    fun observeFoodAreaSections(): Flow<Map<String, List<LikeableRecipe>>>
     suspend fun refreshFoodAreaSection(area: String, force: Boolean): String?
-    suspend fun refreshAllFoodAreaSection(force: Boolean): Boolean
-    fun observeFoodAreaSection(sectionName: String): Flow<Result<List<LikeableRecipe>>>
+    suspend fun refreshFoodAreaSection(force: Boolean): Boolean
+    fun observeFoodAreaSection(sectionName: String): Flow<List<LikeableRecipe>>
 
     suspend fun refreshRecipesByCategory(category: String, force: Boolean): Boolean
-    fun observeRecipesByCategory(category: String): Flow<Result<List<LikeableRecipe>>>
+    fun observeRecipesByCategory(category: String): Flow<List<LikeableRecipe>>
 }
 
 private enum class FoodAreaSection(
     val title: String,
 ) {
     CHINESE("Chinese"),
-    FRENCH("French"),
-    INDIAN("Indian"),
+    FRENCH("Portuguese"),
+    INDIAN("Greek"),
 }

@@ -1,9 +1,11 @@
 package com.francotte.common
 
 import android.content.Context
+import android.os.Build
 import androidx.tracing.trace
 import androidx.work.Configuration
 import coil.ImageLoader
+import coil.request.CachePolicy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,6 +30,9 @@ object SharedExecutorModule {
     ): ImageLoader = trace("FoodImageLoader") {
         ImageLoader
             .Builder(context)
+            .crossfade(false)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.ENABLED)
             .dispatcher(sharedExecutor.asCoroutineDispatcher())
             .build()
     }

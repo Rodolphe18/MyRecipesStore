@@ -36,7 +36,7 @@ class HomeViewModelTest {
     fun stateIsInitiallyLoading() =
         runTest {
             assertEquals(LatestRecipes.Loading, viewModel.latestRecipes.value)
-            assertEquals(AmericanRecipes.Loading, viewModel.americanRecipes.value)
+            assertEquals(JapaneseRecipes.Loading, viewModel.americanRecipes.value)
             assertEquals(EnglishRecipes.Loading, viewModel.englishRecipes.value)
             assertEquals(AreasRecipes.Loading, viewModel.areasRecipes.value)
         }
@@ -84,7 +84,7 @@ class HomeViewModelTest {
             repository.sendAmericanRecipes(Result.success(sample))
             advanceUntilIdle()
 
-            assertEquals(AmericanRecipes.Success(sample), viewModel.americanRecipes.value)
+            assertEquals(JapaneseRecipes.Success(sample), viewModel.americanRecipes.value)
         }
 
     @Test

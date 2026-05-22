@@ -33,10 +33,16 @@ class SearchRecipesViewModel @AssistedInject constructor(
             SearchMode.COUNTRY -> ingredientsAndAreasRepository.observeRecipesByArea(item)
                 .map(::mapToSearchRecipesUiState)
 
-            SearchMode.INGREDIENTS -> ingredientsAndAreasRepository.observeRecipesByIngredients(listOf(item))
+            SearchMode.INGREDIENTS -> ingredientsAndAreasRepository.observeRecipesByIngredients(
+                listOf(item)
+            )
                 .map(::mapToSearchRecipesUiState)
 
-            SearchMode.CATEGORIES -> userHomeRepository.observeRecipesByCategory(item).map(::mapToSearchRecipesUiState)
+            SearchMode.CATEGORIES -> userHomeRepository.observeRecipesByCategory(item)
+                .map { recipes ->
+                    if (recipes.isNotEmpty()) SearchRecipesUiState.Success(recipes) else
+                        SearchRecipesUiState.Error
+                }
         }.debounce(300)
             .stateIn(
                 viewModelScope,
@@ -48,8 +54,12 @@ class SearchRecipesViewModel @AssistedInject constructor(
         viewModelScope.launch {
             when (mode) {
                 SearchMode.COUNTRY -> ingredientsAndAreasRepository.refreshRecipesByArea(item, true)
-                SearchMode.INGREDIENTS -> ingredientsAndAreasRepository.refreshRecipesByIngredients(listOf(item), true)
-                SearchMode.CATEGORIES -> userHomeRepository.refreshRecipesByCategory(item,true)
+                SearchMode.INGREDIENTS -> ingredientsAndAreasRepository.refreshRecipesByIngredients(
+                    listOf(item),
+                    true
+                )
+
+                SearchMode.CATEGORIES -> userHomeRepository.refreshRecipesByCategory(item, true)
             }
         }
     }

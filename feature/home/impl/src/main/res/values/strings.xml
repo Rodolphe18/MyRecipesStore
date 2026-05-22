@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="latest_recipes_title">LatestRecipes</string>
+  <string name="latest_recipes_title">LatestRecipes</string>
+  <string name="homepage_empty_view_error_title">Ça pédale dans la semoule...</string>
+  <string name="homepage_empty_view_error_subtitle">Une erreur est survenue,\nessayez de recharger les informations.</string>
+  <string name="homepage_empty_view_error_action">Recharger</string>
 </resources>

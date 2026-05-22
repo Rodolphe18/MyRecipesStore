@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DetailRecipeNavKey(
-    val ids: List<String>?,
-    val index: Int?,
-    val title: String?,
+    val ids: List<String>? = null,
+    val index: Int? = null,
+    val title: String? = null,
 ) : NavKey
 
 fun Navigator.navigateToDetail(ids: List<String>,

@@ -57,8 +57,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.francotte.common.extension.bitmapToUri
+import com.francotte.designsystem.component.DesignAsyncImage
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.theme.Orange
 import com.francotte.model.UserData
@@ -172,16 +174,14 @@ fun ProfileScreen(
                         }
                     }
                 } else {
-                    Image(
-                        painter =
-                            rememberAsyncImagePainter(
-                                model = updatedImage ?: currentImage,
-                            ),
+                    DesignAsyncImage(
+                        model = updatedImage?.toString() ?: currentImage,
+                        width = 200.dp,
+                        height = 200.dp,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier =
                             Modifier
-                                .size(200.dp)
                                 .clip(CircleShape)
                                 .clickable { showImagePickerDialog = true },
                     )
@@ -227,7 +227,7 @@ fun ProfileScreen(
                                 .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        Text(text = currentEmail!!, color = Color.Black, fontSize = 14.sp)
+                        Text(text = currentEmail, color = Color.Black, fontSize = 14.sp)
                     }
 
                     Text(

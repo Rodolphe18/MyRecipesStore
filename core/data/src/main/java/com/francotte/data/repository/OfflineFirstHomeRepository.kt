@@ -1,5 +1,6 @@
 package com.francotte.data.repository
 
+import android.util.Log
 import com.francotte.common.utils.DataResult
 import com.francotte.common.utils.userMessage
 import com.francotte.data.mapper.dto.asEntity
@@ -31,26 +32,28 @@ class OfflineFirstHomeRepository @Inject constructor(
 ) : RecipesRepository {
     override suspend fun refreshLatestRecipes(force: Boolean): String? {
         val lastUpdatedResult = fullRecipeDao.getLastUpdatedForLatest()
-
+        Log.d("debug_latest_0", lastUpdatedResult.toString())
         val now = Instant.now()
         val ttl = Duration.ofDays(3)
-
-        val shouldRefresh =
-            force || lastUpdatedResult == null || ttl > Duration.between(lastUpdatedResult, now)
+        Log.d("debug_latest_1", "")
+        val shouldRefresh = force || lastUpdatedResult == null || Duration.between(lastUpdatedResult, now) > ttl
         if (!shouldRefresh) return null
-
+        Log.d("debug_latest_2", shouldRefresh.toString())
         val networkResult = safeNetworkCall(Dispatchers.IO) { network.getLatestMeals() }
+        Log.d("debug_latest_3", networkResult.toString())
         val response = when (networkResult) {
             is DataResult.Success -> networkResult.data
             is DataResult.Failure -> return networkResult.error.userMessage()
         }
+
+        Log.d("debug_latest_4", response.meals.toString())
 
         val networkData = response
             .meals
             .filterIsInstance<NetworkRecipe>()
             .filter { !it.strMealThumb.isNullOrBlank() }
 
-
+        Log.d("debug_latest_4", networkData.toString())
         if (networkData.isEmpty()) return null
 
         val entities = networkData.map {
@@ -65,8 +68,13 @@ class OfflineFirstHomeRepository @Inject constructor(
     }
 
 
-    override fun observeLatestRecipes(): Flow<List<Recipe>> =
-        fullRecipeDao.getLatestFullRecipes().map { it.map { e -> e.asExternalModel() } }
+    override fun observeLatestRecipes(): Flow<List<Recipe>> {
+        return fullRecipeDao.getLatestFullRecipes()
+            .map { entities ->
+                entities.map { it.asExternalModel() }
+            }
+    }
+
 
     override suspend fun refreshRecipesListByArea(area: String, force: Boolean): String? {
         val now = Instant.now()
@@ -79,7 +87,7 @@ class OfflineFirstHomeRepository @Inject constructor(
         val result = safeNetworkCall(Dispatchers.IO) {
             network.getRecipesListByArea(area).meals.filterIsInstance<NetworkLightRecipe>()
         }
-
+        Log.d("debug_area", result.toString())
         val networkRecipes = when (result) {
             is DataResult.Failure -> return result.error.userMessage()
             is DataResult.Success -> result.data
@@ -96,7 +104,8 @@ class OfflineFirstHomeRepository @Inject constructor(
 
     override fun observeRecipesListByArea(area: String): Flow<List<LightRecipe>> {
         return lightRecipeDao.observeAreaWithRecipes(area).map { areaWithRecipes ->
-            areaWithRecipes.recipes.map { it.asExternalModel() }
+            val recipes = areaWithRecipes?.recipes ?: emptyList()
+            recipes.map { it.asExternalModel() }
         }
     }
 
@@ -108,7 +117,8 @@ class OfflineFirstHomeRepository @Inject constructor(
         val shouldRefresh = force || lastUpdated == null || Duration.between(lastUpdated, now) > ttl
         if (!shouldRefresh) return false
         val networkData = safeNetworkCall(Dispatchers.IO) {
-            network.getRecipesListByCategory(category).meals.filterIsInstance<NetworkLightRecipe>()}
+            network.getRecipesListByCategory(category).meals.filterIsInstance<NetworkLightRecipe>()
+        }
 
         val networkLightRecipes = when (networkData) {
             is DataResult.Failure -> return false
@@ -123,7 +133,7 @@ class OfflineFirstHomeRepository @Inject constructor(
     }
 
     override fun observeRecipesByCategory(category: String): Flow<List<LightRecipe>?> {
-       return lightRecipeDao.observeCategoryWithRecipes(category).map { categoryWithRecipes ->
+        return lightRecipeDao.observeCategoryWithRecipes(category).map { categoryWithRecipes ->
             categoryWithRecipes?.recipes?.map { it.asExternalModel() } ?: emptyList()
         }
     }
@@ -138,8 +148,9 @@ class OfflineFirstHomeRepository @Inject constructor(
         val ttl = Duration.ofDays(3)
         val shouldRefresh = force || lastUpdated == null || Duration.between(lastUpdated, now) > ttl
         if (!shouldRefresh) return null
-        val networkData = safeNetworkCall(Dispatchers.IO){
-            network.getRecipesListByMultiIngredients(ingredient).meals.filterIsInstance<NetworkLightRecipe>()}
+        val networkData = safeNetworkCall(Dispatchers.IO) {
+            network.getRecipesListByMultiIngredients(ingredient).meals.filterIsInstance<NetworkLightRecipe>()
+        }
         val networkRecipes = when (networkData) {
             is DataResult.Failure -> return networkData.error.userMessage()
             is DataResult.Success -> networkData.data
@@ -150,13 +161,14 @@ class OfflineFirstHomeRepository @Inject constructor(
         }
         lightRecipeDao.upsertIngredientWithRecipes(ingredient, entities, refs, true)
         return "Synced successfully"
-        }
+    }
 
     override fun observeRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>> {
         val ingredient = ingredients.firstOrNull() ?: return flowOf(emptyList())
-       return lightRecipeDao.observeIngredientWithRecipes(ingredient).map { ingredientWithRecipes ->
-            ingredientWithRecipes.recipes.map { it.asExternalModel() }
-        }
+        return lightRecipeDao.observeIngredientWithRecipes(ingredient)
+            .map { ingredientWithRecipes ->
+                ingredientWithRecipes.recipes.map { it.asExternalModel() }
+            }
     }
 }
 
@@ -175,5 +187,5 @@ interface RecipesRepository {
 
     fun observeRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>>
 
-    suspend fun refreshRecipesByIngredients(ingredients: List<String>, force: Boolean):String?
+    suspend fun refreshRecipesByIngredients(ingredients: List<String>, force: Boolean): String?
 }

@@ -2,6 +2,7 @@ package com.francotte.designsystem.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -13,7 +14,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomCircularProgressIndicator(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(modifier = Modifier.size(50.dp).testTag("loadingWheel"), color = Color.Red)
+    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(modifier = Modifier.size(30.dp).testTag("loadingWheel"), color = Color.Red)
     }
 }

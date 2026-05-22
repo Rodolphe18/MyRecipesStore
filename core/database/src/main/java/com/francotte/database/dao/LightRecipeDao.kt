@@ -24,7 +24,7 @@ interface LightRecipeDao {
     // ------- AREA ---------
     @Transaction
     @Query("SELECT * FROM area WHERE strArea = :area")
-    fun observeAreaWithRecipes(area: String): Flow<AreaWithRecipes>
+    fun observeAreaWithRecipes(area: String): Flow<AreaWithRecipes?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun upsertArea(area: AreaEntity)

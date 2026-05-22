@@ -14,8 +14,10 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 
 
-fun EntryProviderScope<NavKey>.sectionEntry(navigator: Navigator,
-                                         onToggleFavorite: (LikeableRecipe) -> Unit) {
+fun EntryProviderScope<NavKey>.sectionEntry(
+    navigator: Navigator,
+    onToggleFavorite: (LikeableRecipe) -> Unit
+) {
     entry<SectionNavKey> {key ->
         SectionRoute(
             sectionViewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel<SectionViewModel, SectionViewModel.Factory>(
@@ -39,8 +41,20 @@ fun SectionRoute(
     onBackClick: () -> Unit,
 ) {
     val uiState by sectionViewModel.sectionUiState.collectAsStateWithLifecycle()
-    val sectionTitle by sectionViewModel.section.collectAsStateWithLifecycle()
-    VerticalSectionScreen(uiState, sectionTitle, {}, onToggleFavorite, onOpenRecipe, onBackClick)
+    VerticalSectionScreen(uiState, sectionViewModel.sectionName, { action ->
+        when (action) {
+            SectionAction.BackClick -> { onBackClick() }
+            is SectionAction.RecipeClick -> {
+                onOpenRecipe(
+                    action.recipeIds,
+                    action.index,
+                    action.title,
+                )
+            }
+            is SectionAction.ToggleFavorite -> { onToggleFavorite(action.recipe) }
+            SectionAction.Reload -> { sectionViewModel.onAction(action) }
+        }
+    })
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

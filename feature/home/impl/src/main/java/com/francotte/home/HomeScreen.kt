@@ -57,9 +57,11 @@ fun HomeScreen(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenSection: (String) -> Unit,
     onVideoButtonClick: (String) -> Unit,
-    isReloading: Boolean,
-    onReload: () -> Unit,
-    currentPage: Int,
+    onRefreshAll: () -> Unit,
+    onRetryLatest: () -> Unit,
+    onRetryJapanese: () -> Unit,
+    onRetryAreas: () -> Unit,
+    onRetryEnglish: () -> Unit,
     onCurrentPageChange: (Int) -> Unit
 ) {
     val mode = LocalAppLayout.current.mode
@@ -67,16 +69,9 @@ fun HomeScreen(
     val spanSize = GridItemSpan(mode.nbHomeColumns)
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
-    val isDataReady =
-        uiState.latest is LatestRecipes.Success && uiState.american is AmericanRecipes.Success
+    val isDataReady = uiState.latest.hasRecipes
     val areaSections =
-        remember(uiState.areas) {
-            (uiState.areas as? AreasRecipes.Success)
-                ?.areasRecipes
-                ?.toList()
-                ?.sortedBy { it.first }
-                ?: emptyList()
-        }
+        remember(uiState.areas) { uiState.areas.recipes.toList().sortedBy { it.first } }
     PullToRefreshBox(
         modifier =
             Modifier
@@ -90,176 +85,176 @@ fun HomeScreen(
                         Modifier
                     },
                 ),
-        isRefreshing = isReloading,
-        onRefresh = onReload,
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = onRefreshAll,
         state = pullRefreshState,
     ) {
-        if (uiState.latest == LatestRecipes.Loading) {
-            CustomCircularProgressIndicator(
-                Modifier.semantics {
-                    testTag = HomeTags.LOADING
-                },
-            )
-        } else {
-            LazyVerticalGrid(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .testTag("feed")
-                        .semantics { contentDescription = "feed" },
-                state = scrollState,
-                contentPadding = PaddingValues(bottom = 16.dp),
-                columns = GridCells.Fixed(mode.nbHomeColumns),
-            ) {
-                item(key = "latest_section", contentType = "section", span = { spanSize }) {
-                    Column {
-                        SectionTitle(
-                            title = stringResource(R.string.latest_recipes_title),
-                            count = null,
-                            showNavIcon = false,
-                        )
-                        when (uiState.latest) {
-                            is LatestRecipes.Empty -> ErrorScreen { onReload() }
-                            is LatestRecipes.Loading -> {}
-                            is LatestRecipes.Success -> {
-                                if (mode == DeviceMode.PhonePortrait) {
-                                    val pagerState =
-                                        rememberPagerState(
-                                            initialPage = currentPage,
-                                            pageCount = {uiState.latest.latestRecipes.size },
-                                        )
+        LazyVerticalGrid(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .testTag("feed")
+                    .semantics { contentDescription = "feed" },
+            state = scrollState,
+            contentPadding = PaddingValues(bottom = 16.dp),
+            columns = GridCells.Fixed(mode.nbHomeColumns),
+        ) {
+            item(key = "latest_section", contentType = "section", span = { spanSize }) {
+                Column {
+                    SectionTitle(
+                        title = stringResource(R.string.latest_recipes_title),
+                        count = null,
+                        showNavIcon = false,
+                    )
+                    when {
+                        uiState.latest.error -> ErrorScreen { onRetryLatest() }
+                        uiState.latest.loading -> {
+                            CustomCircularProgressIndicator()
+                        }
 
-                                    LaunchedEffect(pagerState) {
-                                        snapshotFlow { pagerState.currentPage }
-                                            .distinctUntilChanged()
-                                            .collect(onCurrentPageChange)
-                                    }
-                                    HorizontalPager(state = pagerState) { index ->
-                                        VideoRecipeItem(
-                                            modifier =
-                                                Modifier
-                                                    .testTag("VideoRecipeItem_$index")
-                                                    .semantics {
-                                                        contentDescription =
-                                                            "VideoRecipeItem_$index"
-                                                    },
-                                            likeableRecipe = uiState.latest.latestRecipes[index],
-                                            onOpenRecipe = {
-                                                onOpenRecipe(
-                                                    uiState.latest.latestRecipes.map { it.recipe.idMeal },
-                                                    index,
-                                                    uiState.latest.latestRecipes[index].recipe.strMeal,
-                                                )
-                                            },
-                                            onToggleFavorite = onToggleFavorite,
-                                            onVideoButtonClick = {
-                                                onVideoButtonClick((uiState.latest.latestRecipes[index].recipe as Recipe).strYoutube)
-                                            },
-                                        )
-                                    }
-                                } else {
-                                    SimpleHorizontalRecipesList(
-                                        recipes = uiState.latest.latestRecipes,
-                                        onOpenRecipe = onOpenRecipe,
+                        uiState.latest.hasRecipes -> {
+                            if (mode == DeviceMode.PhonePortrait) {
+                                val pagerState =
+                                    rememberPagerState(
+                                        initialPage = uiState.latest.currentPage,
+                                        pageCount = { uiState.latest.recipes.size },
+                                    )
+
+                                LaunchedEffect(pagerState) {
+                                    snapshotFlow { pagerState.currentPage }
+                                        .distinctUntilChanged()
+                                        .collect(onCurrentPageChange)
+                                }
+                                HorizontalPager(state = pagerState) { index ->
+                                    VideoRecipeItem(
+                                        modifier =
+                                            Modifier
+                                                .testTag("VideoRecipeItem_$index")
+                                                .semantics {
+                                                    contentDescription =
+                                                        "VideoRecipeItem_$index"
+                                                },
+                                        likeableRecipe = uiState.latest.recipes[index],
+                                        onOpenRecipe = {
+                                            onOpenRecipe(
+                                                uiState.latest.recipes.map { it.recipe.idMeal },
+                                                index,
+                                                uiState.latest.recipes[index].recipe.strMeal,
+                                            )
+                                        },
                                         onToggleFavorite = onToggleFavorite,
+                                        onVideoButtonClick = {
+                                            onVideoButtonClick((uiState.latest.recipes[index].recipe as Recipe).strYoutube)
+                                        },
                                     )
                                 }
-                            }
-                        }
-                    }
-                }
-                if (mode != DeviceMode.PhoneLandscape) {
-                    item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
-                    item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                        BannerAd(
-                            placement = BannerPlacement.HOME_POS_1,
-                            provider = localBannerProvider,
-                            horizontalPadding = 16.dp,
-                        )
-                    }
-                }
-                item(
-                    key = "american_section",
-                    contentType = "section",
-                    span = { spanSize },
-                ) {
-                    when (uiState.american) {
-                        AmericanRecipes.Error -> ErrorScreen { }
-                        AmericanRecipes.Loading -> {}
-                        is AmericanRecipes.Success -> {
-                            HorizontalRecipesList(
-                                "American",
-                                uiState.american.americanRecipes,
-                                onOpenRecipe = onOpenRecipe,
-                                onOpenSection = onOpenSection,
-                                onToggleFavorite = onToggleFavorite,
-                            )
-                        }
-                    }
-                }
-
-                when (uiState.areas) {
-                    AreasRecipes.Error -> item { ErrorScreen { } }
-                    AreasRecipes.Loading -> item { }
-                    is AreasRecipes.Success -> {
-                        areaSections.forEach { (key, list) ->
-                            item(
-                                key = "area_section_$key",
-                                contentType = "section",
-                                span = { spanSize },
-                            ) {
-                                HorizontalRecipesList(
-                                    key,
-                                    list,
+                            } else {
+                                SimpleHorizontalRecipesList(
+                                    recipes = uiState.latest.recipes,
                                     onOpenRecipe = onOpenRecipe,
-                                    onOpenSection = { onOpenSection(key) },
                                     onToggleFavorite = onToggleFavorite,
                                 )
                             }
                         }
                     }
                 }
-                item(
-                    key = "banner_mid",
-                    contentType = "ad",
-                    span = { spanSize },
-                ) {
+            }
+            if (mode != DeviceMode.PhoneLandscape) {
+                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
+                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
                     BannerAd(
-                        placement = BannerPlacement.HOME_POS_2,
+                        placement = BannerPlacement.HOME_POS_1,
                         provider = localBannerProvider,
                         horizontalPadding = 16.dp,
                     )
                 }
-                item(span = { spanSize }) { Spacer(Modifier.height(12.dp)) }
-                item(span = { spanSize }) {
-                    Text(
-                        text = "English recipes",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+            }
+            item(
+                key = "japanese_section",
+                contentType = "section",
+                span = { spanSize },
+            ) {
+                when {
+                    uiState.japanese.error -> ErrorScreen { onRetryJapanese() }
+                    uiState.japanese.loading -> {
+                        CustomCircularProgressIndicator()
+                    }
+
+                    uiState.japanese.hasRecipes -> {
+                        HorizontalRecipesList(
+                            "Japanese",
+                            uiState.japanese.recipes,
+                            onOpenRecipe = onOpenRecipe,
+                            onOpenSection = onOpenSection,
+                            onToggleFavorite = onToggleFavorite,
+                        )
+                    }
                 }
-                when (uiState.english) {
-                    EnglishRecipes.Error -> item { ErrorScreen { } }
-                    EnglishRecipes.Loading -> item { }
-                    is EnglishRecipes.Success -> {
-                        items(
-                            items = uiState.english.englishRecipes,
-                            key = { it.recipe.idMeal },
-                            contentType = { "recipe_big" },
-                        ) { recipe ->
-                            BigRecipeItem(recipe,
+            }
+
+            when {
+                uiState.areas.error -> item(span = { spanSize }) { ErrorScreen { onRetryAreas() } }
+                uiState.areas.loading -> item { }
+                uiState.areas.hasRecipes -> {
+                    areaSections.forEach { (key, list) ->
+                        item(
+                            key = "area_section_$key",
+                            contentType = "section",
+                            span = { spanSize },
+                        ) {
+                            HorizontalRecipesList(
+                                key,
+                                list,
+                                onOpenRecipe = onOpenRecipe,
+                                onOpenSection = { onOpenSection(key) },
                                 onToggleFavorite = onToggleFavorite,
-                                onOpenRecipe = {
-                                    onOpenRecipe(
-                                        uiState.english.englishRecipes.map { it.recipe.idMeal },
-                                        uiState.english.englishRecipes.indexOf(recipe),
-                                        recipe.recipe.strMeal,
-                                    )
-                                },
                             )
                         }
+                    }
+                }
+            }
+            item(span = { spanSize }) { Spacer(Modifier.height(4.dp)) }
+            item(
+                key = "banner_mid",
+                contentType = "ad",
+                span = { spanSize },
+            ) {
+                BannerAd(
+                    placement = BannerPlacement.HOME_POS_2,
+                    provider = localBannerProvider,
+                    horizontalPadding = 16.dp,
+                )
+            }
+            item(span = { spanSize }) { Spacer(Modifier.height(4.dp)) }
+            item(span = { spanSize }) {
+                Text(
+                    text = "English recipes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            when {
+                uiState.english.error -> item { ErrorScreen { onRetryEnglish() } }
+                uiState.english.loading -> item { CustomCircularProgressIndicator() }
+                uiState.english.hasRecipes -> {
+                    items(
+                        items = uiState.english.recipes,
+                        key = { it.recipe.idMeal },
+                        contentType = { "recipe_big" },
+                    ) { recipe ->
+                        BigRecipeItem(
+                            recipe,
+                            onToggleFavorite = onToggleFavorite,
+                            onOpenRecipe = {
+                                onOpenRecipe(
+                                    uiState.english.recipes.map { it.recipe.idMeal },
+                                    uiState.english.recipes.indexOf(recipe),
+                                    recipe.recipe.strMeal,
+                                )
+                            },
+                        )
                     }
                 }
             }

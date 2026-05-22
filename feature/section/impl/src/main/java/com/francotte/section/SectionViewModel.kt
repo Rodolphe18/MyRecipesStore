@@ -10,29 +10,65 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = SectionViewModel.Factory::class)
-class SectionViewModel
-@AssistedInject
-constructor(
-    repository: UserHomeRepository,
+class SectionViewModel @AssistedInject constructor(
+    private val repository: UserHomeRepository,
     @Assisted val sectionName: String,
 ) : ViewModel() {
 
 
-    val section = MutableStateFlow(sectionName).asStateFlow()
+    private val _sectionUiState = MutableStateFlow(SectionUiState())
 
-    val sectionUiState =
-        repository
-            .observeFoodAreaSection(sectionName)
-            .map { result ->
-                result.fold(
-                    onSuccess = { SectionUiState.Success(it) },
-                    onFailure = { SectionUiState.Error })
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SectionUiState.Loading)
+    val sectionUiState = _sectionUiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            _sectionUiState.update { it.copy(loading = true) }
+            repository
+                .observeFoodAreaSection(sectionName)
+                .collect { recipes ->
+                    _sectionUiState.update { uiState ->
+                        if (recipes.isNotEmpty()) {
+                            uiState.copy(loading = false, error = null, recipes = recipes)
+                        } else {
+                            uiState.copy(loading = false, error = "Une erreur est survenue")
+                        }
+                    }
+                }
+        }
+    }
+
+    fun onAction(action: SectionAction) {
+        when (action) {
+            SectionAction.Reload -> refresh()
+            else -> Unit
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _sectionUiState.update { it.copy(loading = true, error = null) }
+            val errorMessage = repository.refreshFoodAreaSection(sectionName, true)
+
+            if (errorMessage != null) {
+                _sectionUiState.update {
+                    it.copy(
+                        loading = false,
+                        error = errorMessage,
+                    )
+                }
+            }
+        }
+    }
 
     @AssistedFactory
     interface Factory {
@@ -41,12 +77,23 @@ constructor(
 
 }
 
-sealed interface SectionUiState {
-    data class Success(
-        val recipes: List<LikeableRecipe>,
-    ) : SectionUiState
+data class SectionUiState(
+    val loading:Boolean=false,
+    val error:String?= null,
+    val recipes: List<LikeableRecipe> = emptyList(),
+)
 
-    data object Error : SectionUiState
+sealed interface SectionAction {
+    data object Reload: SectionAction
+    data object BackClick : SectionAction
 
-    data object Loading : SectionUiState
+    data class RecipeClick(
+        val recipeIds: List<String>,
+        val index: Int,
+        val title: String,
+    ) : SectionAction
+
+    data class ToggleFavorite(
+        val recipe: LikeableRecipe,
+    ) : SectionAction
 }

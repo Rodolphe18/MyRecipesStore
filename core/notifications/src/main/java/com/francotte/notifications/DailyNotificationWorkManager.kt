@@ -11,14 +11,13 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class DailyNotificationWorkManager
-    @AssistedInject
-    constructor(
+class DailyNotificationWorkManager @AssistedInject constructor(
         @Assisted context: Context,
         @Assisted workerParams: WorkerParameters,
         private val api: RecipeApi,
         private val notifier: Notifier,
     ) : CoroutineWorker(context, workerParams) {
+
         override suspend fun doWork(): Result {
             try {
                 val recipe = api.getRandomMeal()

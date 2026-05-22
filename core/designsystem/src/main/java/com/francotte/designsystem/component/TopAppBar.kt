@@ -38,7 +38,7 @@ fun TopAppBar(
     title: String? = null,
     actionIcon: ImageVector? = null,
     navigationIcon: ImageVector = ImageVector.vectorResource(R.drawable.ic_back),
-    navigationIconColor: Color=MaterialTheme.colorScheme.onSurface,
+    navigationIconColor: Color = MaterialTheme.colorScheme.onSurface,
     actionIconContentDescription: String? = "",
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
     onActionClick: () -> Unit = {},
@@ -83,17 +83,15 @@ fun TopAppBar(
         navigationIcon = {
             if (navigationIconEnabled) {
                 if (profileImage != null && profileImage != "https://app.myrecipesstore18.com/null") {
-                    Image(
-                        painter =
-                            rememberAsyncImagePainter(
-                                model = profileImage,
-                            ),
+                    DesignAsyncImage(
+                        model = profileImage,
+                        width = 45.dp,
+                        height = 45.dp,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier =
                             Modifier
                                 .offset(x = 12.dp)
-                                .size(45.dp)
                                 .clip(CircleShape)
                                 .clickable {
                                     onNavigationClick()
