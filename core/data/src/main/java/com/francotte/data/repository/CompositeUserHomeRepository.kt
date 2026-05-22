@@ -118,10 +118,4 @@ interface UserHomeRepository {
     fun observeRecipesByCategory(category: String): Flow<List<LikeableRecipe>>
 }
 
-private enum class FoodAreaSection(
-    val title: String,
-) {
-    CHINESE("Chinese"),
-    FRENCH("Portuguese"),
-    INDIAN("Greek"),
-}
+private enum class FoodAreaSection(val title: String) { CHINESE("Chinese"), PORTUGUESE("Portuguese"),URUGUAYAN("Uruguayan") }

@@ -1,5 +1,6 @@
 package com.francotte.home.delegate
 
+import android.util.Log
 import com.francotte.data.repository.UserHomeRepository
 import com.francotte.home.RefreshMode
 import com.francotte.model.LikeableRecipe
@@ -26,11 +27,12 @@ class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserH
 
     override suspend fun observeAreasRecipes() {
         repository.observeFoodAreaSections().collect { areas ->
+            Log.d("debug_areas", areas.toString())
             _areasRecipes.update { current ->
-                if (areas.recipes) {
+                if (areas.values.isEmpty()) {
                     current.copy(loading = false, error = true, recipes = emptyMap())
                 } else {
-                    current.copy(recipes = recipes, loading = false, error = false)
+                    current.copy(recipes = areas, loading = false, error = false)
                 }
             }
         }
