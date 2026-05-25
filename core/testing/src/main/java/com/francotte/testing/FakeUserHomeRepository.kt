@@ -35,14 +35,14 @@ class FakeUserHomeRepository : UserHomeRepository {
     override fun observeJapaneseAreaRecipes(): Flow<List<LikeableRecipe>> = americanFlow
 
     override fun observeFoodAreaSections(): Flow<Map<String, List<LikeableRecipe>>> = areasSectionsFlow
-    override suspend fun refreshFoodAreaSection(
+    override suspend fun refreshSpecificFoodAreaSection(
         area: String,
         force: Boolean
     ): String? {
-        return null
+        TODO("Not yet implemented")
     }
 
-    override suspend fun refreshFoodAreaSection(force: Boolean): Boolean {
+    override suspend fun refreshMultipleFoodAreaSection(force: Boolean): Boolean {
         TODO("Not yet implemented")
     }
 

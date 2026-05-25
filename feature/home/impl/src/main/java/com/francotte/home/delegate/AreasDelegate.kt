@@ -45,7 +45,7 @@ class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserH
         }
 
         try {
-            repository.refreshFoodAreaSection(true)
+            repository.refreshMultipleFoodAreaSection(true)
         } finally {
             _areasRecipes.update { it.copy(loading = false, refreshing = false) }
         }

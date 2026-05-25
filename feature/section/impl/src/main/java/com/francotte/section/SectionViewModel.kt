@@ -57,7 +57,7 @@ class SectionViewModel @AssistedInject constructor(
     fun refresh() {
         viewModelScope.launch {
             _sectionUiState.update { it.copy(loading = true, error = null) }
-            val errorMessage = repository.refreshFoodAreaSection(sectionName, true)
+            val errorMessage = repository.refreshSpecificFoodAreaSection(sectionName, true)
 
             if (errorMessage != null) {
                 _sectionUiState.update {

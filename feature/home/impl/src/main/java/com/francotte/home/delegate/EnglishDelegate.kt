@@ -49,7 +49,7 @@ class EnglishRecipesDelegateImpl @Inject constructor(
         }
 
         try {
-            repository.refreshFoodAreaSection("British", true)
+            repository.refreshSpecificFoodAreaSection("British", true)
 
         } finally {
             _englishRecipes.update { it.copy(refreshing = false, loading = false) }
