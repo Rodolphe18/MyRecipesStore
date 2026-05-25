@@ -58,7 +58,7 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
         }
 
         try {
-            repository.refreshFoodAreaSection("Japanese", true)
+            repository.refreshSpecificFoodAreaSection("Japanese", true)
         } finally {
             _japaneseRecipes.update {
                 it.copy(

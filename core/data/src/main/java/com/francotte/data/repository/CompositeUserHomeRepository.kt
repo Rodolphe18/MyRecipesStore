@@ -44,15 +44,14 @@ class CompositeUserHomeRepository @Inject constructor(
             latestRecipes.mapToLikeableLightRecipes(userData).take(10)
         }
 
-    override suspend fun refreshFoodAreaSection(force: Boolean): Boolean {
-        enumValues<FoodAreaSection>().map { section ->
-            offlineFirstHomeRepository
-                .refreshRecipesListByArea(section.title, force)
+    override suspend fun refreshMultipleFoodAreaSection(force: Boolean): Boolean {
+        enumValues<FoodAreaSection>().forEach { section ->
+            offlineFirstHomeRepository.refreshRecipesListByArea(section.title, force)
         }
         return true
     }
 
-    override suspend fun refreshFoodAreaSection(area: String, force: Boolean): String? {
+    override suspend fun refreshSpecificFoodAreaSection(area: String, force: Boolean): String? {
         return offlineFirstHomeRepository.refreshRecipesListByArea(area, force)
     }
 
@@ -110,8 +109,8 @@ interface UserHomeRepository {
     fun observeJapaneseAreaRecipes(): Flow<List<LikeableRecipe>>
 
     fun observeFoodAreaSections(): Flow<Map<String, List<LikeableRecipe>>>
-    suspend fun refreshFoodAreaSection(area: String, force: Boolean): String?
-    suspend fun refreshFoodAreaSection(force: Boolean): Boolean
+    suspend fun refreshSpecificFoodAreaSection(area: String, force: Boolean): String?
+    suspend fun refreshMultipleFoodAreaSection(force: Boolean): Boolean
     fun observeFoodAreaSection(sectionName: String): Flow<List<LikeableRecipe>>
 
     suspend fun refreshRecipesByCategory(category: String, force: Boolean): Boolean
