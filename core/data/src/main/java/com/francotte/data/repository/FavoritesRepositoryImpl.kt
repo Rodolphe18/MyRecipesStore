@@ -1,7 +1,7 @@
-package com.francotte.domain
+package com.francotte.data.repository
 
 import android.net.Uri
-import com.francotte.data.repository.OfflineFirstFavoritesRepository
+import com.francotte.data.manager.FavoriteManager
 import com.francotte.datastore.UserDataRepository
 import com.francotte.model.CustomIngredient
 import com.francotte.model.CustomRecipe
@@ -13,15 +13,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class FavoritesRepositoryImpl
-@Inject
-constructor(
+class FavoritesRepositoryImpl @Inject constructor(
     private val offlineFirstFavoritesRepository: OfflineFirstFavoritesRepository,
     private val favoriteManager: FavoriteManager,
-    private val userDataRepository: UserDataRepository,
+    private val userDataRepository: UserDataRepository
 ) : FavoritesRepository {
 
     override fun observeFavoritesRecipes(): Flow<Result<List<LikeableRecipe>>> =
@@ -85,29 +81,4 @@ constructor(
             image
         )
     }
-}
-
-interface FavoritesRepository {
-    fun observeFavoritesRecipes(): Flow<Result<List<LikeableRecipe>>>
-
-    suspend fun refreshFavoritesRecipes()
-
-    fun observeUserCustomRecipes(): Flow<Result<List<CustomRecipe>>>
-
-    fun observeUserCustomRecipe(id: String): Flow<Result<CustomRecipe>>
-
-    suspend fun addCustomRecipe(
-        title: String,
-        ingredients: List<CustomIngredient>,
-        instructions: String,
-        image: Uri?,
-    )
-
-    suspend fun updateCustomRecipe(
-        recipeId: String,
-        title: String,
-        ingredients: List<CustomIngredient>,
-        instructions: String,
-        image: Uri?,
-    )
 }

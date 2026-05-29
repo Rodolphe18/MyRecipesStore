@@ -1,34 +1,32 @@
-package com.francotte.domain
+package com.francotte.data.manager
 
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
+import com.francotte.common.extension.ApplicationScope
+import com.francotte.data.R
 import com.francotte.data.util.NetworkMonitor
 import com.francotte.datastore.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.network.api.FavoriteApi
 import com.francotte.network.model.NetworkCustomIngredient
 import com.francotte.network.model.NetworkCustomRecipe
-import com.francotte.ui.FavoritesSyncScheduler
+import com.francotte.data.sync.SyncScheduler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -48,17 +46,15 @@ import javax.inject.Singleton
 const val SHORTCUT_ID_FAVORITES = "shortcut_favorites"
 
 @Singleton
-class FavoriteManager
-@Inject
-constructor(
+class FavoriteManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: FavoriteApi,
     private val networkMonitor: NetworkMonitor,
     authManager: AuthManager,
     private val foodPreferencesDataSource: UserDataRepository,
+    @ApplicationScope private val coroutineScope: CoroutineScope,
+    private val syncScheduler: SyncScheduler,
 ) {
-
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     private val credentials: StateFlow<UserCredentials?> = authManager.credentials
 
@@ -139,7 +135,7 @@ constructor(
                     "Offline: favorites will sync automatically when internet is available."
                 )
             }
-            FavoritesSyncScheduler.enqueueForToggle(context)
+            syncScheduler.enqueueForToggle(context)
         }
     }
 

@@ -10,7 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.metrics.performance.JankStats
 import com.francotte.ads.BannerAdProvider
@@ -19,8 +18,8 @@ import com.francotte.billing.BillingController
 import com.francotte.cmp.ConsentManager
 import com.francotte.common.counters.LaunchCounter
 import com.francotte.designsystem.theme.FoodTheme
-import com.francotte.domain.AuthManager
-import com.francotte.domain.FavoriteManager
+import com.francotte.data.manager.AuthManager
+import com.francotte.data.manager.FavoriteManager
 import com.francotte.inapp_rating.InAppRatingManager
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.permissions.NotificationPermissionEffect

@@ -1,4 +1,4 @@
-package com.francotte.domain
+package com.francotte.data.manager
 
 import android.content.Context
 import android.content.Intent
@@ -12,7 +12,7 @@ import com.francotte.network.model.AuthRequest
 import com.francotte.network.model.AuthResponse
 import com.francotte.network.model.EmailRequest
 import com.francotte.network.model.GoogleIdTokenRequest
-import com.francotte.ui.FavoritesSyncScheduler
+import com.francotte.data.sync.SyncScheduler
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -35,14 +35,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthManager
-    @Inject
-    constructor(
+class AuthManager @Inject constructor(
         @ApplicationContext private val context: Context,
         private val api: AuthApi,
         private val preferences: UserDataRepository,
         private val dao: FullRecipeDao,
         @ApplicationScope private val coroutineScope: CoroutineScope,
+        private val syncScheduler: SyncScheduler,
     ) {
         private val googleSignInClient =
             GoogleSignIn.getClient(
@@ -186,7 +185,7 @@ class AuthManager
                     }
                 }
                 Log.d("debug_fav_enqueue_for_login", "")
-                FavoritesSyncScheduler.enqueueForLogin(context)
+                syncScheduler.enqueueForLogin(context)
             } else if (apiResponse.code() == 413) {
                 loginIsSuccessFull.value = false
                 snackBarMessage.tryEmit("Payload Too Large")

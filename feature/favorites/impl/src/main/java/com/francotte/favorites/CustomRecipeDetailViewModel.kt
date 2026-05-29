@@ -8,9 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.francotte.domain.FavoriteManager
-import com.francotte.domain.FavoritesRepository
+import com.francotte.data.manager.FavoriteManager
+import com.francotte.data.repository.FavoritesRepository
 import com.francotte.model.CustomIngredient
 import com.francotte.model.CustomRecipe
 import dagger.hilt.android.lifecycle.HiltViewModel

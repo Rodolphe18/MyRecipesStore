@@ -22,7 +22,6 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
     private val homeRepository: OfflineFirstHomeRepository,
     private val recipeApi: RecipeApi,
@@ -131,23 +130,4 @@ class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
             }
         }
 
-
-}
-
-interface IngredientsAndAreasRepository {
-    fun observeAllIngredients(): Flow<List<String>>
-
-    fun observeAllAreas(): Flow<List<String>>
-
-    suspend fun refreshAllIngredients(force: Boolean): String?
-
-    suspend fun refreshAllAreas(force: Boolean): String?
-
-    suspend fun refreshRecipesByArea(area:String,force:Boolean):String?
-
-    fun observeRecipesByArea(area: String): Flow<Result<List<LikeableRecipe>>>
-
-    suspend fun refreshRecipesByIngredients(ingredients: List<String>,force: Boolean): String?
-
-    fun observeRecipesByIngredients(ingredients: List<String>): Flow<Result<List<LikeableRecipe>>>
 }

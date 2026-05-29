@@ -56,6 +56,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.kotlinx.serialization.json.okio)
-    implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.play.services.auth)
+
 }

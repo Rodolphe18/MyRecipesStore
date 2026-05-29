@@ -16,13 +16,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Singleton
-class OfflineFirstFavoritesRepositoryImpl
-@Inject
-constructor(
+class OfflineFirstFavoritesRepositoryImpl @Inject constructor(
     private val fullRecipeDao: FullRecipeDao,
     private val favoriteApi: FavoriteApi,
     private val recipeApi: RecipeApi,
@@ -71,10 +67,4 @@ constructor(
             fullRecipeDao.insertFullRecipe(networkRecipe.asEntity())
         }
     }
-}
-
-interface OfflineFirstFavoritesRepository {
-    fun observeFavoritesFullRecipes(): Flow<List<Recipe>>
-
-    suspend fun refreshFavoritesFromServer()
 }

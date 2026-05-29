@@ -5,8 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.domain.FavoriteManager
-import com.francotte.domain.FavoritesRepository
+import com.francotte.data.repository.FavoritesRepository
 import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
 import dagger.hilt.android.lifecycle.HiltViewModel

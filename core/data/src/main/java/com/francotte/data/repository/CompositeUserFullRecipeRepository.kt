@@ -8,10 +8,8 @@ import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
-class CompositeUserFullRecipeRepository
-    @Inject
-    constructor(
+
+class CompositeUserFullRecipeRepository @Inject constructor(
         private val offlineFullRecipeData: OfflineFirstFullRecipeRepository,
         private val userDataRepository: UserDataRepository
     ) : UserFullRecipeRepository {
@@ -29,6 +27,4 @@ class CompositeUserFullRecipeRepository
             }
     }
 
-interface UserFullRecipeRepository {
-    fun observeFullRecipe(id: Long): Flow<Result<LikeableRecipe>>
-}
+

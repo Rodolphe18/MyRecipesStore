@@ -27,14 +27,6 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
-interface SearchContentsRepository {
-    suspend fun populateFtsData()
-    fun searchContents(searchQuery: String): Flow<SearchResult>
-    fun searchContentsIsReady(): Flow<Boolean>
-    suspend fun ensureFtsReady(minCount: Int)
-}
-
-
 class DefaultSearchContentsRepository @Inject constructor(
     private val lightRecipeDao: LightRecipeDao,
     private val recipeFtsDao: RecipeFtsDao,

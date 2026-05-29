@@ -17,7 +17,6 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class OfflineFirstCategoriesRepositoryImpl @Inject constructor(
     private val api: RecipeApi, private val dao: FullCategoryDao,
 ) : CategoriesRepository {
@@ -52,7 +51,4 @@ class OfflineFirstCategoriesRepositoryImpl @Inject constructor(
 
 }
 
-interface CategoriesRepository {
-    fun observeAllMealCategories(): Flow<List<Category>>
-    suspend fun refreshAllMealCategories(force: Boolean): String?
-}
+

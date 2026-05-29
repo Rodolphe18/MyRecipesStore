@@ -29,7 +29,7 @@ class OfflineFirstHomeRepository @Inject constructor(
     private val lightRecipeDao: LightRecipeDao,
     private val fullRecipeDao: FullRecipeDao,
     private val network: RecipeApi,
-) : RecipesRepository {
+) : HomeRepository {
     override suspend fun refreshLatestRecipes(force: Boolean): String? {
         val lastUpdatedResult = fullRecipeDao.getLastUpdatedForLatest()
         Log.d("debug_latest_0", lastUpdatedResult.toString())
@@ -172,20 +172,3 @@ class OfflineFirstHomeRepository @Inject constructor(
     }
 }
 
-interface RecipesRepository {
-    fun observeLatestRecipes(): Flow<List<Recipe>>
-
-    suspend fun refreshLatestRecipes(force: Boolean = false): String?
-
-    fun observeRecipesListByArea(area: String): Flow<List<LightRecipe>>
-
-    suspend fun refreshRecipesListByArea(area: String, force: Boolean): String?
-
-    fun observeRecipesByCategory(category: String): Flow<List<LightRecipe>?>
-
-    suspend fun refreshRecipesByCategory(category: String, force: Boolean): Boolean
-
-    fun observeRecipesByIngredients(ingredients: List<String>): Flow<List<LightRecipe>>
-
-    suspend fun refreshRecipesByIngredients(ingredients: List<String>, force: Boolean): String?
-}
