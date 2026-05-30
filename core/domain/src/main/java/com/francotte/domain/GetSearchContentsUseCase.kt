@@ -1,7 +1,7 @@
 package com.francotte.domain
 
 import android.util.Log
-import com.francotte.data.repository.SearchContentsRepository
+import com.francotte.data.interfaces.SearchContentsRepository
 import com.francotte.datastore.UserDataRepository
 import com.francotte.model.SearchResult
 import com.francotte.model.UserData

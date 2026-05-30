@@ -1,4 +1,4 @@
-package com.francotte.data.repository
+package com.francotte.data.interfaces
 
 import com.francotte.model.SearchResult
 import kotlinx.coroutines.flow.Flow

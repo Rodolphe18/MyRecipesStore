@@ -2,9 +2,8 @@ package com.francotte.search.result_recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.CategoriesRepository
-import com.francotte.data.repository.IngredientsAndAreasRepository
-import com.francotte.data.repository.UserHomeRepository
+import com.francotte.data.interfaces.IngredientsAndAreasRepository
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.feature.search.api.SearchMode
 import com.francotte.model.LikeableRecipe
 import dagger.assisted.Assisted

@@ -62,6 +62,7 @@ import com.francotte.feature.video.api.VideoNavKey
 import com.francotte.home.homeEntry
 import com.francotte.inapp_rating.InAppRatingManager
 import com.francotte.login.loginEntry
+import com.francotte.data.manager.ToggleFavoriteResult
 import com.francotte.model.LikeableRecipe
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.deeplink.toNavKeyOrNull
@@ -74,7 +75,9 @@ import com.francotte.myrecipesstore.splash.splashEntry
 import com.francotte.myrecipesstore.ui.AppState
 import com.francotte.navigation.Navigator
 import com.francotte.navigation.toEntries
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.profile.profileEntry
+import com.francotte.settings.SettingsViewModel
 import com.francotte.register.registerEntry
 import com.francotte.reset.requestResetEntry
 import com.francotte.reset.resetPasswordEntry
@@ -98,12 +101,13 @@ import kotlinx.coroutines.launch
 fun FoodApp(
     @ApplicationContext context: Context,
     appState: AppState,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
+    onToggleFavorite: suspend (LikeableRecipe) -> ToggleFavoriteResult,
     window: Window,
 ) {
     val mode = LocalAppLayout.current.mode
     val localActivity = LocalActivity.current
     val localAuthManager = LocalAuthManager.current
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
     val localFavoriteManager = LocalFavoriteManager.current
     val localInAppRatingManager = LocalInAppRatingManager.current
 
@@ -126,23 +130,37 @@ fun FoodApp(
 
     val pendingDeepLink = rememberSaveable { mutableStateOf<NavKey?>(null) }
 
+    val wrappedToggle: (LikeableRecipe) -> Unit = { recipe ->
+        scope.launch {
+            when (val result = onToggleFavorite(recipe)) {
+                is ToggleFavoriteResult.Success -> snackBarHostState.showSnackbar(
+                    if (result.added) "Recipe added to favorites" else "Recipe removed from favorites"
+                )
+                ToggleFavoriteResult.Offline -> snackBarHostState.showSnackbar(
+                    "Offline: favorites will sync when back online"
+                )
+                ToggleFavoriteResult.Unauthenticated -> navigator.navigateToLogin()
+            }
+        }
+    }
+
     val entryProvider = entryProvider {
         splashEntry(navigator,window) {
             pendingDeepLink.value?.also { pendingDeepLink.value = null } ?: HomeNavKey
         }
-        homeEntry(navigator, onToggleFavorite)
+        homeEntry(navigator, wrappedToggle)
         categoriesEntry(navigator)
-        categoryEntry(navigator, onToggleFavorite)
+        categoryEntry(navigator, wrappedToggle)
         addRecipeEntry(navigator, isAuthenticated)
         searchModeEntry(navigator)
-        sectionEntry(navigator, onToggleFavorite)
-        searchRecipesEntry(navigator, onToggleFavorite)
-        searchEntry(navigator,onToggleFavorite)
+        sectionEntry(navigator, wrappedToggle)
+        searchRecipesEntry(navigator, wrappedToggle)
+        searchEntry(navigator, wrappedToggle)
         loginEntry(navigator)
         registerEntry(navigator)
-        favoritesEntry(navigator, onToggleFavorite, customRecipeHasBeenUpdated)
+        favoritesEntry(navigator, wrappedToggle, customRecipeHasBeenUpdated)
         premiumEntry(navigator)
-        detailRecipeEntry(navigator, onToggleFavorite)
+        detailRecipeEntry(navigator, wrappedToggle)
         customRecipeEntry(navigator)
         videoEntry(window)
         profileEntry(navigator)
@@ -153,11 +171,6 @@ fun FoodApp(
     val entries = appState.navigationState.toEntries(entryProvider)
 
 
-    LaunchedEffect(Unit) {
-        localFavoriteManager.goToLoginScreenEvent.collect {
-            navigator.navigateToLogin()
-        }
-    }
     LaunchedEffect(Unit) {
         showInAppReview(localActivity, localInAppRatingManager)
     }
@@ -184,7 +197,7 @@ fun FoodApp(
             },
             onLogout = {
                 scope.launch {
-                    localAuthManager.logout()
+                    settingsViewModel.logout()
                     navigator.navigateToLoginOnLogout()
                     showSettingsDialog = false
                 }
@@ -199,7 +212,7 @@ fun FoodApp(
             },
             onDeleteClick = {
                 scope.launch {
-                    localAuthManager.deleteUser()
+                    settingsViewModel.deleteAccount()
                     navigator.navigateToLoginOnLogout()
                     showSettingsDialog = false
                 }
@@ -310,9 +323,6 @@ fun FoodApp(
                     )
                 }
 
-                LaunchedEffect(Unit) {
-                    localFavoriteManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
-                }
                 LaunchedEffect(Unit) {
                     localAuthManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
                 }

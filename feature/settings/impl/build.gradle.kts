@@ -38,6 +38,7 @@ android {
 dependencies {
 
     api(project(":core:data"))
+    api(project(":core:domain"))
     api(project(":core:model"))
     api(project(":core:common"))
     api(project(":core:designsystem"))

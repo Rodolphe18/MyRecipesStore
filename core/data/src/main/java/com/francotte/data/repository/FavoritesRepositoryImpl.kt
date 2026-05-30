@@ -1,6 +1,8 @@
 package com.francotte.data.repository
 
 import android.net.Uri
+import com.francotte.data.interfaces.FavoritesRepository
+import com.francotte.data.interfaces.OfflineFirstFavoritesRepository
 import com.francotte.data.manager.FavoriteManager
 import com.francotte.datastore.UserDataRepository
 import com.francotte.model.CustomIngredient
@@ -62,9 +64,8 @@ class FavoritesRepositoryImpl @Inject constructor(
         ingredients: List<CustomIngredient>,
         instructions: String,
         image: Uri?,
-    ) {
+    ): Result<Unit> =
         favoriteManager.createRecipe(title, ingredients.map { it.asDto() }, instructions, image)
-    }
 
     override suspend fun updateCustomRecipe(
         recipeId: String,
@@ -72,13 +73,6 @@ class FavoritesRepositoryImpl @Inject constructor(
         ingredients: List<CustomIngredient>,
         instructions: String,
         image: Uri?,
-    ) {
-        favoriteManager.updateRecipe(
-            recipeId,
-            title,
-            ingredients.map { it.asDto() },
-            instructions,
-            image
-        )
-    }
+    ): Result<Unit> =
+        favoriteManager.updateRecipe(recipeId, title, ingredients.map { it.asDto() }, instructions, image)
 }

@@ -53,6 +53,7 @@ dependencies {
 
     implementation("com.google.android.material:material:1.11.0")
     implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

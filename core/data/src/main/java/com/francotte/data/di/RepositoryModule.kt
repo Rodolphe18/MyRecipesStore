@@ -1,23 +1,25 @@
 package com.francotte.data.di
 
-import com.francotte.data.repository.CategoriesRepository
+import com.francotte.data.interfaces.AuthRepository
+import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.data.repository.CompositeUserFullRecipeRepository
 import com.francotte.data.repository.CompositeUserHomeRepository
 import com.francotte.data.repository.DefaultSearchContentsRepository
-import com.francotte.data.repository.FavoritesRepository
+import com.francotte.data.interfaces.FavoritesRepository
 import com.francotte.data.repository.FavoritesRepositoryImpl
 import com.francotte.data.repository.OfflineFirstCategoriesRepositoryImpl
-import com.francotte.data.repository.OfflineFirstFavoritesRepository
+import com.francotte.data.interfaces.OfflineFirstFavoritesRepository
 import com.francotte.data.repository.OfflineFirstFavoritesRepositoryImpl
-import com.francotte.data.repository.OfflineFirstFullRecipeRepository
+import com.francotte.data.interfaces.OfflineFirstFullRecipeRepository
 import com.francotte.data.repository.OfflineFirstFullRecipeRepositoryImpl
 import com.francotte.data.repository.OfflineFirstHomeRepository
 import com.francotte.data.repository.OfflineFirstIngredientsAndAreasRepositoryImpl
-import com.francotte.data.repository.IngredientsAndAreasRepository
-import com.francotte.data.repository.HomeRepository
-import com.francotte.data.repository.SearchContentsRepository
-import com.francotte.data.repository.UserFullRecipeRepository
-import com.francotte.data.repository.UserHomeRepository
+import com.francotte.data.interfaces.IngredientsAndAreasRepository
+import com.francotte.data.interfaces.HomeRepository
+import com.francotte.data.interfaces.SearchContentsRepository
+import com.francotte.data.interfaces.UserFullRecipeRepository
+import com.francotte.data.interfaces.UserHomeRepository
+import com.francotte.data.manager.AuthManager
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -54,4 +56,8 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindFavoritesRepository(impl: FavoritesRepositoryImpl): FavoritesRepository
+
+    @Binds @Singleton
+    abstract fun bindAuthRepository(impl: AuthManager): AuthRepository
+
 }

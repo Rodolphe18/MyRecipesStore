@@ -3,7 +3,7 @@ package com.francotte.search
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.SearchContentsRepository
+import com.francotte.data.interfaces.SearchContentsRepository
 import com.francotte.domain.GetSearchContentsUseCase
 import com.francotte.model.UserSearchResult
 import dagger.hilt.android.lifecycle.HiltViewModel

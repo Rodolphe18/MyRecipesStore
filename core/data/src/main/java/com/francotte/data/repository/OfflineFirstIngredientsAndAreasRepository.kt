@@ -2,6 +2,7 @@ package com.francotte.data.repository
 
 import com.francotte.common.utils.DataResult
 import com.francotte.common.utils.userMessage
+import com.francotte.data.interfaces.IngredientsAndAreasRepository
 import com.francotte.data.mapper.dto.asEntity
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.AreaDao
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.map
 import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
-import javax.inject.Singleton
 
 class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
     private val homeRepository: OfflineFirstHomeRepository,

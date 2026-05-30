@@ -4,9 +4,7 @@ import android.app.Activity
 import com.francotte.common.counters.LaunchCounter
 import javax.inject.Inject
 
-class InAppRatingManager
-    @Inject
-    constructor(
+class InAppRatingManager @Inject constructor(
         private val inAppRatingPreferences: InAppRatingPreferences,
         private val inAppReview: InAppReview,
         private val playStoreOpener: PlayStoreOpener,

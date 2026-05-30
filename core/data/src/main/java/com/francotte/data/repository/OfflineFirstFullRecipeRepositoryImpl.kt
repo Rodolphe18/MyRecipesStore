@@ -1,5 +1,6 @@
 package com.francotte.data.repository
 
+import com.francotte.data.interfaces.OfflineFirstFullRecipeRepository
 import com.francotte.data.mapper.dto.asEntity
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.FullRecipeDao

@@ -4,7 +4,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.manager.AuthManager
+import com.francotte.data.interfaces.EmailPasswordCredentials
+import com.francotte.data.interfaces.GoogleCredentials
+import com.francotte.domain.GetGoogleSignInIntentUseCase
+import com.francotte.domain.LoginUseCase
+import com.francotte.domain.RegisterUseCase
+import com.francotte.domain.RequestPasswordResetUseCase
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,14 +19,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authManager: AuthManager) : ViewModel() {
+class LoginViewModel @Inject constructor(
+    getGoogleSignInIntentUseCase: GetGoogleSignInIntentUseCase,
+    private val loginUseCase: LoginUseCase,
+    private val registerUseCase: RegisterUseCase,
+    private val requestPasswordResetUseCase: RequestPasswordResetUseCase,
+) : ViewModel() {
 
     val loading = MutableStateFlow(false)
 
-    val googleSignInIntent = authManager.googleSignInIntent
+    val googleSignInIntent = getGoogleSignInIntentUseCase()
 
     private val _authSuccess = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val authSuccess: SharedFlow<Unit> = _authSuccess.asSharedFlow()
@@ -30,15 +41,17 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager) :
 
     fun requestReset(email: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            resetState.value = authManager.requestPasswordReset(email)
+            resetState.value = requestPasswordResetUseCase(email)
         }
     }
 
     fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                authManager.doGoogleLogin(signInTask)
-                onSuccess()
+                val idToken = signInTask.await().idToken
+                if (idToken.isNullOrEmpty()) { onError(); return@launch }
+                val result = loginUseCase(GoogleCredentials(idToken))
+                if (result.isSuccess) onSuccess() else onError()
             } catch (e: Exception) {
                 onError()
                 Log.e("debug_google", "Erreur récupération compte Google", e)
@@ -53,8 +66,8 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager) :
         imageUri: Uri?,
     ) {
         viewModelScope.launch {
-            authManager.createUser(username, email, password, imageUri)
-            if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
+            val result = registerUseCase(username, email, password, imageUri)
+            if (result.isSuccess) onSuccess() else onError()
         }
     }
 
@@ -68,8 +81,8 @@ class LoginViewModel @Inject constructor(private val authManager: AuthManager) :
             viewModelScope.launch(Dispatchers.Default) {
                 loading.value = true
                 try {
-                    authManager.loginByUserNamePassword(nameOrMail, pwd)
-                    if (authManager.loginIsSuccessFull.value) onSuccess() else onError()
+                    val result = loginUseCase(EmailPasswordCredentials(nameOrMail, pwd))
+                    if (result.isSuccess) onSuccess() else onError()
                 } catch (e: Exception) {
                     Log.d("debug_email", "$e")
                 }

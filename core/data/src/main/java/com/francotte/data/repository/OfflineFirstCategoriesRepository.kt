@@ -2,6 +2,7 @@ package com.francotte.data.repository
 
 import com.francotte.common.utils.DataResult
 import com.francotte.common.utils.userMessage
+import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.data.mapper.dto.asEntity
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.FullCategoryDao
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.map
 import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
-import javax.inject.Singleton
 
 class OfflineFirstCategoriesRepositoryImpl @Inject constructor(
     private val api: RecipeApi, private val dao: FullCategoryDao,

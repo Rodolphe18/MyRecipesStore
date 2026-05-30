@@ -1,6 +1,6 @@
 package com.francotte.home.delegate
 
-import com.francotte.data.repository.UserHomeRepository
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.home.RefreshMode
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.flow.MutableSharedFlow

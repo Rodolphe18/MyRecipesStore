@@ -1,4 +1,4 @@
-package com.francotte.data.repository
+package com.francotte.data.interfaces
 
 import android.net.Uri
 import com.francotte.model.CustomIngredient
@@ -20,7 +20,7 @@ interface FavoritesRepository {
         ingredients: List<CustomIngredient>,
         instructions: String,
         image: Uri?,
-    )
+    ): Result<Unit>
 
     suspend fun updateCustomRecipe(
         recipeId: String,
@@ -28,5 +28,5 @@ interface FavoritesRepository {
         ingredients: List<CustomIngredient>,
         instructions: String,
         image: Uri?,
-    )
+    ): Result<Unit>
 }

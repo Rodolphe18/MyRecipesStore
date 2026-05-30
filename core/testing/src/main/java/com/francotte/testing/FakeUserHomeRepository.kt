@@ -1,6 +1,6 @@
 package com.francotte.testing
 
-import com.francotte.data.repository.UserHomeRepository
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow

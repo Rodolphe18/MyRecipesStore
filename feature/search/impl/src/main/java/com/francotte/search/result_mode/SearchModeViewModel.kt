@@ -2,7 +2,7 @@ package com.francotte.search.result_mode
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.IngredientsAndAreasRepository
+import com.francotte.data.interfaces.IngredientsAndAreasRepository
 import com.francotte.feature.search.api.SearchMode
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory

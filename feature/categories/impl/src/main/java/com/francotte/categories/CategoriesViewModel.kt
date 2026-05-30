@@ -1,9 +1,8 @@
 package com.francotte.categories
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.CategoriesRepository
+import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.model.AbstractCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
