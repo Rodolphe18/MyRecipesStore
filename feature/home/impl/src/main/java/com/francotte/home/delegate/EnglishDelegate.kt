@@ -22,9 +22,7 @@ class EnglishRecipesDelegateImpl @Inject constructor(
 ) : EnglishRecipesDelegate {
 
     private val _englishRecipes = MutableStateFlow(EnglishRecipes())
-
     override val englishRecipes: StateFlow<EnglishRecipes> = _englishRecipes.asStateFlow()
-
 
     override suspend fun observeEnglishRecipes() {
         repository.observeEnglishAreaRecipes().collect { recipes ->
@@ -50,15 +48,11 @@ class EnglishRecipesDelegateImpl @Inject constructor(
 
         try {
             repository.refreshSpecificFoodAreaSection("British", true)
-
         } finally {
             _englishRecipes.update { it.copy(refreshing = false, loading = false) }
         }
     }
-
 }
-
-
 
 data class EnglishRecipes(
     val loading: Boolean = true,
@@ -69,4 +63,3 @@ data class EnglishRecipes(
     val hasRecipes: Boolean
         get() = recipes.isNotEmpty()
 }
-

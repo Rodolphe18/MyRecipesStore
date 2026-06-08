@@ -2,7 +2,7 @@ package com.francotte.data.repository
 
 import com.francotte.data.interfaces.HomeRepository
 import com.francotte.data.interfaces.UserHomeRepository
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableFullRecipes
 import com.francotte.model.mapToLikeableLightRecipes

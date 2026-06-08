@@ -2,7 +2,7 @@ package com.francotte.domain
 
 import android.util.Log
 import com.francotte.data.interfaces.SearchContentsRepository
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.SearchResult
 import com.francotte.model.UserData
 import com.francotte.model.UserSearchResult

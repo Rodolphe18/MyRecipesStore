@@ -6,7 +6,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -14,8 +14,6 @@ import com.francotte.api.DetailRecipeNavKey
 import com.francotte.designsystem.component.HideNavigationBar
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.navigation.Navigator
-import com.francotte.ui.LocalConsentManager
-import com.francotte.ui.LocalInterstitialManager
 import kotlinx.serialization.Serializable
 
 
@@ -49,8 +47,6 @@ fun SplashRoute(
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val activity = LocalActivity.current
-    val consentManager = LocalConsentManager.current
-    val interstitialManager = LocalInterstitialManager.current
 
     val step by viewModel.step.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,15 +57,12 @@ fun SplashRoute(
             SplashStep.Consent -> {
                 Log.d("debug_consent", step.toString())
                 val safeActivity = activity ?: return@LaunchedEffect
-                val canRequestAds = consentManager.ensureConsent(safeActivity)
-                viewModel.onConsentFinished(canRequestAds)
+                viewModel.startConsent(safeActivity)
             }
 
             SplashStep.Interstitial -> {
                 val safeActivity = activity ?: return@LaunchedEffect
-                interstitialManager
-                    .loadAndShowInterstitialAd(safeActivity)
-                    .collect { viewModel.onAdEvent(it) }
+                viewModel.startInterstitial(safeActivity)
             }
 
             SplashStep.Done -> Unit

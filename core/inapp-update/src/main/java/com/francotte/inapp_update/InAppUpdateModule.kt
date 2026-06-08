@@ -3,6 +3,7 @@ package com.francotte.inapp_update
 import android.content.Context
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,4 +19,11 @@ object InAppUpdateModule {
     fun provideAppUpdateManager(
         @ApplicationContext context: Context,
     ): AppUpdateManager = AppUpdateManagerFactory.create(context)
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class InAppUpdateBindingModule {
+    @Binds @Singleton
+    abstract fun bindInAppUpdateRepository(impl: InAppUpdateManager): InAppUpdateRepository
 }

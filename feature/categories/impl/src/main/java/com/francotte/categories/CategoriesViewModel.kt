@@ -9,6 +9,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,11 +24,10 @@ class CategoriesViewModel @Inject constructor(private val repository: Categories
     ViewModel() {
 
     private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing.asStateFlow()
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val snackBarMessage = _snackBarMessage.asSharedFlow()
-
+    val snackBarMessage: SharedFlow<String> = _snackBarMessage.asSharedFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val categories =
@@ -42,7 +43,6 @@ class CategoriesViewModel @Inject constructor(private val repository: Categories
                 SharingStarted.WhileSubscribed(5000),
                 CategoriesUiState.Loading
             )
-
 
     fun refresh() {
         viewModelScope.launch {

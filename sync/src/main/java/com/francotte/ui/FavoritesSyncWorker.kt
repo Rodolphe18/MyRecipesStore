@@ -12,7 +12,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.francotte.data.mapper.dto.asEntity
 import com.francotte.database.dao.FullRecipeDao
-import com.francotte.datastore.FoodPreferencesDataRepository
+import com.francotte.datastore.FoodPreferencesDataSource
 import com.francotte.network.api.FavoriteApi
 import com.francotte.network.api.RecipeApi
 import com.francotte.network.model.NetworkRecipe
@@ -82,7 +82,7 @@ class FavoritesSyncWorker(ctx: Context, params: WorkerParameters): CoroutineWork
 
     private suspend fun trySyncOne(
         api: FavoriteApi,
-        repo: FoodPreferencesDataRepository,
+        repo: FoodPreferencesDataSource,
         token: String,
         recipeId: String,
         desiredFav: Boolean,
@@ -118,7 +118,7 @@ class FavoritesSyncWorker(ctx: Context, params: WorkerParameters): CoroutineWork
 
     private suspend fun reconcileFromServer(
         api: FavoriteApi,
-        repo: FoodPreferencesDataRepository,
+        repo: FoodPreferencesDataSource,
         token: String,
     ): Result {
         return try {
@@ -140,7 +140,7 @@ class FavoritesSyncWorker(ctx: Context, params: WorkerParameters): CoroutineWork
     }
 
     private suspend fun prefetchMissingFavoriteRecipes(
-        repo: FoodPreferencesDataRepository,
+        repo: FoodPreferencesDataSource,
         dao: FullRecipeDao,
         api: RecipeApi,
     ): Boolean {
@@ -229,7 +229,7 @@ private const val REASON_LOGIN = "login"
 @InstallIn(SingletonComponent::class)
 interface FavoritesSyncEntryPoint {
     fun favoriteApi(): FavoriteApi
-    fun foodPreferencesRepo(): FoodPreferencesDataRepository
+    fun foodPreferencesRepo(): FoodPreferencesDataSource
     fun recipeApi(): RecipeApi
     fun fullRecipeDao(): FullRecipeDao
 }

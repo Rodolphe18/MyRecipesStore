@@ -10,6 +10,8 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,11 +28,11 @@ constructor(
     @Assisted val searchMode: SearchMode,
 ) : ViewModel() {
 
-    private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1,replay = 1)
-    val snackBarMessage = _snackBarMessage.asSharedFlow()
+    private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1, replay = 1)
+    val snackBarMessage: SharedFlow<String> = _snackBarMessage.asSharedFlow()
 
     private val _isReloading = MutableStateFlow(false)
-    val isReloading = _isReloading.asStateFlow()
+    val isReloading: StateFlow<Boolean> = _isReloading.asStateFlow()
 
     val items =
         when (searchMode) {
@@ -38,7 +40,6 @@ constructor(
             SearchMode.COUNTRY -> repository.observeAllAreas()
             else -> flowOf(emptyList())
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
 
     fun onRefresh() {
         viewModelScope.launch {
@@ -54,7 +55,6 @@ constructor(
             _isReloading.value = false
         }
     }
-
 
     @AssistedFactory
     interface Factory {

@@ -4,7 +4,7 @@ import com.francotte.data.interfaces.OfflineFirstFavoritesRepository
 import com.francotte.data.mapper.dto.asEntity
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.FullRecipeDao
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.Recipe
 import com.francotte.network.api.FavoriteApi
 import com.francotte.network.api.RecipeApi

@@ -8,12 +8,11 @@ import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import com.francotte.designsystem.component.LocalBillingController
 import com.francotte.screenshot_testing.Phone480
 import com.francotte.screenshot_testing.RobolectricTestWindowSizes
 import com.francotte.screenshot_testing.captureForDevice
-import com.francotte.testing.FakeBillingController
 import com.francotte.testing.util.HomeTags
+import com.francotte.ui.LocalShouldShowBanners
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,8 +31,6 @@ class VideosScreenRobolectricTests {
     @get:Rule
     val composeRule: AndroidComposeTestRule<ActivityScenarioRule<ComponentActivity>, ComponentActivity> =
         createAndroidComposeRule()
-
-    private val fakeBillingController = FakeBillingController()
 
     @Before
     fun stableEnv() {
@@ -62,7 +59,7 @@ class VideosScreenRobolectricTests {
         }
 
         composeRule.setContent {
-            CompositionLocalProvider(LocalBillingController provides fakeBillingController) {
+            CompositionLocalProvider(LocalShouldShowBanners provides false) {
                 homeScreen()
             }
         }

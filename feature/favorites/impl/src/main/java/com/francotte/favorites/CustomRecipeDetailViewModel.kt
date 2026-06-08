@@ -14,6 +14,8 @@ import com.francotte.model.CustomRecipe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -28,8 +30,8 @@ class CustomRecipeDetailViewModel @Inject constructor(
 
     val recipeId: String? = savedStateHandle["recipeId"]
 
-    private val _recipe: MutableStateFlow<CustomRecipe?> = MutableStateFlow(null)
-    val recipe = _recipe.asStateFlow()
+    private val _recipe = MutableStateFlow<CustomRecipe?>(null)
+    val recipe: StateFlow<CustomRecipe?> = _recipe.asStateFlow()
 
     var imageUri by mutableStateOf<Uri?>(null)
     var recipeTitle by mutableStateOf("")
@@ -42,7 +44,7 @@ class CustomRecipeDetailViewModel @Inject constructor(
     val hasBeenUpdated = MutableStateFlow(false)
 
     private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
-    val snackBarMessage = _snackBarMessage.asSharedFlow()
+    val snackBarMessage: SharedFlow<String> = _snackBarMessage.asSharedFlow()
 
     fun onRecipeUpdated() {
         imageUri = null

@@ -1,9 +1,12 @@
 package com.francotte.login
 
-import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.LocalActivity
+import androidx.compose.material3.SnackbarDuration
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.francotte.ui.LocalSnackbarHostState
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -19,8 +22,6 @@ import com.francotte.navigation.Navigator
 
 const val LOGIN_ROUTE = "login_route"
 
-
-
 fun EntryProviderScope<NavKey>.loginEntry(navigator: Navigator) {
     entry<LoginNavKey> {
         LoginRoute(
@@ -30,7 +31,6 @@ fun EntryProviderScope<NavKey>.loginEntry(navigator: Navigator) {
         )
     }
 }
-
 
 fun NavController.navigateToLoginScreen(navOptions: NavOptions? = null) {
     this.navigate(LOGIN_ROUTE, navOptions)
@@ -57,14 +57,22 @@ fun LoginRoute(
     navigateToFavoriteScreen: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    val googleSignIn = rememberLauncherForActivityResult(GoogleSignInContract()) { task ->
-            viewModel.doGoogleLogin(task)
-        }
+    val activity = LocalActivity.current
+    val snackbarHostState = LocalSnackbarHostState.current
     LaunchedEffect(Unit) {
-        viewModel.authSuccess.collect { navigateToFavoriteScreen() }
+        launch { viewModel.authSuccess.collect { navigateToFavoriteScreen() } }
+        launch {
+            viewModel.authError.collect { message ->
+                snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+            }
+        }
     }
-    LoginScreen(onOpenResetPassword = onOpenResetPassword, onLogin = viewModel::loginWithMailAndPassword, onRegister = onRegister) {
-        googleSignIn.launch(viewModel.googleSignInIntent)
+    LoginScreen(
+        onOpenResetPassword = onOpenResetPassword,
+        onLogin = viewModel::loginWithMailAndPassword,
+        onRegister = onRegister,
+    ) {
+        activity?.let { viewModel.doGoogleLogin(it) }
     }
     ScreenCounter.increment()
 }

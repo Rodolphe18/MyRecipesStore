@@ -2,7 +2,7 @@ package com.francotte.data.repository
 
 import com.francotte.data.interfaces.OfflineFirstFullRecipeRepository
 import com.francotte.data.interfaces.UserFullRecipeRepository
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableFullRecipe
 import kotlinx.coroutines.flow.Flow

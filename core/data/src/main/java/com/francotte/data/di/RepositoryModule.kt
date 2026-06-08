@@ -1,6 +1,5 @@
 package com.francotte.data.di
 
-import com.francotte.data.interfaces.AuthRepository
 import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.data.repository.CompositeUserFullRecipeRepository
 import com.francotte.data.repository.CompositeUserHomeRepository
@@ -15,11 +14,14 @@ import com.francotte.data.repository.OfflineFirstFullRecipeRepositoryImpl
 import com.francotte.data.repository.OfflineFirstHomeRepository
 import com.francotte.data.repository.OfflineFirstIngredientsAndAreasRepositoryImpl
 import com.francotte.data.interfaces.IngredientsAndAreasRepository
+import com.francotte.data.favorite.FavoriteManager
+import com.francotte.data.interfaces.FavoriteHelper
 import com.francotte.data.interfaces.HomeRepository
 import com.francotte.data.interfaces.SearchContentsRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.data.interfaces.UserFullRecipeRepository
 import com.francotte.data.interfaces.UserHomeRepository
-import com.francotte.data.manager.AuthManager
+import com.francotte.data.repository.LocalUserDataRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -58,6 +60,8 @@ abstract class RepositoryModule {
     abstract fun bindFavoritesRepository(impl: FavoritesRepositoryImpl): FavoritesRepository
 
     @Binds @Singleton
-    abstract fun bindAuthRepository(impl: AuthManager): AuthRepository
+    abstract fun bindFavoriteToggler(impl: FavoriteManager): FavoriteHelper
 
+    @Binds
+    abstract fun bindsUserDataRepository(userDataRepository: LocalUserDataRepository): UserDataRepository
 }

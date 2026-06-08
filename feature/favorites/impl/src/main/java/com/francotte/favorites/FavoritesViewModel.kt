@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -25,15 +26,13 @@ class FavoritesViewModel @Inject constructor(
     private val favoritesRepository: FavoritesRepository,
 ) : ViewModel() {
     private val _searchText = MutableStateFlow("")
-    val searchText = _searchText.asStateFlow()
+    val searchText: StateFlow<String> = _searchText.asStateFlow()
 
     var isReloading by mutableStateOf(false)
 
-
     val favoritesRecipesState =
         combine<Result<List<LikeableRecipe>>, Result<List<CustomRecipe>>, String, FavoriteUiState>(
-            favoritesRepository
-                .observeFavoritesRecipes(),
+            favoritesRepository.observeFavoritesRecipes(),
             favoritesRepository.observeUserCustomRecipes(),
             _searchText,
         ) { favorites, customRecipes, searchText ->
@@ -54,7 +53,6 @@ class FavoritesViewModel @Inject constructor(
             }
         }.debounce(500)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FavoriteUiState.Loading)
-
 
     fun reload() {
         viewModelScope.launch {

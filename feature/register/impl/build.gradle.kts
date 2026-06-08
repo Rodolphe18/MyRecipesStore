@@ -31,9 +31,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
 }
 
 dependencies {
@@ -46,7 +44,8 @@ dependencies {
     api(project(":core:navigation"))
 
     api(project(":feature:register:api"))
-    api(project(":feature:login:impl"))
+    api(project(":core:auth"))
+    api(project(":core:domain"))
     api(project(":feature:favorites:api"))
 
     implementation("com.google.android.material:material:1.11.0")

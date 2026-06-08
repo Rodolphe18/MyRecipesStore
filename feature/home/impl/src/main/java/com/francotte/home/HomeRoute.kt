@@ -10,7 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -21,7 +21,6 @@ import com.francotte.feature.section.api.navigateToSection
 import com.francotte.feature.video.api.navigateToVideo
 import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
-import com.francotte.ui.LocalLaunchCounterManager
 import com.francotte.ui.LocalSnackbarHostState
 
 
@@ -47,7 +46,6 @@ fun HomeRoute(
     onOpenSection: (String) -> Unit,
     onVideoButtonClick: (String) -> Unit
 ) {
-    val localLaunchCounter = LocalLaunchCounterManager.current
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     val snackBarHostState = LocalSnackbarHostState.current

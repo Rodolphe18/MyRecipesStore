@@ -1,73 +1,78 @@
 package com.francotte.login
 
-import android.net.Uri
+import android.content.Context
 import android.util.Log
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.interfaces.EmailPasswordCredentials
-import com.francotte.data.interfaces.GoogleCredentials
-import com.francotte.domain.GetGoogleSignInIntentUseCase
-import com.francotte.domain.LoginUseCase
-import com.francotte.domain.RegisterUseCase
-import com.francotte.domain.RequestPasswordResetUseCase
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.tasks.Task
+import com.francotte.auth.RegistrationRepository
+import com.francotte.auth.SessionRepository
+import com.francotte.auth.strategy.EmailPasswordCredentials
+import com.francotte.auth.strategy.GoogleCredentials
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+
+private const val WEB_CLIENT_ID = "431140586774-o1p6cnlk42macn41t4ld0t0bh2kr21fi.apps.googleusercontent.com"
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    getGoogleSignInIntentUseCase: GetGoogleSignInIntentUseCase,
-    private val loginUseCase: LoginUseCase,
-    private val registerUseCase: RegisterUseCase,
-    private val requestPasswordResetUseCase: RequestPasswordResetUseCase,
+    private val sessionRepository: SessionRepository,
+    private val registrationRepository: RegistrationRepository,
 ) : ViewModel() {
 
     val loading = MutableStateFlow(false)
 
-    val googleSignInIntent = getGoogleSignInIntentUseCase()
-
     private val _authSuccess = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val authSuccess: SharedFlow<Unit> = _authSuccess.asSharedFlow()
+
+    private val _authError = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val authError: SharedFlow<String> = _authError.asSharedFlow()
 
     val resetState = MutableStateFlow<Result<Unit>?>(null)
 
     fun requestReset(email: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            resetState.value = requestPasswordResetUseCase(email)
-        }
-    }
-
-    fun doGoogleLogin(signInTask: Task<GoogleSignInAccount>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val idToken = signInTask.await().idToken
-                if (idToken.isNullOrEmpty()) { onError(); return@launch }
-                val result = loginUseCase(GoogleCredentials(idToken))
-                if (result.isSuccess) onSuccess() else onError()
-            } catch (e: Exception) {
-                onError()
-                Log.e("debug_google", "Erreur récupération compte Google", e)
-            }
-        }
-    }
-
-    fun createUserWithMailAndPassword(
-        username: String,
-        email: String,
-        password: String,
-        imageUri: Uri?,
-    ) {
         viewModelScope.launch {
-            val result = registerUseCase(username, email, password, imageUri)
-            if (result.isSuccess) onSuccess() else onError()
+            resetState.value = registrationRepository.requestPasswordReset(email)
+        }
+    }
+
+    fun doGoogleLogin(activityContext: Context) {
+        viewModelScope.launch {
+            loading.value = true
+            try {
+                val credentialManager = CredentialManager.create(activityContext)
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(WEB_CLIENT_ID)
+                    .build()
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+                val response = credentialManager.getCredential(activityContext, request)
+                val credential = response.credential
+                if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val idToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
+                    val result = sessionRepository.login(GoogleCredentials(idToken))
+                    if (result.isSuccess) onSuccess() else onError()
+                } else {
+                    onError()
+                }
+            } catch (e: GetCredentialCancellationException) {
+                loading.value = false
+            } catch (e: Exception) {
+                Log.e("debug_google", "Erreur récupération compte Google", e)
+                onError()
+            }
         }
     }
 
@@ -78,10 +83,10 @@ class LoginViewModel @Inject constructor(
         if (!loading.value) {
             val nameOrMail = userNameOrMail?.takeUnless(CharSequence::isBlank) ?: return
             val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch {
                 loading.value = true
                 try {
-                    val result = loginUseCase(EmailPasswordCredentials(nameOrMail, pwd))
+                    val result = sessionRepository.login(EmailPasswordCredentials(nameOrMail, pwd))
                     if (result.isSuccess) onSuccess() else onError()
                 } catch (e: Exception) {
                     Log.d("debug_email", "$e")
@@ -97,6 +102,6 @@ class LoginViewModel @Inject constructor(
 
     private fun onError() {
         loading.value = false
-        onCleared()
+        _authError.tryEmit("Google sign-in failed")
     }
 }

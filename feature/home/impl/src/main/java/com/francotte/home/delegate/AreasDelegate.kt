@@ -21,9 +21,7 @@ interface AreasRecipesDelegate {
 class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserHomeRepository):AreasRecipesDelegate {
 
     private val _areasRecipes = MutableStateFlow(AreasRecipes())
-
     override val areasRecipes: StateFlow<AreasRecipes> = _areasRecipes.asStateFlow()
-
 
     override suspend fun observeAreasRecipes() {
         repository.observeFoodAreaSections().collect { areas ->
@@ -49,13 +47,8 @@ class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserH
         } finally {
             _areasRecipes.update { it.copy(loading = false, refreshing = false) }
         }
-
-
     }
-
 }
-
-
 
 data class AreasRecipes (
     val loading:Boolean = true,

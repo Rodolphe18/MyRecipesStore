@@ -7,7 +7,7 @@ import com.francotte.data.mapper.dto.asEntity
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.AreaDao
 import com.francotte.database.dao.IngredientDao
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableLightRecipes
 import com.francotte.network.api.RecipeApi

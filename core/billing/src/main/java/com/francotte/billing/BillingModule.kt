@@ -9,5 +9,5 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 abstract class BillingModule {
     @Binds
-    abstract fun bindPremiumStatusProvider(billingManager: BillingManager): PremiumStatusProvider
+    abstract fun bindBillingManager(impl: BillingManagerImpl): BillingManager
 }

@@ -31,13 +31,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
 }
 
 dependencies {
 
+    api(project(":core:auth"))
     api(project(":core:data"))
     api(project(":core:model"))
     api(project(":core:common"))

@@ -21,9 +21,7 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
     private val repository: UserHomeRepository
 ) : JapaneseRecipesDelegate {
 
-    private val _japaneseRecipes: MutableStateFlow<JapaneseRecipes> =
-        MutableStateFlow(JapaneseRecipes())
-
+    private val _japaneseRecipes = MutableStateFlow(JapaneseRecipes())
     override val japaneseRecipes: StateFlow<JapaneseRecipes> = _japaneseRecipes.asStateFlow()
 
     override suspend fun observeJapaneseRecipes() {
@@ -37,7 +35,6 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
             }
         }
     }
-
 
     override suspend fun refreshJapaneseRecipes(mode: RefreshMode) {
         when (mode) {
@@ -68,7 +65,6 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
             }
         }
     }
-
 }
 
 data class JapaneseRecipes(
@@ -81,4 +77,3 @@ data class JapaneseRecipes(
     val hasRecipes: Boolean
         get() = recipes.isNotEmpty()
 }
-

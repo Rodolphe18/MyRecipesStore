@@ -3,7 +3,7 @@ package com.francotte.favorites
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -17,14 +17,12 @@ import com.francotte.navigation.Navigator
 fun EntryProviderScope<NavKey>.favoritesEntry(
     navigator: Navigator,
     onToggleFavorite: (LikeableRecipe) -> Unit,
-    customRecipeHasBeenUpdated: Boolean
 ) {
     entry<FavoritesNavKey> {
         FavoriteRoute(
             onRecipeClick = navigator::navigateToDetail,
             onToggleFavorite = onToggleFavorite,
             onCustomRecipeClick = navigator::navigateToCustomRecipe,
-            customRecipeHasBeenUpdated = customRecipeHasBeenUpdated,
         )
     }
 }
@@ -36,7 +34,6 @@ fun FavoriteRoute(
     onRecipeClick: (List<String>, Int, String) -> Unit,
     onCustomRecipeClick: (String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
-    customRecipeHasBeenUpdated: Boolean,
 ) {
     val favoriteUiState by viewModel.favoritesRecipesState.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
@@ -51,7 +48,6 @@ fun FavoriteRoute(
         onOpenRecipe = onRecipeClick,
         onToggleFavorite = onToggleFavorite,
         onOpenCustomRecipe = onCustomRecipeClick,
-        customRecipeHasBeenUpdated = customRecipeHasBeenUpdated,
     )
     ScreenCounter.increment()
 }

@@ -62,7 +62,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.ui.nbSectionColumns
 import com.francotte.ui.nbSectionFavorites
@@ -86,7 +86,6 @@ fun FavoritesScreen(
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenCustomRecipe: (String) -> Unit,
-    customRecipeHasBeenUpdated: Boolean,
 ) {
     val mode = LocalAppLayout.current.mode
     val lazyGridState = rememberLazyGridState()
@@ -100,11 +99,6 @@ fun FavoritesScreen(
         if (searchText.isEmpty()) {
             delay(3000)
             focusManager.clearFocus()
-        }
-    }
-    LaunchedEffect(customRecipeHasBeenUpdated) {
-        if (customRecipeHasBeenUpdated) {
-            viewModel.reload()
         }
     }
     LaunchedEffect(lazyGridState) {

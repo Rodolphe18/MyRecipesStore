@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @Composable
-fun RatingBottomSheetHost(inAppRatingManager: InAppRatingManager) {
+fun RatingBottomSheetHost(inAppRatingRepository: InAppRatingRepository) {
     var showSheet by rememberSaveable { mutableStateOf(false) }
     var evaluated by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -39,9 +39,9 @@ fun RatingBottomSheetHost(inAppRatingManager: InAppRatingManager) {
         if (evaluated) return@LaunchedEffect
         evaluated = true
 
-        val shouldShow = inAppRatingManager.shouldShowCustomRatingBottomSheet()
+        val shouldShow = inAppRatingRepository.shouldShowCustomRatingBottomSheet()
         if (shouldShow) {
-            inAppRatingManager.inAppRatingDialogShown()
+            inAppRatingRepository.inAppRatingDialogShown()
             showSheet = true
         }
     }
@@ -50,10 +50,10 @@ fun RatingBottomSheetHost(inAppRatingManager: InAppRatingManager) {
         RatingBottomSheet(
             onRate = {
                 showSheet = false
-                inAppRatingManager.setHasBeenRatedOrNotAskAgainToTrue()
                 val safeActivity = localActivity ?: return@RatingBottomSheet
                 scope.launch {
-                    inAppRatingManager.requestReviewOnPlayStore(safeActivity)
+                    inAppRatingRepository.setHasBeenRatedOrNotAskAgainToTrue()
+                    inAppRatingRepository.launchPlayStoreForReview(safeActivity)
                 }
             },
             onLater = { showSheet = false },

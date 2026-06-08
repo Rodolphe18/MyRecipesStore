@@ -1,10 +1,6 @@
 package com.francotte.myrecipesstore
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.view.Window
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,10 +20,9 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -60,10 +55,7 @@ import com.francotte.feature.login.api.navigateToLoginOnLogout
 import com.francotte.feature.settings.api.navigateToPremium
 import com.francotte.feature.video.api.VideoNavKey
 import com.francotte.home.homeEntry
-import com.francotte.inapp_rating.InAppRatingManager
 import com.francotte.login.loginEntry
-import com.francotte.data.manager.ToggleFavoriteResult
-import com.francotte.model.LikeableRecipe
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.deeplink.toNavKeyOrNull
 import com.francotte.myrecipesstore.navigation.AppNavigationRail
@@ -75,9 +67,7 @@ import com.francotte.myrecipesstore.splash.splashEntry
 import com.francotte.myrecipesstore.ui.AppState
 import com.francotte.navigation.Navigator
 import com.francotte.navigation.toEntries
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.profile.profileEntry
-import com.francotte.settings.SettingsViewModel
 import com.francotte.register.registerEntry
 import com.francotte.reset.requestResetEntry
 import com.francotte.reset.resetPasswordEntry
@@ -88,79 +78,50 @@ import com.francotte.section.sectionEntry
 import com.francotte.settings.SettingsBottomSheet
 import com.francotte.settings.premiumEntry
 import com.francotte.ui.LocalAppLayout
-import com.francotte.ui.LocalAuthManager
-import com.francotte.ui.LocalFavoriteManager
-import com.francotte.ui.LocalInAppRatingManager
+import com.francotte.ui.LocalShouldShowBanners
 import com.francotte.ui.LocalSnackbarHostState
 import com.francotte.video.videoEntry
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FoodApp(
-    @ApplicationContext context: Context,
-    appState: AppState,
-    onToggleFavorite: suspend (LikeableRecipe) -> ToggleFavoriteResult,
-    window: Window,
-) {
-    val mode = LocalAppLayout.current.mode
-    val localActivity = LocalActivity.current
-    val localAuthManager = LocalAuthManager.current
-    val settingsViewModel: SettingsViewModel = hiltViewModel()
-    val localFavoriteManager = LocalFavoriteManager.current
-    val localInAppRatingManager = LocalInAppRatingManager.current
+fun FoodApp(appState: AppState, window: Window) {
 
-    val isAuthenticated by localAuthManager.isAuthenticated.collectAsStateWithLifecycle()
+    val mode = LocalAppLayout.current.mode
+    val mainViewModel: MainViewModel = hiltViewModel()
+
+    val isAuthenticated by mainViewModel.isAuthenticated.collectAsStateWithLifecycle()
+    val shouldShowBanners by mainViewModel.shouldShowBanners.collectAsStateWithLifecycle()
+    val userImage by mainViewModel.userImage.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackBarHostState = LocalSnackbarHostState.current
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
-    val customRecipeHasBeenUpdated by localFavoriteManager
-        .customRecipeHasBeenUpdatedSuccessfully
-        .collectAsStateWithLifecycle()
-
     val useRail = mode.useNavigationRail()
 
-    val topBarScrollBehavior =
-        if (useRail) TopAppBarDefaults.pinnedScrollBehavior()
-        else null
+    val topBarScrollBehavior = if (useRail) TopAppBarDefaults.pinnedScrollBehavior() else null
 
     val navigator = remember { Navigator(appState.navigationState) }
 
     val pendingDeepLink = rememberSaveable { mutableStateOf<NavKey?>(null) }
 
-    val wrappedToggle: (LikeableRecipe) -> Unit = { recipe ->
-        scope.launch {
-            when (val result = onToggleFavorite(recipe)) {
-                is ToggleFavoriteResult.Success -> snackBarHostState.showSnackbar(
-                    if (result.added) "Recipe added to favorites" else "Recipe removed from favorites"
-                )
-                ToggleFavoriteResult.Offline -> snackBarHostState.showSnackbar(
-                    "Offline: favorites will sync when back online"
-                )
-                ToggleFavoriteResult.Unauthenticated -> navigator.navigateToLogin()
-            }
-        }
-    }
-
     val entryProvider = entryProvider {
         splashEntry(navigator,window) {
             pendingDeepLink.value?.also { pendingDeepLink.value = null } ?: HomeNavKey
         }
-        homeEntry(navigator, wrappedToggle)
+        homeEntry(navigator, mainViewModel::toggleFavorite)
         categoriesEntry(navigator)
-        categoryEntry(navigator, wrappedToggle)
-        addRecipeEntry(navigator, isAuthenticated)
+        categoryEntry(navigator, mainViewModel::toggleFavorite)
+        addRecipeEntry(navigator)
         searchModeEntry(navigator)
-        sectionEntry(navigator, wrappedToggle)
-        searchRecipesEntry(navigator, wrappedToggle)
-        searchEntry(navigator, wrappedToggle)
+        sectionEntry(navigator, mainViewModel::toggleFavorite)
+        searchRecipesEntry(navigator, mainViewModel::toggleFavorite)
+        searchEntry(navigator, mainViewModel::toggleFavorite)
         loginEntry(navigator)
         registerEntry(navigator)
-        favoritesEntry(navigator, wrappedToggle, customRecipeHasBeenUpdated)
+        favoritesEntry(navigator, mainViewModel::toggleFavorite)
         premiumEntry(navigator)
-        detailRecipeEntry(navigator, wrappedToggle)
+        detailRecipeEntry(navigator, mainViewModel::toggleFavorite)
         customRecipeEntry(navigator)
         videoEntry(window)
         profileEntry(navigator)
@@ -170,10 +131,6 @@ fun FoodApp(
 
     val entries = appState.navigationState.toEntries(entryProvider)
 
-
-    LaunchedEffect(Unit) {
-        showInAppReview(localActivity, localInAppRatingManager)
-    }
 
     LaunchedEffect(Unit) {
         DeepLinkBus.intents.collect { intent ->
@@ -191,13 +148,9 @@ fun FoodApp(
     if (showSettingsDialog) {
         SettingsBottomSheet(
             onDismiss = { showSettingsDialog = false },
-            onOpenPrivacyPolicy = {
-                showSettingsDialog = false
-                openPrivacyPolicy(context)
-            },
             onLogout = {
                 scope.launch {
-                    settingsViewModel.logout()
+                    mainViewModel.logout()
                     navigator.navigateToLoginOnLogout()
                     showSettingsDialog = false
                 }
@@ -206,13 +159,9 @@ fun FoodApp(
                 showSettingsDialog = false
                 navigator.navigateToPremium()
             },
-            onShareApp = {
-                shareApp(context)
-                showSettingsDialog = false
-            },
             onDeleteClick = {
                 scope.launch {
-                    settingsViewModel.deleteAccount()
+                    mainViewModel.deleteAccount()
                     navigator.navigateToLoginOnLogout()
                     showSettingsDialog = false
                 }
@@ -220,6 +169,7 @@ fun FoodApp(
         )
     }
 
+    CompositionLocalProvider(LocalShouldShowBanners provides shouldShowBanners) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -279,15 +229,11 @@ fun FoodApp(
                         TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
                             ?: error("Top level nav item not found for ${appState.navigationState.currentTopLevelKey}")
 
-                    val user by localAuthManager.user.collectAsStateWithLifecycle()
-                    var image by remember { mutableStateOf("") }
-                    LaunchedEffect(user?.image) { user?.image?.let { image = it } }
-
                     TopAppBar(
                         modifier = Modifier
                             .statusBarsPadding()
                             .padding(horizontal = 4.dp),
-                        profileImage = image,
+                        profileImage = userImage,
                         titleRes = destination.titleTextId,
                         actionIcon = Icons.Outlined.Settings,
                         actionIconContentDescription = "settings",
@@ -324,47 +270,17 @@ fun FoodApp(
                 }
 
                 LaunchedEffect(Unit) {
-                    localAuthManager.snackBarMessage.collect { snackBarHostState.showSnackbar(it) }
+                    mainViewModel.effects.collect { effect ->
+                        when (effect) {
+                            is MainEffect.ShowSnackBar -> snackBarHostState.showSnackbar(effect.message)
+                            MainEffect.NavigateToLogin -> navigator.navigateToLogin()
+                        }
+                    }
                 }
             }
         }
     }
-}
-
-private fun shareApp(context: Context) {
-    val sendIntent =
-        Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, "Try this app! it is incredible!")
-            putExtra(Intent.EXTRA_TITLE, "My recipes Store")
-            putExtra(Intent.EXTRA_SUBJECT, "Food recipes")
-            type = "text/plain"
-        }
-    val shareIntent = Intent.createChooser(sendIntent, null)
-    context.startActivity(shareIntent)
-}
-
-private suspend fun showInAppReview(
-    activity: Activity?,
-    inAppRatingManager: InAppRatingManager,
-) {
-    activity?.let { activity ->
-        if (inAppRatingManager.shouldTryToShowInAppReview()) {
-            inAppRatingManager.apply {
-                requestInAppReview(activity)
-                setHasBeenRatedOrNotAskAgainToTrue()
-            }
-        }
     }
-}
-
-private fun openPrivacyPolicy(context: Context) {
-    val uri = "https://myrecipesstore18.com/privacy-policy.html".toUri()
-    val intent =
-        Intent(Intent.ACTION_VIEW, uri).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-    context.startActivity(intent)
 }
 
 

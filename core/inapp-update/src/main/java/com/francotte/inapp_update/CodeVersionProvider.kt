@@ -13,11 +13,10 @@ interface CodeVersionProvider {
     fun currentVersionCode(): Int
 }
 
-class AndroidVersionCodeProvider
-    @Inject
-    constructor(
-        @ApplicationContext private val context: Context,
+class AndroidVersionCodeProvider @Inject constructor(
+        @param:ApplicationContext private val context: Context,
     ) : CodeVersionProvider {
+
         override fun currentVersionCode(): Int {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) packageInfo.versionCode else packageInfo.longVersionCode.toInt()

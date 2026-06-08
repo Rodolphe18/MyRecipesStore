@@ -9,6 +9,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -19,10 +20,8 @@ class SectionViewModel @AssistedInject constructor(
     @Assisted val sectionName: String,
 ) : ViewModel() {
 
-
     private val _sectionUiState = MutableStateFlow(SectionUiState())
-
-    val sectionUiState = _sectionUiState.asStateFlow()
+    val sectionUiState: StateFlow<SectionUiState> = _sectionUiState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -68,7 +67,6 @@ class SectionViewModel @AssistedInject constructor(
     interface Factory {
         fun create(title: String): SectionViewModel
     }
-
 }
 
 data class SectionUiState(

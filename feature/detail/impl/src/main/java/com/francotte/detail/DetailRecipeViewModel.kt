@@ -15,6 +15,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -26,7 +27,6 @@ class DetailRecipeViewModel @AssistedInject constructor(
     @Assisted val recipeTitle:String?
 ) : ViewModel() {
 
-
     private val longIds = ids?.map { it.toLong() } ?: emptyList()
 
     val pageCount by mutableIntStateOf(longIds.size)
@@ -36,11 +36,11 @@ class DetailRecipeViewModel @AssistedInject constructor(
     private val _recipesMap = mutableStateMapOf<Int, LikeableRecipe>()
     val recipesMap: SnapshotStateMap<Int, LikeableRecipe> = _recipesMap
 
-    private val _deeplinkRecipe: MutableStateFlow<LikeableRecipe?> = MutableStateFlow(null)
-    val deeplinkRecipe: StateFlow<LikeableRecipe?> = _deeplinkRecipe
+    private val _deeplinkRecipe = MutableStateFlow<LikeableRecipe?>(null)
+    val deeplinkRecipe: StateFlow<LikeableRecipe?> = _deeplinkRecipe.asStateFlow()
 
     private val _title = MutableStateFlow(recipeTitle ?: "")
-    val title: StateFlow<String> = _title
+    val title: StateFlow<String> = _title.asStateFlow()
 
     init {
         if (longIds.isNotEmpty()) {
@@ -65,7 +65,6 @@ class DetailRecipeViewModel @AssistedInject constructor(
                 if (result.isSuccess) {
                     val likeableRecipe = result.getOrNull() as LikeableRecipe
                     _deeplinkRecipe.value = likeableRecipe
-
                     _title.value = likeableRecipe.recipe.strMeal
                 }
             }
