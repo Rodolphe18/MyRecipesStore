@@ -75,8 +75,8 @@ import com.francotte.designsystem.component.TopAppBar
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.ui.FavButton
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
+import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -89,7 +89,7 @@ fun DetailRecipeScreen(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBackCLick: () -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val localBannerProvider = LocalBannerProvider.current
     val scope = rememberCoroutineScope()
     val topAppBarScrollBehavior =

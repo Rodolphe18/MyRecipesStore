@@ -1,7 +1,6 @@
 package com.francotte.myrecipesstore.splash
 
 import android.util.Log
-import android.view.Window
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,15 +33,14 @@ fun Navigator.goToBaseAndClearSplash(key: NavKey) {
 @Serializable
 object SplashNavKey : NavKey
 
-fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator,window: Window, resolveNextKey: () -> NavKey) {
+fun EntryProviderScope<NavKey>.splashEntry(navigator: Navigator, resolveNextKey: () -> NavKey) {
     entry<SplashNavKey> {
-        SplashRoute(window,{ navigator.goToBaseAndClearSplash(resolveNextKey()) })
+        SplashRoute({ navigator.goToBaseAndClearSplash(resolveNextKey()) })
     }
 }
 
 @Composable
 fun SplashRoute(
-    window: Window,
     onDone: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
@@ -51,7 +49,7 @@ fun SplashRoute(
     val step by viewModel.step.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    HideNavigationBar(window)
+    HideNavigationBar()
     LaunchedEffect(step) {
         when (step) {
             SplashStep.Consent -> {

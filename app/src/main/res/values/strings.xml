@@ -81,4 +81,6 @@
     <string name="latest_recipes_title">LatestRecipes</string>
     <string name="supporting_text_email">Email adress is not modifiable</string>
     <string name="app_launcher_name">My Recipes Store</string>
+  <string name="permission_granted">Permission granted ✅</string>
+  <string name="permission_denied">Permission denied ❌</string>
 </resources>

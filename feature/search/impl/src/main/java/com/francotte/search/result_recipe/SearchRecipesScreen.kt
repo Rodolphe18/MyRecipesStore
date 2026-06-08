@@ -44,9 +44,9 @@ import com.francotte.designsystem.theme.LightYellow
 import com.francotte.model.LikeableRecipe
 import com.francotte.search.R
 import com.francotte.ui.ErrorScreen
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.TrackScrollJank
+import com.francotte.ui.rememberDeviceMode
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +59,7 @@ fun SearchRecipesScreen(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Scaffold(

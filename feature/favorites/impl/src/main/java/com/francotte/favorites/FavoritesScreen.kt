@@ -68,10 +68,10 @@ import com.francotte.ui.nbSectionColumns
 import com.francotte.ui.nbSectionFavorites
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.ErrorScreen
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.TrackScrollJank
+import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -87,7 +87,7 @@ fun FavoritesScreen(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenCustomRecipe: (String) -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val lazyGridState = rememberLazyGridState()
     val focusManager = LocalFocusManager.current
     val pullRefreshState = rememberPullToRefreshState()

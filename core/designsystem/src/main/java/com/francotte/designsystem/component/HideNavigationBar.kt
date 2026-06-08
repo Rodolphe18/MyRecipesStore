@@ -1,6 +1,6 @@
 package com.francotte.designsystem.component
 
-import android.view.Window
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
@@ -12,7 +12,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
-fun HideNavigationBar(window: Window) {
+fun HideNavigationBar() {
+    val window = LocalActivity.current?.window ?: return
     val view = LocalView.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
@@ -34,7 +35,8 @@ fun HideNavigationBar(window: Window) {
 }
 
 @Composable
-fun HideBottomSystemBar(window: Window) {
+fun HideBottomSystemBar() {
+    val window = LocalActivity.current?.window ?: return
     val view = LocalView.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 

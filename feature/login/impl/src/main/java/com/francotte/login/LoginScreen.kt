@@ -47,8 +47,8 @@ import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.theme.Orange
 import com.francotte.ui.CustomTextField
 import com.francotte.ui.DeviceMode
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.PasswordField
+import com.francotte.ui.rememberDeviceMode
 import com.francotte.ui.favButtonDimension
 
 @Composable
@@ -58,7 +58,7 @@ fun LoginScreen(
     onOpenResetPassword: () -> Unit,
     doGoogleLogin: () -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val dimension = remember(mode) { googleButtonDimension(mode) }
     var loginUserNameOrMail by remember { mutableStateOf("") }
     var loginPassword by remember { mutableStateOf("") }

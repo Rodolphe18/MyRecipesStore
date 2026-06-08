@@ -41,12 +41,12 @@ import com.francotte.ui.BigRecipeItem
 import com.francotte.ui.DeviceMode
 import com.francotte.ui.ErrorScreen
 import com.francotte.ui.HorizontalRecipesList
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
 import com.francotte.ui.VideoRecipeItem
 import com.francotte.ui.nbHomeColumns
+import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,7 +64,7 @@ fun HomeScreen(
     onRetryEnglish: () -> Unit,
     onCurrentPageChange: (Int) -> Unit
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val localBannerProvider = LocalBannerProvider.current
     val spanSize = GridItemSpan(mode.nbHomeColumns)
     val scrollState = rememberLazyGridState()

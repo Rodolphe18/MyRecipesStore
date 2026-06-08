@@ -41,7 +41,7 @@ fun FavButton(
     onToggleFavorite: () -> Unit,
     pendingDelayMs: Long = 250L,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val dimension = remember(mode) { favButtonDimension(mode) }
 
     var displayState by remember { mutableStateOf(syncState) }

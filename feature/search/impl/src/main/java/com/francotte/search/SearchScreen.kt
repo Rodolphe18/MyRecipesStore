@@ -62,9 +62,9 @@ import com.francotte.feature.search.api.SearchMode
 import com.francotte.model.LikeableRecipe
 import com.francotte.search.result_mode.SelectableChip
 import com.francotte.ui.DeviceMode
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.RecipeItem
+import com.francotte.ui.rememberDeviceMode
 
 @Composable
 fun SearchScreen(
@@ -78,7 +78,7 @@ fun SearchScreen(
     onToggleFavorite: (LikeableRecipe) -> Unit
 ) {
     val localBannerProvider = LocalBannerProvider.current
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val dimension = remember(mode) { searchModeButtonDimension(mode) }
     Column(
         modifier = Modifier

@@ -26,10 +26,10 @@ import com.francotte.designsystem.component.TopAppBar
 import com.francotte.ui.nbSectionColumns
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.ErrorScreen
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.TrackScrollJank
+import com.francotte.ui.rememberDeviceMode
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +39,7 @@ fun VerticalSectionScreen(
     titleRes: String,
     onAction: (SectionAction) -> Unit
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val localBannerProvider = LocalBannerProvider.current
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())

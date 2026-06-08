@@ -14,8 +14,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+ /**
+  * Cette classe sert seulement à afficher une notification si l'application est active.
+  *  Si ce n'est pas le cas, FCM affiche la notification via le système Android.
+  */
+
 @Singleton
-class AndroidNotifier @Inject constructor(@ApplicationContext private val context: Context) : Notifier {
+class AndroidNotifier @Inject constructor(@ApplicationContext private val context: Context) :
+    Notifier {
+
 
     override fun postNotification(title: String, body: String, idMeal: String?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -24,7 +31,6 @@ class AndroidNotifier @Inject constructor(@ApplicationContext private val contex
             ) == PackageManager.PERMISSION_GRANTED
             if (!granted) return
         }
-
         val pendingIntent = idMeal?.let {
             PendingIntent.getActivity(
                 context,
@@ -35,7 +41,6 @@ class AndroidNotifier @Inject constructor(@ApplicationContext private val contex
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
         }
-
         val notification = NotificationCompat.Builder(context, NotificationChannels.DAILY_MEAL)
             .setSmallIcon(R.mipmap.ic_custom_launcher_foreground)
             .setContentTitle(title)
@@ -43,10 +48,10 @@ class AndroidNotifier @Inject constructor(@ApplicationContext private val contex
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
-
         try {
             NotificationManagerCompat.from(context)
                 .notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
-        } catch (_: SecurityException) {}
+        } catch (_: SecurityException) {
+        }
     }
 }

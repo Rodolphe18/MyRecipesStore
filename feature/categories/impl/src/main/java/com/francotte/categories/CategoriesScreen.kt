@@ -44,8 +44,8 @@ import com.francotte.model.AbstractCategory
 import com.francotte.model.Category
 import com.francotte.ui.ErrorScreen
 import com.francotte.ui.DeviceMode
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
+import com.francotte.ui.rememberDeviceMode
 
 @Composable
 fun CategoriesScreen(
@@ -54,7 +54,7 @@ fun CategoriesScreen(
     onRefresh: () -> Unit,
     onOpenCategory: (AbstractCategory) -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val lazyListState = rememberLazyGridState()
     val localBannerProvider = LocalBannerProvider.current
     val spanSize = GridItemSpan(mode.nbCategoriesColumns)

@@ -12,10 +12,6 @@ val LocalBannerProvider =
         error("BannerAdProvider not provided")
     }
 
-val LocalAppLayout = staticCompositionLocalOf<AppLayoutInfo> {
-    error("LocalAppLayout not provided. Wrap your app with ProvideAppLayout().")
-}
-
 val LocalSnackbarHostState = staticCompositionLocalOf<SnackbarHostState> {
     error("SnackbarHostState state should be initialized at runtime")
 }

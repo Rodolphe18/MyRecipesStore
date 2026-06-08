@@ -3,7 +3,6 @@ package com.francotte.video
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.webkit.ConsoleMessage
 import android.webkit.CookieManager
 import android.webkit.PermissionRequest
@@ -27,9 +26,8 @@ import com.francotte.designsystem.component.HideNavigationBar
 @Composable
 fun VideoFullScreen(
     youtubeUrl: String,
-    window: Window,
 ) {
-    HideNavigationBar(window = window)
+    HideNavigationBar()
     val videoId =
         remember(youtubeUrl) {
             when {

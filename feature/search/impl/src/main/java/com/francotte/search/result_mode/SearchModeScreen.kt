@@ -37,8 +37,8 @@ import com.francotte.designsystem.theme.SearchItemColor1
 import com.francotte.designsystem.theme.SearchItemColor2
 import com.francotte.designsystem.theme.SearchItemColor3
 import com.francotte.feature.search.api.SearchMode
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.nbIngredientsColumns
+import com.francotte.ui.rememberDeviceMode
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +51,7 @@ fun ItemSelectionGrid(
     onItemSelected: (String, SearchMode) -> Unit,
     onBack: () -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     val pullToRefreshState = rememberPullToRefreshState()

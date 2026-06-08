@@ -19,11 +19,11 @@ import com.francotte.ads.BannerAdProvider
 import com.francotte.designsystem.theme.FoodTheme
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.permissions.NotificationPermissionEffect
+import com.francotte.myrecipesstore.ui.FoodApp
 
 import com.francotte.myrecipesstore.ui.rememberAppState
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.LocalSnackbarHostState
-import com.francotte.ui.ProvideDeviceMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -61,16 +61,13 @@ class MainActivity : ComponentActivity() {
                 LocalBannerProvider provides bannerAdProvider,
                 LocalSnackbarHostState provides snackbarHostState,
             ) {
-                ProvideDeviceMode {
-                    val data: Uri? = intent?.data
-                    val appState = rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
-                    FoodTheme {
-                        FoodApp(
-                            appState = appState,
-                            window = window,
-                        )
-                        NotificationPermissionEffect()
-                    }
+                val data: Uri? = intent?.data
+                val appState = rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
+                FoodTheme {
+                    FoodApp(
+                        appState = appState,
+                    )
+                    NotificationPermissionEffect(this)
                 }
             }
         }
