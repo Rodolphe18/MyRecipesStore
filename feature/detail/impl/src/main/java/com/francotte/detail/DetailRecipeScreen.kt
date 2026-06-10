@@ -20,24 +20,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -46,6 +41,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +52,6 @@ import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.DesignAsyncImage
-import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.component.YouTubeWebViewPlayer
 import com.francotte.domain.YouTubeUrlParser
 import com.francotte.model.LikeableRecipe
@@ -65,12 +60,9 @@ import com.francotte.ui.FavButton
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.DeviceMode
 import com.francotte.ui.rememberDeviceMode
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailRecipeScreen(
     state: DetailState,
@@ -78,32 +70,13 @@ fun DetailRecipeScreen(
 ) {
     val onToggleFavorite: (LikeableRecipe) -> Unit = { onAction(DetailAction.OnToggleFavorite(it)) }
     val mode = rememberDeviceMode()
-    val scope = rememberCoroutineScope()
-    val topAppBarScrollBehavior =
-        TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    val title = state.title
     val pageCount = state.pageCount
     val pagerState =
         rememberPagerState(initialPage = state.initialPage, pageCount = { pageCount })
     val deepLink = state.deeplinkRecipe
-    Scaffold(
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = title,
-                scrollBehavior = topAppBarScrollBehavior,
-                navigationIconEnabled = true,
-                onNavigationClick = {
-                    scope.launch {
-                        while (pagerState.isScrollInProgress) {
-                            delay(50)
-                        }
-                        onAction(DetailAction.OnBackClick)
-                    }
-                },
-            )
-        },
-    ) { padding ->
+    // Pas de TopAppBar : le titre est déjà affiché dans le contenu de la recette, et le retour
+    // se fait via le back système (NavDisplay onBack = navigator::goBack).
+    Scaffold { padding ->
         if (deepLink != null) {
             RecipeContent(
                 likeableRecipe = deepLink,
@@ -164,34 +137,33 @@ internal fun RecipeContent(
             .verticalScroll(rememberScrollState())
             .padding(top = topPadding, bottom = 12.dp),
     ) {
+        DetailScreenMainSectionTitle(likeableRecipe)
+        Spacer(modifier = Modifier.height(8.dp))
         DetailVideoScreen(likeableRecipe)
-        Spacer(modifier = Modifier.height(16.dp))
-        Column {
-            DetailScreenMainSectionTitle(likeableRecipe, onToggleFavorite)
-            BannerAd(
-                horizontalPadding = 12.dp,
-                placement = BannerPlacement.RECIPE_POS_1,
-                provider = localBannerProvider,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            DetailScreenSectionTitle(R.string.ingredients)
-            IngredientRow(ingredients)
-            DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
-            BannerAd(
-                horizontalPadding = 12.dp,
-                placement = BannerPlacement.RECIPE_POS_2,
-                provider = localBannerProvider,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            DetailScreenSectionTitle(R.string.instructions)
-            Text(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
-                style = MaterialTheme.typography.bodyLarge,
-                lineHeight = 22.sp,
-                color = MaterialTheme.colorScheme.secondary,
-            )
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+        BannerAd(
+            horizontalPadding = 12.dp,
+            placement = BannerPlacement.RECIPE_POS_1,
+            provider = localBannerProvider,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        DetailScreenIngredientTitle(likeableRecipe,R.string.ingredients,onToggleFavorite)
+        IngredientRow(ingredients)
+        DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
+        BannerAd(
+            horizontalPadding = 12.dp,
+            placement = BannerPlacement.RECIPE_POS_2,
+            provider = localBannerProvider,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        DetailScreenSectionTitle(R.string.instructions)
+        Text(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
+            style = MaterialTheme.typography.bodyLarge,
+            lineHeight = 22.sp,
+            color = MaterialTheme.colorScheme.secondary,
+        )
     }
 }
 
@@ -289,13 +261,28 @@ private fun DetailRecipeShareRecipeButton(
 }
 
 @Composable
-fun DetailScreenMainSectionTitle(
+fun DetailScreenMainSectionTitle(likeableRecipe: LikeableRecipe) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = likeableRecipe.recipe.strMeal,
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.secondary,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+    }
+}
+
+@Composable
+fun DetailScreenIngredientTitle(
     likeableRecipe: LikeableRecipe,
+    @StringRes stringRes: Int,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     Row(Modifier.padding(horizontal = 12.dp)) {
         Text(
-            text = likeableRecipe.recipe.strMeal,
+            text = stringResource(stringRes),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.secondary,
             fontWeight = FontWeight.Bold,

@@ -18,8 +18,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.francotte.designsystem.component.DesignAsyncImage
+import com.francotte.designsystem.theme.Orange
 import com.francotte.model.AbstractRecipe
 import com.francotte.model.LikeableRecipe
 
@@ -29,9 +31,9 @@ internal fun RecipeListPane(
     count: Int,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier,
+    topPadding: Dp
 ) {
-    LazyColumn(modifier = modifier.fillMaxSize()) {
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(top = topPadding, bottom = 12.dp)) {
         items(count) { index ->
             RecipeListItem(
                 recipe = recipes[index]?.recipe,
@@ -50,7 +52,7 @@ private fun RecipeListItem(
     modifier: Modifier = Modifier,
 ) {
     val background =
-        if (selected) MaterialTheme.colorScheme.primaryContainer
+        if (selected) Orange.copy(alpha = 0.12f)
         else MaterialTheme.colorScheme.surface
     Row(
         modifier = modifier
