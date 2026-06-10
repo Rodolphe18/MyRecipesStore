@@ -63,6 +63,7 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.ui.FavButton
 import com.francotte.ui.LocalBannerProvider
+import com.francotte.ui.DeviceMode
 import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -113,24 +114,34 @@ fun DetailRecipeScreen(
                     .semantics { contentDescription = "full_detail_screen" },
             )
         } else {
-            LaunchedEffect(pagerState) {
-                snapshotFlow { pagerState.settledPage }
-                    .distinctUntilChanged()
-                    .collectLatest { newPage ->
-                        onAction(DetailAction.OnPageChanged(newPage))
+            val isLandscape =
+                mode == DeviceMode.PhoneLandscape || mode == DeviceMode.TabletLandscape
+            if (isLandscape) {
+                RecipeListDetailLayout(
+                    state = state,
+                    contentPadding = padding,
+                    onAction = onAction,
+                )
+            } else {
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.settledPage }
+                        .distinctUntilChanged()
+                        .collectLatest { newPage ->
+                            onAction(DetailAction.OnPageChanged(newPage))
+                        }
+                }
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 1,
+                    modifier = Modifier.fillMaxSize(),
+                ) { index ->
+                    state.recipes[index]?.let { likeableRecipe ->
+                        RecipeContent(
+                            likeableRecipe = likeableRecipe,
+                            onToggleFavorite = onToggleFavorite,
+                            topPadding = padding.calculateTopPadding() + 12.dp,
+                        )
                     }
-            }
-            HorizontalPager(
-                state = pagerState,
-                beyondViewportPageCount = 1,
-                modifier = Modifier.fillMaxSize(),
-            ) { index ->
-                state.recipes[index]?.let { likeableRecipe ->
-                    RecipeContent(
-                        likeableRecipe = likeableRecipe,
-                        onToggleFavorite = onToggleFavorite,
-                        topPadding = padding.calculateTopPadding() + 12.dp,
-                    )
                 }
             }
         }
