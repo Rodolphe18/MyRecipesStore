@@ -13,7 +13,7 @@ import com.francotte.ui.TrackDisposableJank
 
 @Composable
 fun rememberAppState(resetPasswordToken: String? = null): AppState {
-    val navigationState = rememberNavigationState(SplashNavKey,HomeNavKey, TOP_LEVEL_NAV_ITEMS.keys+ DetailRecipeNavKey())
+    val navigationState = rememberNavigationState(SplashNavKey,HomeNavKey, TOP_LEVEL_NAV_ITEMS.keys + DetailRecipeNavKey())
     NavigationTrackingSideEffect(navigationState)
 
     return remember {

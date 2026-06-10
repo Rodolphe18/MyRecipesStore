@@ -16,11 +16,14 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
@@ -43,6 +46,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
 import com.francotte.add_recipe.addRecipeEntry
+import com.francotte.api.DetailRecipeNavKey
 import com.francotte.api.navigateToProfile
 import com.francotte.api.navigateToResetPassword
 import com.francotte.categories.categoriesEntry
@@ -50,6 +54,7 @@ import com.francotte.categories.categoryEntry
 import com.francotte.designsystem.component.FoodSnackbarHost
 import com.francotte.designsystem.component.HideBottomSystemBar
 import com.francotte.designsystem.component.TopAppBar
+import com.francotte.designsystem.theme.Orange
 import com.francotte.detail.detailRecipeEntry
 import com.francotte.favorites.customRecipeEntry
 import com.francotte.favorites.favoritesEntry
@@ -103,7 +108,12 @@ fun FoodApp(appState: AppState) {
 
     val pendingDeepLink = rememberSaveable { mutableStateOf<NavKey?>(null) }
 
-    val showBottomSystemBar = appState.navigationState.currentKey != SplashNavKey && appState.navigationState.currentKey !is VideoNavKey
+    // Détail : on masque la nav suite (bottom bar / rail) en portrait comme en paysage.
+    // Comme HideBottomSystemBar() n'est appelé qu'en mode rail, la barre système Android
+    // reste affichée sur le détail → l'user garde le back système.
+    val showNavigationSuite = appState.navigationState.currentKey != SplashNavKey &&
+        appState.navigationState.currentKey !is VideoNavKey &&
+        appState.navigationState.currentKey !is DetailRecipeNavKey
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
@@ -111,7 +121,7 @@ fun FoodApp(appState: AppState) {
     val isWidthAtLeastMedium = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     val windowAdaptiveInfo =
-        if (!showBottomSystemBar) {
+        if (!showNavigationSuite) {
             NavigationSuiteType.None
         } else if (isWidthAtLeastMedium) {
             NavigationSuiteType.NavigationRail
@@ -121,7 +131,20 @@ fun FoodApp(appState: AppState) {
 
     val useNavigationRail = windowAdaptiveInfo == NavigationSuiteType.NavigationRail
 
-    val topBarScrollBehavior = if (useNavigationRail) TopAppBarDefaults.pinnedScrollBehavior() else null
+    // La TopAppBar se cache au scroll vers le bas et réapparaît dès qu'on scrolle vers le haut.
+    val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    // Item sélectionné (bottom bar / nav rail) : icône + texte en orange.
+    val navItemColors = NavigationSuiteDefaults.itemColors(
+        navigationBarItemColors = NavigationBarItemDefaults.colors(
+            selectedIconColor = Orange,
+            selectedTextColor = Orange,
+        ),
+        navigationRailItemColors = NavigationRailItemDefaults.colors(
+            selectedIconColor = Orange,
+            selectedTextColor = Orange,
+        ),
+    )
 
     val entryProvider = entryProvider {
         splashEntry(navigator) {
@@ -189,7 +212,7 @@ fun FoodApp(appState: AppState) {
         NavigationSuiteScaffold(
             layoutType = windowAdaptiveInfo,
             navigationSuiteItems = {
-                if (showBottomSystemBar) {
+                if (showNavigationSuite) {
                     val currentNavItems =
                         if (isAuthenticated) {
                             TOP_LEVEL_NAV_ITEMS.filterNot { it.value == LOGIN }
@@ -207,12 +230,12 @@ fun FoodApp(appState: AppState) {
                                 )
                             },
                             label = { Text(stringResource(navItem.titleTextId)) },
+                            colors = navItemColors,
                         )
                     }
                 }
             },
         ) {
-            if (useNavigationRail) HideBottomSystemBar()
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -224,13 +247,7 @@ fun FoodApp(appState: AppState) {
                         .padding(padding)
                         .consumeWindowInsets(padding)
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                        .then(
-                            if (topBarScrollBehavior != null) {
-                                Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-                            } else {
-                                Modifier
-                            },
-                        ),
+                        .nestedScroll(topBarScrollBehavior.nestedScrollConnection),
                 ) {
                     var shouldShowTopAppBar = false
 
