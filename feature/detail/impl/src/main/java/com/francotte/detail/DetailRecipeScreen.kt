@@ -46,6 +46,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,7 +77,6 @@ fun DetailRecipeScreen(
 ) {
     val onToggleFavorite: (LikeableRecipe) -> Unit = { onAction(DetailAction.OnToggleFavorite(it)) }
     val mode = rememberDeviceMode()
-    val localBannerProvider = LocalBannerProvider.current
     val scope = rememberCoroutineScope()
     val topAppBarScrollBehavior =
         TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
@@ -84,7 +84,6 @@ fun DetailRecipeScreen(
     val pageCount = state.pageCount
     val pagerState =
         rememberPagerState(initialPage = state.initialPage, pageCount = { pageCount })
-    val context = LocalContext.current
     val deepLink = state.deeplinkRecipe
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
@@ -105,66 +104,14 @@ fun DetailRecipeScreen(
         },
     ) { padding ->
         if (deepLink != null) {
-            deepLink?.also { link ->
-                val ingredients =
-                    remember(link.recipe) {
-                        (1..20).mapNotNull { i ->
-                            val ingredient =
-                                (link.recipe as? Recipe)
-                                    ?.javaClass
-                                    ?.getDeclaredField("strIngredient$i")
-                                    ?.apply { isAccessible = true }
-                                    ?.get(link.recipe) as? String
-                            val measure =
-                                (link.recipe as Recipe)
-                                    .javaClass
-                                    .getDeclaredField("strMeasure$i")
-                                    .apply { isAccessible = true }
-                                    .get(link.recipe) as? String
-                            if (!ingredient.isNullOrBlank()) {
-                                ingredient to (measure ?: "")
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(
-                                top = padding.calculateTopPadding() + 12.dp,
-                                bottom = 12.dp,
-                            )
-                            .testTag("full_detail_screen")
-                            .semantics { contentDescription = "full_detail_screen" },
-                ) {
-                    DetailVideoScreen(link)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(Modifier.padding(horizontal = 12.dp)) {
-                        DetailScreenMainSectionTitle(link, onToggleFavorite)
-                        DetailScreenSectionTitle(R.string.ingredients)
-                        BannerAd(
-                            placement = BannerPlacement.RECIPE_POS_1,
-                            provider = localBannerProvider,
-                        )
-                        IngredientRow(ingredients)
-                        DetailRecipeShareRecipeButton(link, ingredients, context)
-                        BannerAd(
-                            placement = BannerPlacement.RECIPE_POS_2,
-                            provider = localBannerProvider,
-                        )
-                        DetailScreenSectionTitle(R.string.instructions)
-                        Text(
-                            text = (link.recipe as Recipe).strInstructions.orEmpty(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            lineHeight = 22.sp,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
-                }
-            }
+            RecipeContent(
+                likeableRecipe = deepLink,
+                onToggleFavorite = onToggleFavorite,
+                topPadding = padding.calculateTopPadding() + 12.dp,
+                modifier = Modifier
+                    .testTag("full_detail_screen")
+                    .semantics { contentDescription = "full_detail_screen" },
+            )
         } else {
             LaunchedEffect(pagerState) {
                 snapshotFlow { pagerState.settledPage }
@@ -179,73 +126,76 @@ fun DetailRecipeScreen(
                 modifier = Modifier.fillMaxSize(),
             ) { index ->
                 state.recipes[index]?.let { likeableRecipe ->
-                    val ingredients =
-                        remember(likeableRecipe) {
-                            (1..20).mapNotNull { i ->
-                                val ingredient =
-                                    (likeableRecipe.recipe as? Recipe)
-                                        ?.javaClass
-                                        ?.getDeclaredField(
-                                            "strIngredient$i",
-                                        )?.apply { isAccessible = true }
-                                        ?.get(likeableRecipe.recipe) as? String
-                                val measure =
-                                    (likeableRecipe.recipe as Recipe)
-                                        .javaClass
-                                        .getDeclaredField("strMeasure$i")
-                                        .apply { isAccessible = true }
-                                        .get(likeableRecipe.recipe) as? String
-                                if (!ingredient.isNullOrBlank()) {
-                                    ingredient to (measure ?: "")
-                                } else {
-                                    null
-                                }
-                            }
-                        }
-                    Column(
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
-                                .padding(
-                                    top = padding.calculateTopPadding() + 12.dp,
-                                    bottom = 12.dp,
-                                ),
-                    ) {
-                        DetailVideoScreen(likeableRecipe)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Column {
-                            DetailScreenMainSectionTitle(likeableRecipe, onToggleFavorite)
-                            BannerAd(
-                                horizontalPadding = 12.dp,
-                                placement = BannerPlacement.RECIPE_POS_1,
-                                provider = localBannerProvider,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            DetailScreenSectionTitle(R.string.ingredients)
-                            IngredientRow(ingredients)
-                            DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
-                            BannerAd(
-                                horizontalPadding = 12.dp,
-                                placement = BannerPlacement.RECIPE_POS_2,
-                                provider = localBannerProvider,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            DetailScreenSectionTitle(R.string.instructions)
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                lineHeight = 22.sp,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                    }
+                    RecipeContent(
+                        likeableRecipe = likeableRecipe,
+                        onToggleFavorite = onToggleFavorite,
+                        topPadding = padding.calculateTopPadding() + 12.dp,
+                    )
                 }
             }
         }
     }
 }
+
+@Composable
+internal fun RecipeContent(
+    likeableRecipe: LikeableRecipe,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
+    topPadding: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val localBannerProvider = LocalBannerProvider.current
+    val context = LocalContext.current
+    val ingredients = rememberIngredients(likeableRecipe)
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(top = topPadding, bottom = 12.dp),
+    ) {
+        DetailVideoScreen(likeableRecipe)
+        Spacer(modifier = Modifier.height(16.dp))
+        Column {
+            DetailScreenMainSectionTitle(likeableRecipe, onToggleFavorite)
+            BannerAd(
+                horizontalPadding = 12.dp,
+                placement = BannerPlacement.RECIPE_POS_1,
+                provider = localBannerProvider,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            DetailScreenSectionTitle(R.string.ingredients)
+            IngredientRow(ingredients)
+            DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
+            BannerAd(
+                horizontalPadding = 12.dp,
+                placement = BannerPlacement.RECIPE_POS_2,
+                provider = localBannerProvider,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            DetailScreenSectionTitle(R.string.instructions)
+            Text(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
+                style = MaterialTheme.typography.bodyLarge,
+                lineHeight = 22.sp,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun rememberIngredients(likeableRecipe: LikeableRecipe): List<Pair<String, String>> =
+    remember(likeableRecipe.recipe) {
+        (1..20).mapNotNull { i ->
+            val recipe = likeableRecipe.recipe as? Recipe ?: return@mapNotNull null
+            val ingredient = recipe.javaClass.getDeclaredField("strIngredient$i")
+                .apply { isAccessible = true }.get(recipe) as? String
+            val measure = recipe.javaClass.getDeclaredField("strMeasure$i")
+                .apply { isAccessible = true }.get(recipe) as? String
+            if (!ingredient.isNullOrBlank()) ingredient to (measure ?: "") else null
+        }
+    }
 
 @Composable
 private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
