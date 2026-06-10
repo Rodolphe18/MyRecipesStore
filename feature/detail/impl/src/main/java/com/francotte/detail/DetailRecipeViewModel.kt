@@ -2,7 +2,7 @@ package com.francotte.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.CompositeUserFullRecipeRepository
+import com.francotte.data.interfaces.UserFullRecipeRepository
 import com.francotte.model.LikeableRecipe
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = DetailRecipeViewModel.Factory::class)
 class DetailRecipeViewModel @AssistedInject constructor(
-    private val detailRecipeRepository: CompositeUserFullRecipeRepository,
+    private val detailRecipeRepository: UserFullRecipeRepository,
     @Assisted val ids: List<String>?,
     @Assisted val index: Int?,
     @Assisted val recipeTitle: String?,
@@ -31,6 +31,7 @@ class DetailRecipeViewModel @AssistedInject constructor(
             title = recipeTitle ?: "",
             pageCount = longIds.size,
             initialPage = index ?: 0,
+            selectedIndex = index ?: 0,
         )
     )
     val state = _state.asStateFlow()
@@ -40,28 +41,33 @@ class DetailRecipeViewModel @AssistedInject constructor(
 
     private var currentPage = index ?: 0
 
-    /** Pages with an active observer — keeps favorites reactive without re-subscribing. */
+    /** Pages with an active observer — avoids re-subscribing the same id twice. */
     private val observedPages = mutableSetOf<Int>()
 
     init {
-        if (longIds.isNotEmpty()) loadPage(currentPage)
+        // Eager-load : on souscrit à toutes les recettes du lot pour alimenter le volet liste.
+        longIds.indices.forEach { loadPage(it) }
     }
 
     fun onAction(action: DetailAction) {
         when (action) {
-            is DetailAction.OnPageChanged -> {
-                currentPage = action.page
-                loadPage(action.page)
-                // Reflect the settled page's title immediately if it's already loaded.
-                _state.value.recipes[action.page]?.let { recipe ->
-                    _state.update { it.copy(title = recipe.recipe.strMeal) }
-                }
-            }
+            is DetailAction.OnPageChanged -> selectRecipe(action.page)
+            is DetailAction.OnRecipeSelected -> selectRecipe(action.index)
             DetailAction.OnBackClick -> viewModelScope.launch {
                 _events.send(DetailEvent.NavigateBack)
             }
             // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
             is DetailAction.OnToggleFavorite -> Unit
+        }
+    }
+
+    private fun selectRecipe(page: Int) {
+        currentPage = page
+        _state.update { state ->
+            state.copy(
+                selectedIndex = page,
+                title = state.recipes[page]?.recipe?.strMeal ?: state.title,
+            )
         }
     }
 
@@ -101,12 +107,14 @@ data class DetailState(
     val title: String = "",
     val pageCount: Int = 0,
     val initialPage: Int = 0,
+    val selectedIndex: Int = 0,
     val recipes: Map<Int, LikeableRecipe> = emptyMap(),
     val deeplinkRecipe: LikeableRecipe? = null,
 )
 
 sealed interface DetailAction {
     data class OnPageChanged(val page: Int) : DetailAction
+    data class OnRecipeSelected(val index: Int) : DetailAction
     data class OnToggleFavorite(val recipe: LikeableRecipe) : DetailAction
     data object OnBackClick : DetailAction
 }
