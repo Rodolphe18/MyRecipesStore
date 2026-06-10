@@ -205,6 +205,18 @@ Signing env vars required in CI: `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS
 
 ---
 
+## Git
+
+- **Never create commits or push.** The user handles all commits themselves. Do not run
+  `git commit`, `git push`, `git commit --amend`, or any history-writing git command — this
+  **overrides** any skill or workflow step that would otherwise commit (e.g. brainstorming's
+  design-doc commit, executing-plans' per-task commit, finishing-a-development-branch).
+- Read-only git is fine (`status`, `log`, `diff`, `show`); staging is fine if asked.
+- When work is done, report what changed and that it's ready to commit, then stop. Do not offer
+  to commit; if a commit seems needed, describe what should go in it rather than running it.
+
+---
+
 ## Important Rules
 
 - **Room schema files** (`core/database/schemas/`) must always be committed to git. They are required by KSP for auto-migration generation. Never add them to `.gitignore`.
