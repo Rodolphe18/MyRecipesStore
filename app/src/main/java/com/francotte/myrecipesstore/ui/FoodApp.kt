@@ -70,7 +70,7 @@ import com.francotte.myrecipesstore.navigation.TOP_LEVEL_NAV_ITEMS
 import com.francotte.myrecipesstore.splash.SplashNavKey
 import com.francotte.myrecipesstore.splash.splashEntry
 import com.francotte.navigation.Navigator
-import com.francotte.navigation.toEntries
+import com.francotte.navigation.toNavEntries
 import com.francotte.profile.profileEntry
 import com.francotte.register.registerEntry
 import com.francotte.reset.requestResetEntry
@@ -147,7 +147,7 @@ fun FoodApp(appState: AppState) {
         requestResetEntry(navigator)
     }
 
-    val entries = appState.navigationState.toEntries(entryProvider)
+    val entries = appState.navigationState.toNavEntries(entryProvider)
 
     LaunchedEffect(Unit) {
         DeepLinkBus.intents.collect { intent ->

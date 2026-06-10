@@ -22,8 +22,7 @@ internal fun RecipeListDetailLayout(
         onAction(DetailAction.OnToggleFavorite(it))
     }
 
-    // On force 2 volets même en largeur MEDIUM (téléphone en paysage), au lieu de
-    // l'heuristique >= 840dp par défaut.
+    // On force 2 volets même en largeur MEDIUM (téléphone en paysage).
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
         .copy(maxHorizontalPartitions = 2)
     val navigator = rememberListDetailPaneScaffoldNavigator<Any>(scaffoldDirective = directive)
