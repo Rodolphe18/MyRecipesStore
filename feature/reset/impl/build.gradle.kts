@@ -42,7 +42,7 @@ dependencies {
     api(project(":core:common"))
 
     api(project(":feature:reset:api"))
-    api(project(":feature:login:impl"))
+    implementation(project(":core:auth"))
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)

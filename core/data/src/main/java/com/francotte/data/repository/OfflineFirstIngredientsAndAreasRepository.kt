@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.Duration
 import java.time.Instant
@@ -130,4 +131,19 @@ class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun getRecipesByArea(area: String): DataResult<List<LikeableRecipe>> {
+        val userData = userDataRepository.userData.first()
+        return when (val result = homeRepository.getRecipesByArea(area)) {
+            is DataResult.Success -> DataResult.Success(result.data.mapToLikeableLightRecipes(userData))
+            is DataResult.Failure -> result
+        }
+    }
+
+    override suspend fun getRecipesByIngredients(ingredients: List<String>): DataResult<List<LikeableRecipe>> {
+        val userData = userDataRepository.userData.first()
+        return when (val result = homeRepository.getRecipesByIngredients(ingredients)) {
+            is DataResult.Success -> DataResult.Success(result.data.mapToLikeableLightRecipes(userData))
+            is DataResult.Failure -> result
+        }
+    }
 }

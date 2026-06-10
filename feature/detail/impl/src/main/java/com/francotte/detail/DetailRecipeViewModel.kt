@@ -1,10 +1,5 @@
 package com.francotte.detail
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.repository.CompositeUserFullRecipeRepository
@@ -13,67 +8,109 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = DetailRecipeViewModel.Factory::class)
 class DetailRecipeViewModel @AssistedInject constructor(
     private val detailRecipeRepository: CompositeUserFullRecipeRepository,
-    @Assisted val ids:List<String>?,
-    @Assisted val index:Int?,
-    @Assisted val recipeTitle:String?
+    @Assisted val ids: List<String>?,
+    @Assisted val index: Int?,
+    @Assisted val recipeTitle: String?,
 ) : ViewModel() {
 
     private val longIds = ids?.map { it.toLong() } ?: emptyList()
 
-    val pageCount by mutableIntStateOf(longIds.size)
+    private val _state = MutableStateFlow(
+        DetailState(
+            title = recipeTitle ?: "",
+            pageCount = longIds.size,
+            initialPage = index ?: 0,
+        )
+    )
+    val state = _state.asStateFlow()
 
-    var currentPage by mutableIntStateOf(index ?: 0)
+    private val _events = Channel<DetailEvent>()
+    val events = _events.receiveAsFlow()
 
-    private val _recipesMap = mutableStateMapOf<Int, LikeableRecipe>()
-    val recipesMap: SnapshotStateMap<Int, LikeableRecipe> = _recipesMap
+    private var currentPage = index ?: 0
 
-    private val _deeplinkRecipe = MutableStateFlow<LikeableRecipe?>(null)
-    val deeplinkRecipe: StateFlow<LikeableRecipe?> = _deeplinkRecipe.asStateFlow()
-
-    private val _title = MutableStateFlow(recipeTitle ?: "")
-    val title: StateFlow<String> = _title.asStateFlow()
+    /** Pages with an active observer — keeps favorites reactive without re-subscribing. */
+    private val observedPages = mutableSetOf<Int>()
 
     init {
-        if (longIds.isNotEmpty()) {
-            getRecipe()
+        if (longIds.isNotEmpty()) loadPage(currentPage)
+    }
+
+    fun onAction(action: DetailAction) {
+        when (action) {
+            is DetailAction.OnPageChanged -> {
+                currentPage = action.page
+                loadPage(action.page)
+                // Reflect the settled page's title immediately if it's already loaded.
+                _state.value.recipes[action.page]?.let { recipe ->
+                    _state.update { it.copy(title = recipe.recipe.strMeal) }
+                }
+            }
+            DetailAction.OnBackClick -> viewModelScope.launch {
+                _events.send(DetailEvent.NavigateBack)
+            }
+            // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
+            is DetailAction.OnToggleFavorite -> Unit
         }
     }
 
-    fun getRecipe() {
+    private fun loadPage(page: Int) {
+        if (page in observedPages || page !in longIds.indices) return
+        observedPages += page
         viewModelScope.launch {
-            detailRecipeRepository.observeFullRecipe(longIds[currentPage]).collectLatest { result ->
-                if (result.isSuccess) {
-                    _recipesMap[currentPage] = result.getOrNull() as LikeableRecipe
-                    _title.value = _recipesMap[currentPage]?.recipe?.strMeal ?: ""
+            detailRecipeRepository.observeFullRecipe(longIds[page]).collectLatest { result ->
+                val recipe = result.getOrNull() ?: return@collectLatest
+                _state.update { state ->
+                    state.copy(
+                        recipes = state.recipes + (page to recipe),
+                        title = if (page == currentPage) recipe.recipe.strMeal else state.title,
+                    )
                 }
             }
         }
     }
 
-    fun loadRecipeById(id: String) {
+    /** Deep-link entry: loads a single recipe by id. */
+    fun loadDeeplink(id: String) {
         viewModelScope.launch {
             detailRecipeRepository.observeFullRecipe(id.toLong()).collectLatest { result ->
-                if (result.isSuccess) {
-                    val likeableRecipe = result.getOrNull() as LikeableRecipe
-                    _deeplinkRecipe.value = likeableRecipe
-                    _title.value = likeableRecipe.recipe.strMeal
-                }
+                val recipe = result.getOrNull() ?: return@collectLatest
+                _state.update { it.copy(deeplinkRecipe = recipe, title = recipe.recipe.strMeal) }
             }
         }
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(ids: List<String>?, index: Int?, recipeTitle: String?):
-            DetailRecipeViewModel
+        fun create(ids: List<String>?, index: Int?, recipeTitle: String?): DetailRecipeViewModel
     }
+}
+
+data class DetailState(
+    val title: String = "",
+    val pageCount: Int = 0,
+    val initialPage: Int = 0,
+    val recipes: Map<Int, LikeableRecipe> = emptyMap(),
+    val deeplinkRecipe: LikeableRecipe? = null,
+)
+
+sealed interface DetailAction {
+    data class OnPageChanged(val page: Int) : DetailAction
+    data class OnToggleFavorite(val recipe: LikeableRecipe) : DetailAction
+    data object OnBackClick : DetailAction
+}
+
+sealed interface DetailEvent {
+    data object NavigateBack : DetailEvent
 }

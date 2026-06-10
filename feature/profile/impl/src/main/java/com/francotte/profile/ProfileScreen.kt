@@ -28,7 +28,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -63,33 +62,29 @@ import com.francotte.common.extension.bitmapToUri
 import com.francotte.designsystem.component.DesignAsyncImage
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.theme.Orange
-import com.francotte.model.UserData
+import com.francotte.model.hasCustomImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onBackClick: () -> Unit,
-    user: UserData,
-    updateCurrentUser: (name: String?, image: Uri?) -> Unit,
+    state: ProfileState,
+    onAction: (ProfileAction) -> Unit,
 ) {
+    val user = state.user ?: return
     val context = LocalContext.current
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-    val currentName = user.userName
     val currentEmail = user.email
-    val currentImage = user.image
-    var updatedImage by remember { mutableStateOf<Uri?>(null) }
     val focusManager = LocalFocusManager.current
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val launcherGallery =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-            updatedImage = it.firstOrNull()
+            onAction(ProfileAction.OnImageChange(it.firstOrNull()))
         }
     val launcherCamera =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
             it?.let { bitmap ->
-                val uri = bitmapToUri(context, bitmap)
-                updatedImage = uri
+                onAction(ProfileAction.OnImageChange(bitmapToUri(context, bitmap)))
             }
         }
     Scaffold(
@@ -99,7 +94,7 @@ fun ProfileScreen(
                 title = "Profile",
                 scrollBehavior = topAppBarScrollBehavior,
                 navigationIconEnabled = true,
-                onNavigationClick = onBackClick,
+                onNavigationClick = { onAction(ProfileAction.OnBackClick) },
             )
         },
     ) { padding ->
@@ -131,7 +126,7 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 20.dp))
-                if (updatedImage == null && currentImage == "https://app.myrecipesstore18.com/null") {
+                if (state.editedImageUri == null && !user.hasCustomImage) {
                     val scale = remember { Animatable(1f) }
                     LaunchedEffect(Unit) {
                         scale.animateTo(
@@ -175,7 +170,7 @@ fun ProfileScreen(
                     }
                 } else {
                     DesignAsyncImage(
-                        model = updatedImage?.toString() ?: currentImage,
+                        model = state.editedImageUri?.toString() ?: user.image,
                         width = 200.dp,
                         height = 200.dp,
                         contentDescription = null,
@@ -187,29 +182,27 @@ fun ProfileScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                val state = rememberTextFieldState(currentName!!)
-                val isValid = state.text.length >= 6
-
                 Column(verticalArrangement = Arrangement.Center) {
                     Text("Username", color = MaterialTheme.colorScheme.onSurface)
                     BasicTextField(
-                        state = state,
+                        value = state.editedName,
+                        onValueChange = { onAction(ProfileAction.OnNameChange(it)) },
                         modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .height(50.dp)
                                 .background(Color(0xFFF6E8D6), RoundedCornerShape(12.dp))
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
-                        decorator = { innerTextField ->
+                        decorationBox = { innerTextField ->
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
                                 innerTextField()
                             }
                         },
                     )
-                    if (state.text.isNotEmpty() && state.text.toString() != currentName) {
+                    if (state.editedName.isNotEmpty() && state.isNameChanged) {
                         Text(
-                            text = if (isValid) "Valid ✅" else "At least 6 characters",
-                            color = if (isValid) Color(0xFF81C784) else Color.Red,
+                            text = if (state.isNameValid) "Valid ✅" else "At least 6 characters",
+                            color = if (state.isNameValid) Color(0xFF81C784) else Color.Red,
                             fontSize = 12.sp,
                         )
                     }
@@ -239,14 +232,8 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = {
-                        updateCurrentUser(
-                            if (state.text.isNotBlank()) state.text.toString() else currentName,
-                            updatedImage,
-                        )
+                        onAction(ProfileAction.OnSave)
                         focusManager.clearFocus()
-                        state.edit {
-                            this.replace(start = 0, end = 0, text = "")
-                        }
                     },
                     modifier =
                         Modifier

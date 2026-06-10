@@ -5,61 +5,68 @@ import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.model.AbstractCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CategoriesViewModel @Inject constructor(private val repository: CategoriesRepository) :
-    ViewModel() {
+class CategoriesViewModel @Inject constructor(
+    private val repository: CategoriesRepository,
+) : ViewModel() {
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+    private val _state = MutableStateFlow(CategoriesState())
+    val state = _state.asStateFlow()
 
-    private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val snackBarMessage: SharedFlow<String> = _snackBarMessage.asSharedFlow()
+    private val _events = Channel<CategoriesEvent>()
+    val events = _events.receiveAsFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val categories =
-        combine(repository.observeAllMealCategories(), _isRefreshing) { categories, reloading ->
-            if (categories.isEmpty()) {
-                CategoriesUiState.Empty
-            } else {
-                CategoriesUiState.Success(categories, reloading)
+    init {
+        repository.observeAllMealCategories()
+            .onEach { categories ->
+                _state.update { it.copy(categories = categories, isLoading = false) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun onAction(action: CategoriesAction) {
+        when (action) {
+            CategoriesAction.OnRefresh -> refresh()
+            is CategoriesAction.OnCategoryClick -> viewModelScope.launch {
+                _events.send(CategoriesEvent.NavigateToCategory(action.category))
             }
         }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                CategoriesUiState.Loading
-            )
+    }
 
-    fun refresh() {
+    private fun refresh() {
         viewModelScope.launch {
-            _isRefreshing.value = true
+            _state.update { it.copy(isRefreshing = true) }
             val message = repository.refreshAllMealCategories(true)
-            message?.let {
-                _snackBarMessage.tryEmit(it)
-            }
-            _isRefreshing.value = false
+            message?.let { _events.send(CategoriesEvent.ShowSnackbar(it)) }
+            _state.update { it.copy(isRefreshing = false) }
         }
     }
 }
 
+data class CategoriesState(
+    val categories: List<AbstractCategory> = emptyList(),
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+) {
+    val isEmpty: Boolean get() = !isLoading && categories.isEmpty()
+}
 
-sealed interface CategoriesUiState {
-    data object Loading : CategoriesUiState
-    data object Empty : CategoriesUiState
-    data class Success(val categories: List<AbstractCategory>, val isReloading: Boolean) :
-        CategoriesUiState
+sealed interface CategoriesAction {
+    data object OnRefresh : CategoriesAction
+    data class OnCategoryClick(val category: AbstractCategory) : CategoriesAction
+}
+
+sealed interface CategoriesEvent {
+    data class NavigateToCategory(val category: AbstractCategory) : CategoriesEvent
+    data class ShowSnackbar(val message: String) : CategoriesEvent
 }

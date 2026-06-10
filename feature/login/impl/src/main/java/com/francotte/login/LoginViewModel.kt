@@ -8,17 +8,17 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.auth.RegistrationRepository
 import com.francotte.auth.SessionRepository
 import com.francotte.auth.strategy.EmailPasswordCredentials
 import com.francotte.auth.strategy.GoogleCredentials
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,28 +27,27 @@ private const val WEB_CLIENT_ID = "431140586774-o1p6cnlk42macn41t4ld0t0bh2kr21fi
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
-    private val registrationRepository: RegistrationRepository,
 ) : ViewModel() {
 
-    val loading = MutableStateFlow(false)
+    private val _state = MutableStateFlow(LoginState())
+    val state = _state.asStateFlow()
 
-    private val _authSuccess = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val authSuccess: SharedFlow<Unit> = _authSuccess.asSharedFlow()
+    private val _events = Channel<LoginEvent>()
+    val events = _events.receiveAsFlow()
 
-    private val _authError = MutableSharedFlow<String>(extraBufferCapacity = 1)
-    val authError: SharedFlow<String> = _authError.asSharedFlow()
-
-    val resetState = MutableStateFlow<Result<Unit>?>(null)
-
-    fun requestReset(email: String) {
-        viewModelScope.launch {
-            resetState.value = registrationRepository.requestPasswordReset(email)
+    fun onAction(action: LoginAction) {
+        when (action) {
+            is LoginAction.OnLoginClick -> loginWithMailAndPassword(action.usernameOrMail, action.password)
+            // Google login (needs an Activity) and pure navigation are handled by LoginRoute.
+            LoginAction.OnGoogleLoginClick,
+            LoginAction.OnRegisterClick,
+            LoginAction.OnResetPasswordClick -> Unit
         }
     }
 
     fun doGoogleLogin(activityContext: Context) {
         viewModelScope.launch {
-            loading.value = true
+            _state.update { it.copy(isLoading = true) }
             try {
                 val credentialManager = CredentialManager.create(activityContext)
                 val googleIdOption = GetGoogleIdOption.Builder()
@@ -68,7 +67,7 @@ class LoginViewModel @Inject constructor(
                     onError()
                 }
             } catch (e: GetCredentialCancellationException) {
-                loading.value = false
+                _state.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
                 Log.e("debug_google", "Erreur récupération compte Google", e)
                 onError()
@@ -76,32 +75,44 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun loginWithMailAndPassword(
-        userNameOrMail: String?,
-        password: String?,
-    ) {
-        if (!loading.value) {
-            val nameOrMail = userNameOrMail?.takeUnless(CharSequence::isBlank) ?: return
-            val pwd = password?.takeUnless(CharSequence::isBlank) ?: return
-            viewModelScope.launch {
-                loading.value = true
-                try {
-                    val result = sessionRepository.login(EmailPasswordCredentials(nameOrMail, pwd))
-                    if (result.isSuccess) onSuccess() else onError()
-                } catch (e: Exception) {
-                    Log.d("debug_email", "$e")
-                }
+    private fun loginWithMailAndPassword(userNameOrMail: String, password: String) {
+        if (state.value.isLoading) return
+        if (userNameOrMail.isBlank() || password.isBlank()) return
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                val result = sessionRepository.login(EmailPasswordCredentials(userNameOrMail, password))
+                if (result.isSuccess) onSuccess() else onError()
+            } catch (e: Exception) {
+                Log.d("debug_email", "$e")
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }
 
-    fun onSuccess() {
-        loading.value = false
-        _authSuccess.tryEmit(Unit)
+    private suspend fun onSuccess() {
+        _state.update { it.copy(isLoading = false) }
+        _events.send(LoginEvent.NavigateToFavorites)
     }
 
-    private fun onError() {
-        loading.value = false
-        _authError.tryEmit("Google sign-in failed")
+    private suspend fun onError() {
+        _state.update { it.copy(isLoading = false) }
+        _events.send(LoginEvent.ShowSnackbar("Google sign-in failed"))
     }
+}
+
+data class LoginState(
+    val isLoading: Boolean = false,
+)
+
+sealed interface LoginAction {
+    data class OnLoginClick(val usernameOrMail: String, val password: String) : LoginAction
+    data object OnGoogleLoginClick : LoginAction
+    data object OnRegisterClick : LoginAction
+    data object OnResetPasswordClick : LoginAction
+}
+
+sealed interface LoginEvent {
+    data object NavigateToFavorites : LoginEvent
+    data class ShowSnackbar(val message: String) : LoginEvent
 }

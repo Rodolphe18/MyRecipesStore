@@ -59,4 +59,8 @@ data class AreasRecipes (
 
     val hasRecipes: Boolean
         get() = recipes.isNotEmpty()
+
+    /** Area sections sorted by name — derivation lives here, not in the Composable. */
+    val sortedSections: List<Pair<String, List<LikeableRecipe>>>
+        get() = recipes.toList().sortedBy { it.first }
 }

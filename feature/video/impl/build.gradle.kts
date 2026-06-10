@@ -38,6 +38,7 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:model"))
     api(project(":core:common"))
+    api(project(":core:domain"))
     api(project(":core:designsystem"))
     api(project(":feature:login:impl"))
     api(project(":core:common"))

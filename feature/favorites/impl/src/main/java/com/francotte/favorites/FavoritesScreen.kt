@@ -1,6 +1,5 @@
 package com.francotte.favorites
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -62,12 +61,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.ui.nbSectionColumns
 import com.francotte.ui.nbSectionFavorites
-import com.francotte.model.LikeableRecipe
-import com.francotte.ui.ErrorScreen
+import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.TrackScrollJank
@@ -78,14 +75,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    viewModel: FavoritesViewModel = hiltViewModel<FavoritesViewModel>(),
-    customRecipeDetailViewModel: CustomRecipeDetailViewModel = hiltViewModel<CustomRecipeDetailViewModel>(),
-    favoriteUiState: FavoriteUiState,
-    searchText: String,
-    onSearchTextChanged: (String) -> Unit,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
-    onOpenCustomRecipe: (String) -> Unit,
+    state: FavoritesState,
+    onAction: (FavoritesAction) -> Unit,
 ) {
     val mode = rememberDeviceMode()
     val lazyGridState = rememberLazyGridState()
@@ -95,8 +86,8 @@ fun FavoritesScreen(
     var showSearchBar by remember { mutableStateOf(true) }
     val lastScrollOffset = remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(searchText) {
-        if (searchText.isEmpty()) {
+    LaunchedEffect(state.searchText) {
+        if (state.searchText.isEmpty()) {
             delay(3000)
             focusManager.clearFocus()
         }
@@ -123,8 +114,8 @@ fun FavoritesScreen(
                     Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                value = searchText,
-                onValueChange = onSearchTextChanged,
+                value = state.searchText,
+                onValueChange = { onAction(FavoritesAction.OnSearchChange(it)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -141,24 +132,24 @@ fun FavoritesScreen(
                 colors = OutlinedTextFieldDefaults.colors(),
             )
         }
-        when (favoriteUiState) {
+        when (val content = state.content) {
             FavoriteUiState.Loading -> CustomCircularProgressIndicator()
-            FavoriteUiState.Error -> ErrorScreen { viewModel.reload() }
+            FavoriteUiState.Error -> SectionErrorScreen { onAction(FavoritesAction.OnReload) }
             is FavoriteUiState.Success -> {
-                LaunchedEffect(favoriteUiState.favoritesRecipes.isEmpty()) {
-                    if (favoriteUiState.favoritesRecipes.isEmpty()) {
-                        viewModel.reload()
+                LaunchedEffect(content.favoritesRecipes.isEmpty()) {
+                    if (content.favoritesRecipes.isEmpty()) {
+                        onAction(FavoritesAction.OnReload)
                     }
                 }
-                if (favoriteUiState.favoritesRecipes.isEmpty() && favoriteUiState.customRecipes.isEmpty()) {
+                if (content.favoritesRecipes.isEmpty() && content.customRecipes.isEmpty()) {
                     AnimatedCookbookScreen()
                 } else {
                     PullToRefreshBox(
                         modifier = Modifier.fillMaxSize(),
-                        isRefreshing = viewModel.isReloading,
+                        isRefreshing = state.isReloading,
                         onRefresh = {
                             coroutineScope.launch {
-                                viewModel.reload()
+                                onAction(FavoritesAction.OnReload)
                                 pullRefreshState.animateToHidden()
                             }
                         },
@@ -174,8 +165,8 @@ fun FavoritesScreen(
                             flingBehavior = ScrollableDefaults.flingBehavior(),
                             contentPadding = PaddingValues(all = 16.dp),
                         ) {
-                            val likeableRecipes = favoriteUiState.favoritesRecipes
-                            val customRecipes = favoriteUiState.customRecipes
+                            val likeableRecipes = content.favoritesRecipes
+                            val customRecipes = content.customRecipes
                             if (customRecipes.isNotEmpty()) {
                                 item(span = { GridItemSpan(mode.nbSectionFavorites) }) {
                                     CustomRecipesSection(
@@ -191,7 +182,7 @@ fun FavoritesScreen(
                                             }
                                         },
                                         customRecipes,
-                                        onOpenCustomRecipe,
+                                        { onAction(FavoritesAction.OnCustomRecipeClick(it)) },
                                     )
                                 }
                                 item(span = { GridItemSpan(mode.nbSectionColumns) }) {
@@ -209,14 +200,8 @@ fun FavoritesScreen(
                             ) { index, likeableRecipe ->
                                 RecipeItem(
                                     likeableRecipe = likeableRecipe,
-                                    onToggleFavorite = onToggleFavorite,
-                                    onOpenRecipe = {
-                                        onOpenRecipe(
-                                            likeableRecipes.map { it.recipe.idMeal },
-                                            index,
-                                            likeableRecipe.recipe.strMeal,
-                                        )
-                                    },
+                                    onToggleFavorite = { onAction(FavoritesAction.OnToggleFavorite(it)) },
+                                    onOpenRecipe = { onAction(FavoritesAction.OnRecipeClick(index)) },
                                 )
                             }
                         }

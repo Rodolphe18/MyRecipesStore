@@ -1,22 +1,20 @@
 package com.francotte.add_recipe
 
 import android.net.Uri
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.FavoritesRepository
 import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.CustomIngredient
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,43 +24,110 @@ class AddRecipeViewModel @Inject constructor(
     userDataRepository: UserDataRepository,
 ) : ViewModel() {
 
-    val isAuthenticated = userDataRepository.userData
-        .map { it.isConnected && it.token?.isNotBlank() == true }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
-    var imageUri by mutableStateOf<Uri?>(null)
-    var recipeTitle by mutableStateOf("")
-    var recipeInstructions by mutableStateOf("")
-    var currentIngredient by mutableStateOf("")
-    var currentQuantity by mutableStateOf("")
-    var quantityType by mutableStateOf("")
-    var recipeIngredients = mutableStateListOf<CustomIngredient>()
+    private val _state = MutableStateFlow(AddRecipeState())
+    val state = _state.asStateFlow()
 
-    private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
-    val snackBarMessage: SharedFlow<String> = _snackBarMessage.asSharedFlow()
+    private val _events = Channel<AddRecipeEvent>()
+    val events = _events.receiveAsFlow()
 
-    fun onRecipeCreated() {
-        imageUri = null
-        recipeTitle = ""
-        recipeInstructions = ""
-        currentIngredient = ""
-        quantityType = ""
-        currentQuantity = ""
+    init {
+        userDataRepository.userData
+            .map { it.isConnected && it.token?.isNotBlank() == true }
+            .onEach { authenticated -> _state.update { it.copy(isAuthenticated = authenticated) } }
+            .launchIn(viewModelScope)
     }
 
-    fun onSubmit(
-        title: String,
-        ingredients: List<CustomIngredient>,
-        instructions: String,
-        image: Uri?,
-    ) {
+    fun onAction(action: AddRecipeAction) {
+        when (action) {
+            is AddRecipeAction.OnTitleChange -> _state.update { it.copy(title = action.title) }
+            is AddRecipeAction.OnInstructionsChange -> _state.update { it.copy(instructions = action.instructions) }
+            is AddRecipeAction.OnImageChange -> _state.update { it.copy(imageUri = action.uri) }
+            is AddRecipeAction.OnIngredientChange -> _state.update { it.copy(currentIngredient = action.ingredient) }
+            is AddRecipeAction.OnQuantityChange -> _state.update { it.copy(currentQuantity = action.quantity) }
+            is AddRecipeAction.OnQuantityTypeChange -> _state.update { it.copy(quantityType = action.quantityType) }
+            AddRecipeAction.OnAddIngredient -> addIngredient()
+            AddRecipeAction.OnSubmit -> submit()
+            // Pure navigation, handled by AddRoute.
+            AddRecipeAction.OnGoToLogin -> Unit
+        }
+    }
+
+    private fun addIngredient() {
+        _state.update { current ->
+            if (current.currentIngredient.isBlank()) return@update current
+            current.copy(
+                ingredients = current.ingredients + CustomIngredient(
+                    current.currentIngredient,
+                    current.currentQuantity,
+                    current.quantityType,
+                ),
+                currentIngredient = "",
+                currentQuantity = "",
+                quantityType = "",
+            )
+        }
+    }
+
+    private fun submit() {
+        val form = state.value
+        if (!form.canSubmit) return
         viewModelScope.launch {
-            val result = favoritesRepository.addCustomRecipe(title, ingredients, instructions, image)
+            val result = favoritesRepository.addCustomRecipe(
+                form.title,
+                form.ingredients,
+                form.instructions,
+                form.imageUri,
+            )
             if (result.isSuccess) {
-                _snackBarMessage.emit("Your recipe has been created successfully!")
-                onRecipeCreated()
+                _events.send(AddRecipeEvent.ShowSnackbar("Your recipe has been created successfully!"))
+                resetForm()
             } else {
-                _snackBarMessage.emit("An error occurred. Please try again.")
+                _events.send(AddRecipeEvent.ShowSnackbar("An error occurred. Please try again."))
             }
         }
     }
+
+    private fun resetForm() {
+        _state.update {
+            it.copy(
+                imageUri = null,
+                title = "",
+                instructions = "",
+                currentIngredient = "",
+                currentQuantity = "",
+                quantityType = "",
+                ingredients = emptyList(),
+            )
+        }
+    }
+}
+
+data class AddRecipeState(
+    val isAuthenticated: Boolean = false,
+    val imageUri: Uri? = null,
+    val title: String = "",
+    val instructions: String = "",
+    val currentIngredient: String = "",
+    val currentQuantity: String = "",
+    val quantityType: String = "",
+    val ingredients: List<CustomIngredient> = emptyList(),
+) {
+    val canSubmit: Boolean
+        get() = title.isNotBlank() && instructions.isNotBlank() && ingredients.isNotEmpty()
+}
+
+sealed interface AddRecipeAction {
+    data class OnTitleChange(val title: String) : AddRecipeAction
+    data class OnInstructionsChange(val instructions: String) : AddRecipeAction
+    data class OnImageChange(val uri: Uri?) : AddRecipeAction
+    data class OnIngredientChange(val ingredient: String) : AddRecipeAction
+    data class OnQuantityChange(val quantity: String) : AddRecipeAction
+    data class OnQuantityTypeChange(val quantityType: String) : AddRecipeAction
+    data object OnAddIngredient : AddRecipeAction
+    data object OnSubmit : AddRecipeAction
+    data object OnGoToLogin : AddRecipeAction
+}
+
+sealed interface AddRecipeEvent {
+    data class ShowSnackbar(val message: String) : AddRecipeEvent
 }

@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -40,19 +41,16 @@ import com.francotte.ads.BannerPlacement
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.ui.nbCategoriesColumns
-import com.francotte.model.AbstractCategory
 import com.francotte.model.Category
-import com.francotte.ui.ErrorScreen
+import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.DeviceMode
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.rememberDeviceMode
 
 @Composable
 fun CategoriesScreen(
-    categoryUiState: CategoriesUiState,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-    onOpenCategory: (AbstractCategory) -> Unit,
+    state: CategoriesState,
+    onAction: (CategoriesAction) -> Unit,
 ) {
     val mode = rememberDeviceMode()
     val lazyListState = rememberLazyGridState()
@@ -60,57 +58,55 @@ fun CategoriesScreen(
     val spanSize = GridItemSpan(mode.nbCategoriesColumns)
     val pullToRefreshState = rememberPullToRefreshState()
     PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onAction(CategoriesAction.OnRefresh) },
         state = pullToRefreshState
     ) {
-        when (categoryUiState) {
-            CategoriesUiState.Loading -> CustomCircularProgressIndicator()
-            CategoriesUiState.Empty -> ErrorScreen { onRefresh() }
-            is CategoriesUiState.Success -> {
-                categoryUiState.categories.let { categories ->
-                    LazyVerticalGrid(
-                        state = lazyListState,
-                        columns = GridCells.Fixed(mode.nbCategoriesColumns),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    ) {
-                        if (mode != DeviceMode.PhoneLandscape) {
-                            item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                                Box(
-                                    modifier =
-                                        Modifier.layout { measurable, constraints ->
-                                            val placeable =
-                                                measurable.measure(
-                                                    constraints.copy(
-                                                        maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
-                                                    ),
-                                                )
-                                            layout(placeable.width, placeable.height) {
-                                                placeable.place(0, 0)
-                                            }
-                                        },
-                                ) {
-                                    BannerAd(
-                                        placement = BannerPlacement.FOOD_LIST,
-                                        provider = localBannerProvider,
-                                        horizontalPadding = 16.dp,
-                                    )
-                                }
+        when {
+            state.isLoading -> CustomCircularProgressIndicator()
+            state.isEmpty -> SectionErrorScreen { onAction(CategoriesAction.OnRefresh) }
+            else -> {
+                LazyVerticalGrid(
+                    state = lazyListState,
+                    columns = GridCells.Fixed(mode.nbCategoriesColumns),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    if (mode != DeviceMode.PhoneLandscape) {
+                        item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+                            Box(
+                                modifier =
+                                    Modifier.layout { measurable, constraints ->
+                                        val placeable =
+                                            measurable.measure(
+                                                constraints.copy(
+                                                    maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
+                                                ),
+                                            )
+                                        layout(placeable.width, placeable.height) {
+                                            placeable.place(0, 0)
+                                        }
+                                    },
+                            ) {
+                                BannerAd(
+                                    placement = BannerPlacement.FOOD_LIST,
+                                    provider = localBannerProvider,
+                                    horizontalPadding = 16.dp,
+                                )
                             }
                         }
-                        items(
-                            key = { it.strCategory },
-                            contentType = { "categories" },
-                            items = categories,
-                        ) { category ->
-                            CategoryItem(
-                                imageUrl = (category as Category).strCategoryThumb,
-                                title = category.strCategory,
-                            ) {
-                                onOpenCategory(category)
-                            }
+                    }
+                    items(
+                        key = { it.strCategory },
+                        contentType = { "categories" },
+                        items = state.categories,
+                    ) { category ->
+                        CategoryItem(
+                            imageUrl = (category as Category).strCategoryThumb,
+                            title = category.strCategory,
+                        ) {
+                            onAction(CategoriesAction.OnCategoryClick(category))
                         }
                     }
                 }
@@ -184,4 +180,10 @@ fun GradientBackGround(modifier: Modifier = Modifier) {
                 ),
         )
     }
+}
+
+@Preview
+@Composable
+private fun CategoriesScreenPreview() {
+    CategoriesScreen(state = CategoriesState(), onAction = {})
 }

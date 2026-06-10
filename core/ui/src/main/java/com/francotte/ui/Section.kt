@@ -21,7 +21,7 @@ import com.francotte.model.LikeableRecipe
 fun HorizontalRecipesList(
     title: String,
     recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    onOpenRecipe: (Int) -> Unit,
     onOpenSection: (String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
@@ -50,7 +50,7 @@ fun HorizontalRecipesList(
                 ) { index, likeableRecipe ->
                     HorizontalRecipeItem(
                         likeableRecipe = likeableRecipe,
-                        onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
+                        onOpenRecipe = { onOpenRecipe(index) },
                         onToggleFavorite = onToggleFavorite,
                     )
                 }
@@ -62,7 +62,7 @@ fun HorizontalRecipesList(
 @Composable
 fun SimpleHorizontalRecipesList(
     recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    onOpenRecipe: (Int) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     val listState = rememberLazyListState()
@@ -80,7 +80,7 @@ fun SimpleHorizontalRecipesList(
                 ) { index, likeableRecipe ->
                     HorizontalRecipeItem(
                         likeableRecipe = likeableRecipe,
-                        onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
+                        onOpenRecipe = { onOpenRecipe(index) },
                         onToggleFavorite = onToggleFavorite
                     )
                 }

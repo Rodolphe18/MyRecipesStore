@@ -35,19 +35,31 @@ fun FavoriteRoute(
     onCustomRecipeClick: (String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
-    val favoriteUiState by viewModel.favoritesRecipesState.collectAsStateWithLifecycle()
-    val searchText by viewModel.searchText.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.onSearchTextChange("")
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is FavoritesEvent.NavigateToRecipe -> onRecipeClick(event.ids, event.index, event.title)
+                is FavoritesEvent.NavigateToCustomRecipe -> onCustomRecipeClick(event.recipeId)
+            }
+        }
     }
+    LaunchedEffect(Unit) {
+        viewModel.onAction(FavoritesAction.OnSearchChange(""))
+    }
+
     FavoritesScreen(
-        favoriteUiState = favoriteUiState,
-        searchText = searchText,
-        onSearchTextChanged = viewModel::onSearchTextChange,
-        onOpenRecipe = onRecipeClick,
-        onToggleFavorite = onToggleFavorite,
-        onOpenCustomRecipe = onCustomRecipeClick,
+        state = state,
+        onAction = { action ->
+            when (action) {
+                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
+                is FavoritesAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
+                else -> viewModel.onAction(action)
+            }
+        },
     )
-    ScreenCounter.increment()
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 }

@@ -82,7 +82,6 @@ class FavoriteManager @Inject constructor(
     override suspend fun toggleRecipeFavorite(likeableRecipe: LikeableRecipe): ToggleFavoriteResult {
         val userData = foodPreferencesDataSource.userData.first()
         if (!userData.isAuthenticated) return ToggleFavoriteResult.Unauthenticated
-        val token = userData.token!!
 
         val recipeId = likeableRecipe.recipe.idMeal
         val currentlyFavorite = foodPreferencesDataSource.userData.first().favoriteRecipesIds.contains(recipeId)

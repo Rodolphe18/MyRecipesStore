@@ -53,10 +53,8 @@ import com.francotte.ui.favButtonDimension
 
 @Composable
 fun LoginScreen(
-    onRegister: () -> Unit,
-    onLogin:(String?,String?)->Unit,
-    onOpenResetPassword: () -> Unit,
-    doGoogleLogin: () -> Unit,
+    state: LoginState,
+    onAction: (LoginAction) -> Unit,
 ) {
     val mode = rememberDeviceMode()
     val dimension = remember(mode) { googleButtonDimension(mode) }
@@ -89,7 +87,7 @@ fun LoginScreen(
             ButtonGoogle(
                 modifier = Modifier.fillMaxWidth(),
                 dimension = dimension,
-                onClick = doGoogleLogin
+                onClick = { onAction(LoginAction.OnGoogleLoginClick) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,7 +131,7 @@ fun LoginScreen(
                 ButtonGoogle(
                     modifier = Modifier.weight(1f),
                     dimension = dimension,
-                    onClick = doGoogleLogin
+                    onClick = { onAction(LoginAction.OnGoogleLoginClick) }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column (Modifier.weight(1f)){
@@ -153,15 +151,15 @@ fun LoginScreen(
             modifier =
                 Modifier
                     .padding(top = 10.dp)
-                    .clickable { onOpenResetPassword() },
+                    .clickable { onAction(LoginAction.OnResetPasswordClick) },
             textDecoration = TextDecoration.Underline,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(modifier = Modifier.height(16.dp))
         CustomButton(
-            onClick = { onLogin(loginUserNameOrMail, loginPassword) },
-            enabled = canConnect,
+            onClick = { onAction(LoginAction.OnLoginClick(loginUserNameOrMail, loginPassword)) },
+            enabled = canConnect && !state.isLoading,
             contentText = R.string.sign_in_connexion_button,
         )
         Text(
@@ -171,7 +169,7 @@ fun LoginScreen(
                     .padding(top = 16.dp)
                     .fillMaxWidth()
                     .wrapContentWidth(Alignment.CenterHorizontally)
-                    .clickable { onRegister() },
+                    .clickable { onAction(LoginAction.OnRegisterClick) },
             color = Orange.copy(0.75f),
             style =
                 TextStyle(

@@ -1,6 +1,5 @@
 package com.francotte.search.result_recipe
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,23 +40,17 @@ import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.ui.nbSectionColumns
 import com.francotte.designsystem.theme.LightYellow
-import com.francotte.model.LikeableRecipe
 import com.francotte.search.R
-import com.francotte.ui.ErrorScreen
+import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.RecipeItem
 import com.francotte.ui.TrackScrollJank
 import com.francotte.ui.rememberDeviceMode
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchRecipesScreen(
-    searchRecipesUiState: SearchRecipesUiState,
-    title: String,
-    onReload: () -> Unit,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
-    onBack: () -> Unit,
+    state: SearchRecipesState,
+    onAction: (SearchRecipesAction) -> Unit,
 ) {
     val mode = rememberDeviceMode()
     val topAppBarScrollBehavior =
@@ -66,91 +59,84 @@ fun SearchRecipesScreen(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = title,
+                title = state.title,
                 navigationIconEnabled = true,
-                onNavigationClick = onBack,
+                onNavigationClick = { onAction(SearchRecipesAction.OnBackClick) },
                 scrollBehavior = topAppBarScrollBehavior,
             )
         },
     ) { padding ->
-        when (searchRecipesUiState) {
-            SearchRecipesUiState.Loading -> CustomCircularProgressIndicator()
-            SearchRecipesUiState.Error -> ErrorScreen { onReload() }
-            is SearchRecipesUiState.Success -> {
-                if (searchRecipesUiState.recipes.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().background(LightYellow.copy(0.2f)),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.think),
-                            contentDescription = null,
-                            modifier = Modifier.size(200.dp),
+        when {
+            state.isLoading -> CustomCircularProgressIndicator()
+            state.isError -> SectionErrorScreen { onAction(SearchRecipesAction.OnReload) }
+            state.recipes.isEmpty() -> EmptyRecipesScreen(onBack = { onAction(SearchRecipesAction.OnBackClick) })
+            else -> {
+                val listState = rememberLazyGridState()
+                TrackScrollJank(scrollableState = listState, stateName = "search:grid")
+                LazyVerticalGrid(
+                    state = listState,
+                    columns = GridCells.Fixed(mode.nbSectionColumns),
+                    reverseLayout = false,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    flingBehavior = ScrollableDefaults.flingBehavior(),
+                    contentPadding =
+                        PaddingValues(
+                            top = padding.calculateTopPadding(),
+                            bottom = 16.dp,
+                            start = 16.dp,
+                            end = 16.dp,
+                        ),
+                ) {
+                    itemsIndexed(
+                        items = state.recipes,
+                        key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal + index },
+                    ) { index, likeableRecipe ->
+                        RecipeItem(
+                            likeableRecipe = likeableRecipe,
+                            onToggleFavorite = { onAction(SearchRecipesAction.OnToggleFavorite(it)) },
+                            onOpenRecipe = { onAction(SearchRecipesAction.OnRecipeClick(index)) },
                         )
-                        Spacer(Modifier.height(30.dp))
-                        Text(
-                            text = stringResource(R.string.empty_recipes_screen),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray,
-                            lineHeight = 36.sp,
-                        )
-                        Spacer(Modifier.height(40.dp))
-                        Box(
-                            modifier =
-                                Modifier
-                                    .height(60.dp)
-                                    .width(240.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFFFA000))
-                                    .clickable {
-                                        onBack()
-                                    },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text("Go back", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-                } else {
-                    val listState = rememberLazyGridState()
-                    TrackScrollJank(scrollableState = listState, stateName = "search:grid")
-                    LazyVerticalGrid(
-                        state = listState,
-                        columns = GridCells.Fixed(mode.nbSectionColumns),
-                        reverseLayout = false,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        flingBehavior = ScrollableDefaults.flingBehavior(),
-                        contentPadding =
-                            PaddingValues(
-                                top = padding.calculateTopPadding(),
-                                bottom = 16.dp,
-                                start = 16.dp,
-                                end = 16.dp,
-                            ),
-                    ) {
-                        val likeableRecipes = searchRecipesUiState.recipes
-                        itemsIndexed(
-                            items = likeableRecipes,
-                            key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal + index },
-                        ) { index, likeableRecipe ->
-                            RecipeItem(
-                                likeableRecipe = likeableRecipe,
-                                onToggleFavorite = onToggleFavorite,
-                                onOpenRecipe = {
-                                    onOpenRecipe(
-                                        likeableRecipes.map { it.recipe.idMeal },
-                                        index,
-                                        likeableRecipe.recipe.strMeal,
-                                    )
-                                },
-                            )
-                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun EmptyRecipesScreen(onBack: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().background(LightYellow.copy(0.2f)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.think),
+            contentDescription = null,
+            modifier = Modifier.size(200.dp),
+        )
+        Spacer(Modifier.height(30.dp))
+        Text(
+            text = stringResource(R.string.empty_recipes_screen),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            color = Color.Gray,
+            lineHeight = 36.sp,
+        )
+        Spacer(Modifier.height(40.dp))
+        Box(
+            modifier =
+                Modifier
+                    .height(60.dp)
+                    .width(240.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFFFA000))
+                    .clickable { onBack() },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("Go back", color = Color.White, fontWeight = FontWeight.SemiBold)
         }
     }
 }

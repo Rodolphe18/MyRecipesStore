@@ -1,5 +1,6 @@
 package com.francotte.data.repository
 
+import com.francotte.common.utils.DataResult
 import com.francotte.data.interfaces.HomeRepository
 import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.data.interfaces.UserDataRepository
@@ -8,6 +9,7 @@ import com.francotte.model.mapToLikeableFullRecipes
 import com.francotte.model.mapToLikeableLightRecipes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -97,6 +99,14 @@ class CompositeUserHomeRepository @Inject constructor(
         force: Boolean
     ): Boolean {
         return offlineFirstHomeRepository.refreshRecipesByCategory(category, force)
+    }
+
+    override suspend fun getRecipesByCategory(category: String): DataResult<List<LikeableRecipe>> {
+        val userData = userDataRepository.userData.first()
+        return when (val result = offlineFirstHomeRepository.getRecipesByCategory(category)) {
+            is DataResult.Success -> DataResult.Success(result.data.mapToLikeableLightRecipes(userData))
+            is DataResult.Failure -> result
+        }
     }
 }
 

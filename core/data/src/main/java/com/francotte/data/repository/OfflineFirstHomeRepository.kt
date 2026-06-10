@@ -16,6 +16,7 @@ import com.francotte.model.Recipe
 import com.francotte.network.api.RecipeApi
 import com.francotte.network.model.NetworkLightRecipe
 import com.francotte.network.model.NetworkRecipe
+import com.francotte.network.model.asExternalModel as networkAsExternalModel
 import com.francotte.network.utils.safeNetworkCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -136,6 +137,29 @@ class OfflineFirstHomeRepository @Inject constructor(
     override fun observeRecipesByCategory(category: String): Flow<List<LightRecipe>?> {
         return lightRecipeDao.observeCategoryWithRecipes(category).map { categoryWithRecipes ->
             categoryWithRecipes?.recipes?.map { it.asExternalModel() } ?: emptyList()
+        }
+    }
+
+    override suspend fun getRecipesByCategory(category: String): DataResult<List<LightRecipe>> =
+        safeNetworkCall(Dispatchers.IO) {
+            network.getRecipesListByCategory(category).meals
+                .filterIsInstance<NetworkLightRecipe>()
+                .map { it.networkAsExternalModel() }
+        }
+
+    override suspend fun getRecipesByArea(area: String): DataResult<List<LightRecipe>> =
+        safeNetworkCall(Dispatchers.IO) {
+            network.getRecipesListByArea(area).meals
+                .filterIsInstance<NetworkLightRecipe>()
+                .map { it.networkAsExternalModel() }
+        }
+
+    override suspend fun getRecipesByIngredients(ingredients: List<String>): DataResult<List<LightRecipe>> {
+        val ingredient = ingredients.firstOrNull() ?: return DataResult.Success(emptyList())
+        return safeNetworkCall(Dispatchers.IO) {
+            network.getRecipesListByMultiIngredients(ingredient).meals
+                .filterIsInstance<NetworkLightRecipe>()
+                .map { it.networkAsExternalModel() }
         }
     }
 

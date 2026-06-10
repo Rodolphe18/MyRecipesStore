@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -68,14 +67,8 @@ import com.francotte.ui.rememberDeviceMode
 
 @Composable
 fun SearchScreen(
-    onSearchModeSelected: (SearchMode) -> Unit,
-    searchResultUiState: SearchResultUiState = SearchResultUiState.Loading,
-    searchQuery: String = "",
-    onSearchQueryChanged: (String) -> Unit = {},
-    onSearchTriggered: (String) -> Unit = {},
-    onSearchTypeClick: (String, SearchMode) -> Unit,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit
+    state: SearchState,
+    onAction: (SearchAction) -> Unit,
 ) {
     val localBannerProvider = LocalBannerProvider.current
     val mode = rememberDeviceMode()
@@ -87,19 +80,20 @@ fun SearchScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SearchToolbar(
-            searchQuery = searchQuery,
-            onSearchQueryChanged = onSearchQueryChanged,
-            onSearchTriggered = onSearchTriggered
+            searchQuery = state.query,
+            onSearchQueryChanged = { onAction(SearchAction.OnQueryChange(it)) },
+            onSearchTriggered = {},
         )
-        if (searchResultUiState is SearchResultUiState.Success) {
+        val result = state.result
+        if (result is SearchResultUiState.Success) {
             SearchResultBody(
-                categories = searchResultUiState.categories,
-                areas = searchResultUiState.areas,
-                ingredients = searchResultUiState.ingredients,
-                likeableRecipes = searchResultUiState.likeableRecipes,
-                onSearchTypeClick = onSearchTypeClick,
-                onOpenRecipe = onOpenRecipe,
-                onToggleFavorite = onToggleFavorite
+                categories = result.categories,
+                areas = result.areas,
+                ingredients = result.ingredients,
+                likeableRecipes = result.likeableRecipes,
+                onSearchTypeClick = { item, searchMode -> onAction(SearchAction.OnSearchTypeClick(item, searchMode)) },
+                onRecipeClick = { index -> onAction(SearchAction.OnRecipeClick(index)) },
+                onToggleFavorite = { onAction(SearchAction.OnToggleFavorite(it)) }
             )
         } else {
             BannerAd(
@@ -122,7 +116,7 @@ fun SearchScreen(
                         Icons.Default.ThumbUp,
                         dimension
                     ) {
-                        onSearchModeSelected(SearchMode.INGREDIENTS)
+                        onAction(SearchAction.OnSearchModeClick(SearchMode.INGREDIENTS))
                     }
                     Spacer(Modifier.width(60.dp))
                     SearchModeButton(
@@ -130,7 +124,7 @@ fun SearchScreen(
                         Icons.Default.Notifications,
                         dimension
                     ) {
-                        onSearchModeSelected(SearchMode.COUNTRY)
+                        onAction(SearchAction.OnSearchModeClick(SearchMode.COUNTRY))
                     }
                 }
             } else {
@@ -139,7 +133,7 @@ fun SearchScreen(
                     Icons.Default.ThumbUp,
                     dimension
                 ) {
-                    onSearchModeSelected(SearchMode.INGREDIENTS)
+                    onAction(SearchAction.OnSearchModeClick(SearchMode.INGREDIENTS))
                 }
                 Spacer(Modifier.height(dimension.spacer2))
                 SearchModeButton(
@@ -147,7 +141,7 @@ fun SearchScreen(
                     Icons.Default.Notifications,
                     dimension
                 ) {
-                    onSearchModeSelected(SearchMode.COUNTRY)
+                    onAction(SearchAction.OnSearchModeClick(SearchMode.COUNTRY))
                 }
             }
         }
@@ -162,13 +156,10 @@ private fun SearchResultBody(
     ingredients: List<String>,
     likeableRecipes: List<LikeableRecipe>,
     onSearchTypeClick: (String, SearchMode) -> Unit,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    onRecipeClick: (Int) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit
 ) {
     val state = rememberLazyGridState()
-    val recipeIds = remember(likeableRecipes) {
-        likeableRecipes.map { it.recipe.idMeal }
-    }
     LazyVerticalGrid(
         state = state,
         columns = GridCells.Fixed(3),
@@ -237,7 +228,7 @@ private fun SearchResultBody(
             }
         }
         itemsIndexed(likeableRecipes) { index, likeableRecipe ->
-            RecipeItem(likeableRecipe, onToggleFavorite, { onOpenRecipe(recipeIds,index,likeableRecipe.recipe.strMeal) }, size = 120.dp)
+            RecipeItem(likeableRecipe, onToggleFavorite, { onRecipeClick(index) }, size = 120.dp)
         }
     }
 }
@@ -408,4 +399,3 @@ private fun SearchTextField(
         focusRequester.requestFocus()
     }
 }
-

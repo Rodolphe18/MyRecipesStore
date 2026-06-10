@@ -44,6 +44,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         emitDeepLinkIfAny(intent)
+        showInAppReviewIfNeeded()
+
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
                 lightScrim = android.graphics.Color.TRANSPARENT,
@@ -54,7 +56,7 @@ class MainActivity : ComponentActivity() {
                 darkScrim = darkScrim,
             ),
         )
-        showInAppReview()
+
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }
             CompositionLocalProvider(
@@ -64,16 +66,14 @@ class MainActivity : ComponentActivity() {
                 val data: Uri? = intent?.data
                 val appState = rememberAppState(resetPasswordToken = data?.getQueryParameter("token"))
                 FoodTheme {
-                    FoodApp(
-                        appState = appState,
-                    )
+                    FoodApp(appState = appState)
                     NotificationPermissionEffect(this)
                 }
             }
         }
     }
 
-    private fun showInAppReview() {
+    private fun showInAppReviewIfNeeded() {
         lifecycleScope.launch {
             mainViewModel.showInAppReviewIfNeeded(this@MainActivity)
         }

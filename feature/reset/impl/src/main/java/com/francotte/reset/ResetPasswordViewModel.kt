@@ -1,48 +1,48 @@
 package com.francotte.reset
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.network.api.AuthApi
+import com.francotte.auth.PasswordResetRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ResetPasswordViewModel
-    @Inject
-    constructor(
-        private val api: AuthApi,
-    ) : ViewModel() {
-        var uiState by mutableStateOf("")
-        var isSuccess by mutableStateOf(false)
+class ResetPasswordViewModel @Inject constructor(
+    private val passwordResetRepository: PasswordResetRepository,
+) : ViewModel() {
 
-        fun resetPassword(
-            token: String,
-            newPassword: String,
-        ) {
-            viewModelScope.launch {
-                try {
-                    val response =
-                        api.resetPassword(
-                            mapOf(
-                                "token" to token,
-                                "newPassword" to newPassword,
-                            ),
-                        )
-                    if (response.isSuccessful) {
-                        isSuccess = true
-                        uiState = "Password updated successfully"
-                    } else {
-                        isSuccess = false
-                        uiState = response.errorBody()?.string() ?: "Unknown error"
-                    }
-                } catch (e: Exception) {
-                    isSuccess = false
-                    uiState = "Error : ${e.localizedMessage}"
-                }
-            }
+    private val _state = MutableStateFlow(ResetPasswordState())
+    val state = _state.asStateFlow()
+
+    fun onAction(action: ResetPasswordAction) {
+        when (action) {
+            is ResetPasswordAction.OnConfirmClick -> resetPassword(action.token, action.newPassword)
         }
     }
+
+    private fun resetPassword(token: String, newPassword: String) {
+        viewModelScope.launch {
+            passwordResetRepository.resetPassword(token, newPassword).fold(
+                onSuccess = {
+                    _state.update { it.copy(isSuccess = true, message = "Password updated successfully") }
+                },
+                onFailure = { error ->
+                    _state.update { it.copy(isSuccess = false, message = error.message ?: "Unknown error") }
+                },
+            )
+        }
+    }
+}
+
+data class ResetPasswordState(
+    val message: String = "",
+    val isSuccess: Boolean = false,
+)
+
+sealed interface ResetPasswordAction {
+    data class OnConfirmClick(val token: String, val newPassword: String) : ResetPasswordAction
+}

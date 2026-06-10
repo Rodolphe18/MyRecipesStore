@@ -13,45 +13,52 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.api.ResetPasswordNavKey
 import com.francotte.navigation.Navigator
 import com.francotte.ui.CustomTextField
-import kotlinx.serialization.Serializable
 
 
 fun EntryProviderScope<NavKey>.resetPasswordEntry(navigator: Navigator) {
     entry<ResetPasswordNavKey> {
-        val token: String? = it.token
-
-        if (token != null) {
-            ResetPasswordScreen(token = token)
-        }
+        ResetPasswordRoute(token = it.token)
     }
+}
+
+
+@Composable
+fun ResetPasswordRoute(
+    token: String,
+    viewModel: ResetPasswordViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    ResetPasswordScreen(
+        token = token,
+        state = state,
+        onAction = viewModel::onAction,
+    )
 }
 
 
 @Composable
 fun ResetPasswordScreen(
     token: String,
-    viewModel: ResetPasswordViewModel = hiltViewModel(),
+    state: ResetPasswordState,
+    onAction: (ResetPasswordAction) -> Unit,
 ) {
     var password by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)) {
         Text("New password")
         CustomTextField(text = password, onTextChange = { password = it })
-        Button(onClick = { viewModel.resetPassword(token, password) }) {
+        Button(onClick = { onAction(ResetPasswordAction.OnConfirmClick(token, password)) }) {
             Text("Confirm")
         }
 
-        if (viewModel.uiState.isNotBlank()) {
-            Text(viewModel.uiState, color = if (viewModel.isSuccess) Color.Green else Color.Red)
+        if (state.message.isNotBlank()) {
+            Text(state.message, color = if (state.isSuccess) Color.Green else Color.Red)
         }
     }
 }

@@ -28,37 +28,46 @@ Layers: **UI (Screen/ViewModel) → Domain (Use Cases) → Data (Repositories �
 | `:app` | Application entry point, DI setup, top-level navigation |
 
 ### Core modules (`core/`)
-| Module | Role |
-|--------|------|
-| `:core:model` | Domain data models shared across modules |
-| `:core:network` | Retrofit + OkHttp setup, API service interfaces, Kotlinx Serialization |
-| `:core:database` | Room database, DAOs, migrations, schema files |
-| `:core:data` | Repositories — aggregate network and database sources |
-| `:core:datastore` | Proto DataStore for encrypted key-value storage |
-| `:core:datastore-proto` | Protobuf definitions for DataStore |
-| `:core:domain` | Use cases and business logic |
-| `:core:common` | Shared utilities, extensions, helpers |
-| `:core:ui` | Shared Composables not part of the design system |
-| `:core:designsystem` | Material3 theme, typography, colors, design tokens |
-| `:core:auth` | Authentication logic (Google Sign-In, Facebook SDK) |
-| `:core:billing` | Google Play Billing integration |
-| `:core:notifications` | Firebase Cloud Messaging + notification handling |
-| `:core:navigation` | Type-safe navigation state management |
-| `:core:ads` | Ad network integration (Admob, Prebid, Criteo, APS) |
-| `:core:premium` | Premium/subscription features |
-| `:core:web` | WebView integration |
-| `:core:shared-prefs` | SharedPreferences helpers |
-| `:core:inapp-update` | Google Play In-App Update |
-| `:core:inapp-rating` | Google Play In-App Review |
-| `:core:cmp` | Consent management (Didomi SDK) |
-| `:core:testing` | Shared test utilities and fixtures |
-| `:core:screenshot-testing` | Roborazzi screenshot test utilities |
+| Module | Role                                                                        |
+|--------|-----------------------------------------------------------------------------|
+| `:core:model` | Domain data models shared across modules                                    |
+| `:core:network` | Retrofit + OkHttp setup, API service interfaces, Kotlinx Serialization      |
+| `:core:database` | Room database, DAOs, migrations, schema files                               |
+| `:core:data` | Repositories — aggregate network and database sources                       |
+| `:core:datastore` | Proto DataStore for encrypted key-value storage                             |
+| `:core:datastore-proto` | Protobuf definitions for DataStore                                          |
+| `:core:domain` | Use cases and business logic                                                |
+| `:core:common` | Shared utilities, extensions, helpers                                       |
+| `:core:ui` | Shared Composables not part of the design system                            |
+| `:core:designsystem` | Material3 theme, typography, colors, design tokens                          |
+| `:core:auth` | Authentication logic (Email/Password sign in, Google Sign-In, Facebook SDK) |
+| `:core:billing` | Google Play Billing integration                                             |
+| `:core:notifications` | Firebase Cloud Messaging + notification handling                            |
+| `:core:navigation` | Type-safe navigation state management                                       |
+| `:core:ads` | Ad network integration (Admob, Prebid, Criteo, APS)                         |
+| `:core:premium` | Premium/subscription features                                               |
+| `:core:web` | WebView integration                                                         |
+| `:core:shared-prefs` | SharedPreferences helpers                                                   |
+| `:core:inapp-update` | Google Play In-App Update                                                   |
+| `:core:inapp-rating` | Google Play In-App Review                                                   |
+| `:core:cmp` | Consent management google play services ads)                                |
+| `:core:testing` | Shared test utilities and fixtures                                          |
+| `:core:screenshot-testing` | Roborazzi screenshot test utilities                                         |
 
 ### Feature modules (`feature/`)
 
 Each feature follows a two-module pattern:
 - **`api`** — public interface: type-safe `NavKey`, navigation extension function
 - **`impl`** — implementation: Screen, Route, ViewModel, delegates, DI module
+
+**Presentation pattern:** `feature/` modules use **MVI** (single `State` data
+class, sealed `Action`, sealed `Event`; ViewModel exposes `StateFlow<State>` +
+`onAction(Action)` and emits one-time `Event`s). The full pattern — including
+Route/Screen split, `UiText` error mapping, `Ui` models, and process-death
+handling — is documented in the `android-presentation-mvi` skill
+(`.claude/skills/android-presentation-mvi/SKILL.md`), which is invoked
+automatically when working on any ViewModel or screen. Apply it to new features
+and when migrating existing MVVM screens.
 
 | Feature | Role |
 |---------|------|
@@ -128,10 +137,8 @@ feature/<name>/api/src/main/java/com/francotte/feature/<name>/api/
 | Java | VERSION_17 |
 
 Key Gradle flags (in `gradle.properties`):
-- `org.gradle.parallel=true`
-- `org.gradle.caching=true`
-- `org.gradle.configuration-cache=true`
-- JVM: `-Xmx6g -XX:MaxMetaspaceSize=1g`
+- `org.gradle.parallel=false`
+- JVM: `-Xmx4g -XX:MaxMetaspaceSize=1g`
 
 ---
 

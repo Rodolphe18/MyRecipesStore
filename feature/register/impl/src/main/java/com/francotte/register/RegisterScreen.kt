@@ -72,21 +72,20 @@ import com.francotte.designsystem.theme.Orange
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onBackClick: () -> Unit,
-    viewModel: RegisterViewModel = hiltViewModel(),
+    state: RegisterState,
+    onAction: (RegisterAction) -> Unit,
 ) {
     val context = LocalContext.current
-    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val launcherGallery =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-            viewModel.onImageChange(it.firstOrNull())
+            onAction(RegisterAction.OnImageChange(it.firstOrNull()))
         }
     val launcherCamera =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
-            it?.let { bitmap -> viewModel.onImageChange(bitmapToUri(context, bitmap)) }
+            it?.let { bitmap -> onAction(RegisterAction.OnImageChange(bitmapToUri(context, bitmap))) }
         }
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
@@ -95,7 +94,7 @@ fun RegisterScreen(
                 title = "Register",
                 scrollBehavior = topAppBarScrollBehavior,
                 navigationIconEnabled = true,
-                onNavigationClick = onBackClick,
+                onNavigationClick = { onAction(RegisterAction.OnBackClick) },
             )
         },
     ) { padding ->
@@ -124,7 +123,7 @@ fun RegisterScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(modifier = Modifier.height(padding.calculateTopPadding() + 12.dp))
-                if (formState.imageUri == null) {
+                if (state.imageUri == null) {
                     val scale = remember { Animatable(1f) }
                     LaunchedEffect(Unit) {
                         scale.animateTo(
@@ -170,7 +169,7 @@ fun RegisterScreen(
                     Image(
                         painter =
                             rememberAsyncImagePainter(
-                                model = formState.imageUri,
+                                model = state.imageUri,
                             ),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
@@ -182,44 +181,44 @@ fun RegisterScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 RegisterTextField(
-                    formState.name,
-                    viewModel::onNameChange,
-                    formState.isNameValid,
+                    state.name,
+                    { onAction(RegisterAction.OnNameChange(it)) },
+                    state.isNameValid,
                     "Valid name ✅",
                     "At least 6 caracters",
                     "UserName",
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RegisterTextField(
-                    formState.email,
-                    viewModel::onEmailChange,
-                    formState.isEmailValid,
+                    state.email,
+                    { onAction(RegisterAction.OnEmailChange(it)) },
+                    state.isEmailValid,
                     "Valid email ✅",
                     "Email incorrect",
                     "Email",
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RegisterPasswordField(
-                    formState.password,
-                    viewModel::onPasswordChange,
-                    formState.isPasswordValid,
+                    state.password,
+                    { onAction(RegisterAction.OnPasswordChange(it)) },
+                    state.isPasswordValid,
                     "Secure password ✅",
                     "Invalid password (1 maj, 1 number, 6 characters min)",
                     "Password",
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 RegisterPasswordField(
-                    formState.confirmPassword,
-                    viewModel::onConfirmPasswordChange,
-                    formState.isConfirmPasswordValid,
+                    state.confirmPassword,
+                    { onAction(RegisterAction.OnConfirmPasswordChange(it)) },
+                    state.isConfirmPasswordValid,
                     "Password confirmed successfully",
                     "Password is not the same",
                     "Confirm password",
                 )
                 Spacer(modifier = Modifier.height(36.dp))
                 CustomButton(
-                    onClick = viewModel::createUser,
-                    enabled = formState.canRegister,
+                    onClick = { onAction(RegisterAction.OnRegisterClick) },
+                    enabled = state.canRegister && !state.isLoading,
                     contentText = R.string.subscribe,
                 )
                 Spacer(modifier = Modifier.height(500.dp))

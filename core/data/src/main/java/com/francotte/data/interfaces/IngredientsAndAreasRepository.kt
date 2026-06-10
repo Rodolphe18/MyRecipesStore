@@ -1,5 +1,6 @@
 package com.francotte.data.interfaces
 
+import com.francotte.common.utils.DataResult
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.flow.Flow
 
@@ -19,4 +20,10 @@ interface IngredientsAndAreasRepository {
     suspend fun refreshRecipesByIngredients(ingredients: List<String>,force: Boolean): String?
 
     fun observeRecipesByIngredients(ingredients: List<String>): Flow<Result<List<LikeableRecipe>>>
+
+    /** One-shot network fetch, no DB write. */
+    suspend fun getRecipesByArea(area: String): DataResult<List<LikeableRecipe>>
+
+    /** One-shot network fetch, no DB write. */
+    suspend fun getRecipesByIngredients(ingredients: List<String>): DataResult<List<LikeableRecipe>>
 }

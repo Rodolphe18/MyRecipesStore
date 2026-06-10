@@ -37,12 +37,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,56 +64,40 @@ import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.CustomButton
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.theme.Orange
-import com.francotte.model.CustomIngredient
-import com.francotte.model.CustomRecipe
 import com.francotte.ui.CustomTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomRecipeDetailScreen(
-    viewModel: CustomRecipeDetailViewModel,
-    customRecipe: CustomRecipe?,
-    onBackCLick: () -> Unit,
+    state: CustomRecipeDetailState,
+    onAction: (CustomRecipeDetailAction) -> Unit,
 ) {
     val context = LocalContext.current
+    val recipe = state.recipe
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-    var isUpdating by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     var showImagePickerDialog by remember { mutableStateOf(false) }
     val launcherGallery =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-            viewModel.imageUri = it.firstOrNull()
+            onAction(CustomRecipeDetailAction.OnImageChange(it.firstOrNull()))
         }
     val launcherCamera =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
             it?.let { bitmap ->
-                val uri = bitmapToUri(context, bitmap)
-                viewModel.imageUri = uri
+                onAction(CustomRecipeDetailAction.OnImageChange(bitmapToUri(context, bitmap)))
             }
         }
-    val snackBarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(!isUpdating) {
-        if (!isUpdating) {
-            viewModel.getCustomRecipe()
-            viewModel.hasBeenUpdated.value = true
-        }
-    }
-    LaunchedEffect(Unit) {
-        viewModel.snackBarMessage.collect { msg ->
-            snackBarHostState.showSnackbar(msg)
-        }
-    }
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = customRecipe?.title ?: "",
+                title = recipe?.title ?: "",
                 scrollBehavior = topAppBarScrollBehavior,
                 navigationIconEnabled = true,
-                onNavigationClick = { onBackCLick() },
+                onNavigationClick = { onAction(CustomRecipeDetailAction.OnBackClick) },
                 actionIcon = Icons.Default.Update,
-                onActionClick = { isUpdating = true },
+                onActionClick = { onAction(CustomRecipeDetailAction.OnStartEdit) },
             )
         },
     ) { padding ->
@@ -136,18 +118,18 @@ fun CustomRecipeDetailScreen(
                     Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp)
-                        .clickable(enabled = isUpdating) {
+                        .clickable(enabled = state.isEditing) {
                             showImagePickerDialog = true
                         },
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 val painter =
-                    if (isUpdating && viewModel.imageUri != null) {
-                        rememberAsyncImagePainter(viewModel.imageUri)
+                    if (state.isEditing && state.imageUri != null) {
+                        rememberAsyncImagePainter(state.imageUri)
                     } else {
                         rememberAsyncImagePainter(
-                            imageRequestBuilder(LocalContext.current, customRecipe?.imageUrl ?: ""),
+                            imageRequestBuilder(LocalContext.current, recipe?.imageUrl ?: ""),
                         )
                     }
 
@@ -162,15 +144,15 @@ fun CustomRecipeDetailScreen(
                 )
             }
             SectionTitle("Title")
-            if (isUpdating) {
+            if (state.isEditing) {
                 CustomTextField(
-                    viewModel.recipeTitle,
-                    { viewModel.recipeTitle = it },
+                    state.title,
+                    { onAction(CustomRecipeDetailAction.OnTitleChange(it)) },
                     label = "Title",
                 )
             } else {
                 Text(
-                    text = customRecipe?.title ?: "",
+                    text = recipe?.title ?: "",
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -182,23 +164,23 @@ fun CustomRecipeDetailScreen(
                 color = Color.LightGray,
             )
             SectionTitle("Ingredients")
-            if (isUpdating) {
+            if (state.isEditing) {
                 Row(
                     Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     CustomTextField(
-                        viewModel.currentIngredient,
-                        { viewModel.currentIngredient = it },
+                        state.currentIngredient,
+                        { onAction(CustomRecipeDetailAction.OnIngredientChange(it)) },
                         label = "Ingredient",
                         modifier = Modifier.weight(1.2f),
                         verticalPadding = 12.dp,
                     )
 
                     CustomTextField(
-                        viewModel.currentQuantity,
-                        { viewModel.currentQuantity = it },
+                        state.currentQuantity,
+                        { onAction(CustomRecipeDetailAction.OnQuantityChange(it)) },
                         label = "Qty",
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(0.5f),
@@ -212,19 +194,8 @@ fun CustomRecipeDetailScreen(
                                 .clip(CircleShape)
                                 .background(Orange)
                                 .clickable {
-                                    if (viewModel.currentIngredient.isNotBlank()) {
-                                        viewModel.recipeIngredients.add(
-                                            CustomIngredient(
-                                                viewModel.currentIngredient,
-                                                viewModel.currentQuantity,
-                                                viewModel.quantityType,
-                                            ),
-                                        )
-                                        viewModel.currentIngredient = ""
-                                        viewModel.currentQuantity = ""
-                                        viewModel.quantityType = ""
-                                        focusManager.clearFocus()
-                                    }
+                                    onAction(CustomRecipeDetailAction.OnAddIngredient)
+                                    focusManager.clearFocus()
                                 },
                     ) {
                         Icon(
@@ -240,9 +211,9 @@ fun CustomRecipeDetailScreen(
                 }
 
                 Column {
-                    if (viewModel.recipeIngredients.isNotEmpty()) {
+                    if (state.ingredients.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        viewModel.recipeIngredients.forEach { (ingredient, qty, measureType) ->
+                        state.ingredients.forEach { (ingredient, qty, measureType) ->
                             Text(
                                 "- $ingredient: $qty $measureType",
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -251,7 +222,7 @@ fun CustomRecipeDetailScreen(
                     }
                 }
             } else {
-                customRecipe?.ingredients?.forEach { ingredient ->
+                recipe?.ingredients?.forEach { ingredient ->
                     Row(
                         modifier =
                             Modifier
@@ -279,10 +250,10 @@ fun CustomRecipeDetailScreen(
                 color = Color.LightGray,
             )
             SectionTitle("Instructions")
-            if (isUpdating) {
+            if (state.isEditing) {
                 CustomTextField(
-                    viewModel.recipeInstructions,
-                    { viewModel.recipeInstructions = it },
+                    state.instructions,
+                    { onAction(CustomRecipeDetailAction.OnInstructionsChange(it)) },
                     label = "Instructions",
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
                     minLines = 5,
@@ -290,30 +261,17 @@ fun CustomRecipeDetailScreen(
                 )
             } else {
                 Text(
-                    text = customRecipe?.instructions ?: "",
+                    text = recipe?.instructions ?: "",
                     style = MaterialTheme.typography.bodyLarge,
                     lineHeight = 22.sp,
                     color = MaterialTheme.colorScheme.secondary,
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            if (isUpdating) {
+            if (state.isEditing) {
                 CustomButton(
-                    onClick = {
-                        viewModel.onSubmit(
-                            viewModel.recipeId ?: "",
-                            viewModel.recipeTitle,
-                            viewModel.recipeIngredients,
-                            viewModel.recipeInstructions,
-                            viewModel.imageUri,
-                        )
-                        viewModel.onRecipeUpdated()
-                        isUpdating = false
-                    },
-                    enabled =
-                        viewModel.recipeTitle.isNotBlank() &&
-                            viewModel.recipeInstructions.isNotBlank() &&
-                            viewModel.recipeIngredients.isNotEmpty(),
+                    onClick = { onAction(CustomRecipeDetailAction.OnSubmit) },
+                    enabled = state.canSubmit,
                     contentText = R.string.update_recipe,
                 )
             } else {
@@ -328,9 +286,9 @@ fun CustomRecipeDetailScreen(
                     onClick = {
                         val shoppingListText =
                             buildString {
-                                appendLine("🛒 Groceries list : ${customRecipe?.title}")
+                                appendLine("🛒 Groceries list : ${recipe?.title}")
                                 appendLine()
-                                customRecipe?.ingredients?.forEach { (ingredient, measure) ->
+                                recipe?.ingredients?.forEach { (ingredient, measure) ->
                                     appendLine("- $ingredient: $measure")
                                 }
                             }
@@ -340,7 +298,7 @@ fun CustomRecipeDetailScreen(
                                 setType("text/plain")
                                 putExtra(
                                     Intent.EXTRA_SUBJECT,
-                                    "My groceries list for ${customRecipe?.title}",
+                                    "My groceries list for ${recipe?.title}",
                                 )
                                 putExtra(Intent.EXTRA_TEXT, shoppingListText)
                             }

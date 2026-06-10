@@ -2,19 +2,6 @@ package com.francotte.detail
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.webkit.ConsoleMessage
-import android.webkit.CookieManager
-import android.webkit.PermissionRequest
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -42,10 +29,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -63,7 +48,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -72,6 +56,8 @@ import com.francotte.ads.BannerPlacement
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.DesignAsyncImage
 import com.francotte.designsystem.component.TopAppBar
+import com.francotte.designsystem.component.YouTubeWebViewPlayer
+import com.francotte.domain.YouTubeUrlParser
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.ui.FavButton
@@ -85,21 +71,21 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailRecipeScreen(
-    viewModel: DetailRecipeViewModel,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
-    onBackCLick: () -> Unit,
+    state: DetailState,
+    onAction: (DetailAction) -> Unit,
 ) {
+    val onToggleFavorite: (LikeableRecipe) -> Unit = { onAction(DetailAction.OnToggleFavorite(it)) }
     val mode = rememberDeviceMode()
     val localBannerProvider = LocalBannerProvider.current
     val scope = rememberCoroutineScope()
     val topAppBarScrollBehavior =
         TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    val title by viewModel.title.collectAsStateWithLifecycle()
-    val pageCount = viewModel.pageCount
+    val title = state.title
+    val pageCount = state.pageCount
     val pagerState =
-        rememberPagerState(initialPage = viewModel.index ?: 0, pageCount = { pageCount })
+        rememberPagerState(initialPage = state.initialPage, pageCount = { pageCount })
     val context = LocalContext.current
-    val deepLink by viewModel.deeplinkRecipe.collectAsStateWithLifecycle()
+    val deepLink = state.deeplinkRecipe
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -112,7 +98,7 @@ fun DetailRecipeScreen(
                         while (pagerState.isScrollInProgress) {
                             delay(50)
                         }
-                        onBackCLick()
+                        onAction(DetailAction.OnBackClick)
                     }
                 },
             )
@@ -184,10 +170,7 @@ fun DetailRecipeScreen(
                 snapshotFlow { pagerState.settledPage }
                     .distinctUntilChanged()
                     .collectLatest { newPage ->
-                        if (!viewModel.recipesMap.containsKey(newPage)) {
-                            viewModel.currentPage = newPage
-                            viewModel.getRecipe()
-                        }
+                        onAction(DetailAction.OnPageChanged(newPage))
                     }
             }
             HorizontalPager(
@@ -195,7 +178,7 @@ fun DetailRecipeScreen(
                 beyondViewportPageCount = 1,
                 modifier = Modifier.fillMaxSize(),
             ) { index ->
-                viewModel.recipesMap.getOrDefault(index, null)?.let { likeableRecipe ->
+                state.recipes[index]?.let { likeableRecipe ->
                     val ingredients =
                         remember(likeableRecipe) {
                             (1..20).mapNotNull { i ->
@@ -267,135 +250,13 @@ fun DetailRecipeScreen(
 @Composable
 private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
     val youtubeUrl = (likeableRecipe.recipe as Recipe).strYoutube
-    val videoId =
-        remember(youtubeUrl) {
-            when {
-                youtubeUrl.contains("watch?v=") ->
-                    youtubeUrl.substringAfter("v=").substringBefore("&")
-
-                youtubeUrl.contains("youtu.be/") ->
-                    youtubeUrl.substringAfter("youtu.be/").substringBefore("?").substringBefore("&")
-
-                youtubeUrl.contains("/shorts/") ->
-                    youtubeUrl.substringAfter("/shorts/").substringBefore("?").substringBefore("&")
-
-                youtubeUrl.contains("/embed/") ->
-                    youtubeUrl.substringAfter("/embed/").substringBefore("?").substringBefore("&")
-
-                else -> ""
-            }
-        }
+    val videoId = remember(youtubeUrl) { YouTubeUrlParser.extractVideoId(youtubeUrl) }
     if (videoId.isNotBlank()) {
-        val origin = "https://app.local" // n'importe quel https stable, mais garde-le partout
-        val embedUrl =
-            "https://www.youtube.com/embed/$videoId" +
-                "?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&origin=$origin"
-
-        val html =
-            """
-<!doctype html><html>
-<head>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>html,body{margin:0;background:#000;height:100%}#wrap{position:fixed;inset:0}</style>
-</head>
-<body>
-  <div id="wrap">
-    <iframe
-      src="$embedUrl"
-      title="YouTube video player"
-      allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
-      allowfullscreen
-      referrerpolicy="origin-when-cross-origin"
-      style="border:0;width:100%;height:100%"></iframe>
-  </div>
-</body>
-</html>
-            """.trimIndent()
-        var webView by remember { mutableStateOf<WebView?>(null) }
-        DisposableEffect(videoId) {
-            onDispose {
-                webView?.apply {
-                    stopLoading()
-                    loadUrl("about:blank")
-                    postDelayed({
-                        removeAllViews()
-                        destroy()
-                    }, 100)
-                }
-                webView = null
-            }
-        }
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    layoutParams =
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            220,
-                        )
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.mediaPlaybackRequiresUserGesture = false
-                    settings.javaScriptCanOpenWindowsAutomatically = true
-
-                    // UA : repartir d'un UA Chrome standard + suffixe
-                    settings.userAgentString =
-                        WebSettings.getDefaultUserAgent(context) + " YTWebView/1.0"
-
-                    webChromeClient =
-                        object : WebChromeClient() {
-                            override fun onPermissionRequest(request: PermissionRequest?) {
-                                // Autoriser audio/vidéo pour l'iFrame
-                                request?.grant(request.resources)
-                            }
-
-                            override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
-                                Log.d("YTWebView", "${msg?.message()} @${msg?.lineNumber()}")
-                                return super.onConsoleMessage(msg)
-                            }
-                        }
-                    webViewClient =
-                        object : WebViewClient() {
-                            override fun onReceivedError(
-                                v: WebView,
-                                r: WebResourceRequest,
-                                e: WebResourceError,
-                            ) {
-                                Log.e("YTWebView", "WebError ${e.errorCode}: ${e.description}")
-                            }
-
-                            override fun onReceivedHttpError(
-                                v: WebView,
-                                r: WebResourceRequest,
-                                resp: WebResourceResponse,
-                            ) {
-                                Log.e("YTWebView", "HTTP ${resp.statusCode} ${resp.reasonPhrase}")
-                            }
-                        }
-
-                    CookieManager.getInstance().setAcceptCookie(true)
-                    CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-
-                    // Accélération matérielle conseillée
-                    setLayerType(View.LAYER_TYPE_HARDWARE, null)
-
-                    loadDataWithBaseURL(origin, html, "text/html", "utf-8", null)
-                    webView = this
-                }
-            },
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-            update = { view ->
-                view.loadDataWithBaseURL(
-                    origin,
-                    html,
-                    "text/html",
-                    "utf-8",
-                    null,
-                )
-            },
+        YouTubeWebViewPlayer(
+            videoId = videoId,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp),
         )
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {

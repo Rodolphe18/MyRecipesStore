@@ -36,7 +36,6 @@ import com.francotte.designsystem.component.TopAppBar
 import com.francotte.designsystem.theme.SearchItemColor1
 import com.francotte.designsystem.theme.SearchItemColor2
 import com.francotte.designsystem.theme.SearchItemColor3
-import com.francotte.feature.search.api.SearchMode
 import com.francotte.ui.nbIngredientsColumns
 import com.francotte.ui.rememberDeviceMode
 import kotlin.math.absoluteValue
@@ -44,12 +43,8 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemSelectionGrid(
-    searchMode: SearchMode,
-    items: List<String>,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-    onItemSelected: (String, SearchMode) -> Unit,
-    onBack: () -> Unit,
+    state: SearchModeState,
+    onAction: (SearchModeAction) -> Unit,
 ) {
     val mode = rememberDeviceMode()
     val topAppBarScrollBehavior =
@@ -58,9 +53,9 @@ fun ItemSelectionGrid(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = searchMode.title,
+                title = state.title,
                 navigationIconEnabled = true,
-                onNavigationClick = onBack,
+                onNavigationClick = { onAction(SearchModeAction.OnBackClick) },
                 scrollBehavior = topAppBarScrollBehavior,
             )
         },
@@ -72,8 +67,8 @@ fun ItemSelectionGrid(
         ) {
             PullToRefreshBox(
                 modifier = Modifier.fillMaxSize(),
-                isRefreshing = isRefreshing,
-                onRefresh = onRefresh,
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onAction(SearchModeAction.OnRefresh) },
                 state = pullToRefreshState
             ) {
                 LazyVerticalGrid(
@@ -82,8 +77,8 @@ fun ItemSelectionGrid(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(items) { item ->
-                        SelectableChip(Modifier.fillMaxWidth(),item, onClick = { onItemSelected(item, searchMode) })
+                    items(state.items) { item ->
+                        SelectableChip(Modifier.fillMaxWidth(), item, onClick = { onAction(SearchModeAction.OnItemClick(item)) })
                     }
                 }
             }

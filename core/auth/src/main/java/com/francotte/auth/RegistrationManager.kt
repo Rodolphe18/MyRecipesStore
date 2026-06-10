@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import com.francotte.auth.RegistrationRepository
 import com.francotte.network.api.AuthApi
-import com.francotte.network.model.EmailRequest
 import com.francotte.network.utils.toMultiPartBody
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -35,15 +34,6 @@ class RegistrationManager @Inject constructor(
                 ),
                 operation = AuthOperation.REGISTER,
             )
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-
-    override suspend fun requestPasswordReset(email: String): Result<Unit> =
-        try {
-            val response = api.requestPasswordReset(EmailRequest(email))
-            if (response.isSuccessful) Result.success(Unit)
-            else Result.failure(Exception("Erreur : ${response.code()}"))
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -26,3 +26,10 @@ enum class ConnectionMethod {
     FACEBOOK,
     GOOGLE,
 }
+
+/** Placeholder URL the backend returns when the user has no profile picture. */
+const val NO_PROFILE_IMAGE_URL = "https://app.myrecipesstore18.com/null"
+
+/** True when the user has a real profile picture (not the backend placeholder). */
+val UserData.hasCustomImage: Boolean
+    get() = image.isNotBlank() && image != NO_PROFILE_IMAGE_URL

@@ -22,7 +22,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -42,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import androidx.window.core.layout.WindowSizeClass
 import com.francotte.add_recipe.addRecipeEntry
 import com.francotte.api.navigateToProfile
 import com.francotte.api.navigateToResetPassword
@@ -105,12 +105,18 @@ fun FoodApp(appState: AppState) {
 
     val showBottomSystemBar = appState.navigationState.currentKey != SplashNavKey && appState.navigationState.currentKey !is VideoNavKey
 
-    // NavigationSuiteScaffold choisit seul bottom bar / rail selon WindowAdaptiveInfo.
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
+    // On force le rail dès que la largeur est >= MEDIUM
+    val isWidthAtLeastMedium = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+
     val windowAdaptiveInfo =
         if (!showBottomSystemBar) {
             NavigationSuiteType.None
+        } else if (isWidthAtLeastMedium) {
+            NavigationSuiteType.NavigationRail
         } else {
-            NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo())
+            NavigationSuiteType.NavigationBar
         }
 
     val useNavigationRail = windowAdaptiveInfo == NavigationSuiteType.NavigationRail
