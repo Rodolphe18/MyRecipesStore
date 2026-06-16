@@ -26,7 +26,7 @@ fun EntryProviderScope<NavKey>.videoEntry() {
 
 @Composable
 fun VideoRoute(
-    viewModel: VideoViewModel = hiltViewModel(),
+    viewModel: VideoViewModel,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     VideoFullScreen(videoId = state.videoId)

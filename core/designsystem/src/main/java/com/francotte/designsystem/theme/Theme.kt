@@ -25,6 +25,7 @@ val LightColorScheme =
         secondary = NeutralBlack,
         onSecondary = NeutralMediumGrey,
         primaryContainer = Color.DarkGray,
+        secondaryContainer = LightOrange.copy(alpha = 0.1f),
         // Famille surface aplatie sur `surface` → aucune teinte tonale (supprime le violet de base).
         surfaceBright = NeutralWhite,
         surfaceDim = NeutralWhite,
@@ -52,6 +53,7 @@ val DarkColorScheme =
         secondary = NeutralLightGrey,
         onSecondary = NeutralSoftGrey,
         primaryContainer = Color.LightGray,
+        secondaryContainer = LightOrange.copy(alpha = 0.1f),
         // Famille surface aplatie sur `surface` → aucune teinte tonale (supprime le violet de base).
         surfaceBright = NeutralBlack,
         surfaceDim = NeutralBlack,

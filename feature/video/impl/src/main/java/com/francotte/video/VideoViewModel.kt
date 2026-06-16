@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel(assistedFactory = VideoViewModel.Factory::class)
-class VideoViewModel @AssistedInject constructor(
-    @Assisted youtubeUrl: String,
-) : ViewModel() {
+class VideoViewModel @AssistedInject constructor(@Assisted youtubeUrl: String) : ViewModel() {
 
     val state: StateFlow<VideoState> =
         MutableStateFlow(VideoState(videoId = YouTubeUrlParser.extractVideoId(youtubeUrl)))

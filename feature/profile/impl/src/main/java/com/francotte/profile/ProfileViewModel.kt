@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.auth.SessionRepository
 import com.francotte.data.interfaces.UserDataRepository
-import com.francotte.domain.RegisterValidator
+import com.francotte.domain.userNameValidator
 import com.francotte.model.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +68,7 @@ data class ProfileState(
     val editedImageUri: Uri? = null,
 ) {
     val isNameValid: Boolean
-        get() = RegisterValidator.isValidName(editedName)
+        get() = userNameValidator.isValid(editedName)
 
     val isNameChanged: Boolean
         get() = user != null && editedName != user.userName

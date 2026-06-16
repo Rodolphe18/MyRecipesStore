@@ -4,7 +4,10 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.auth.RegistrationRepository
-import com.francotte.domain.RegisterValidator
+import com.francotte.domain.matchValidator
+import com.francotte.domain.emailValidator
+import com.francotte.domain.passwordValidator
+import com.francotte.domain.userNameValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,13 +66,13 @@ data class RegisterState(
     val isLoading: Boolean = false,
 ) {
     val isNameValid: Boolean
-        get() = RegisterValidator.isValidName(name)
+        get() = userNameValidator.isValid(name)
     val isEmailValid: Boolean
-        get() = RegisterValidator.isValidEmail(email)
+        get() = emailValidator.isValid(email)
     val isPasswordValid: Boolean
-        get() = RegisterValidator.isValidPassword(password)
+        get() = passwordValidator.isValid(password)
     val isConfirmPasswordValid: Boolean
-        get() = RegisterValidator.isPasswordConfirmed(password, confirmPassword)
+        get() = matchValidator(password).isValid(confirmPassword)
     val canRegister: Boolean
         get() = isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid
 }

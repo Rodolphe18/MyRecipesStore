@@ -1,18 +1,23 @@
 package com.francotte.myrecipesstore.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,9 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,6 +78,7 @@ import com.francotte.myrecipesstore.MainEffect
 import com.francotte.myrecipesstore.MainViewModel
 import com.francotte.myrecipesstore.deeplink.DeepLinkBus
 import com.francotte.myrecipesstore.deeplink.toNavKeyOrNull
+import com.francotte.myrecipesstore.navigation.ADD
 import com.francotte.myrecipesstore.navigation.FAVORITES
 import com.francotte.myrecipesstore.navigation.LOGIN
 import com.francotte.myrecipesstore.navigation.TOP_LEVEL_NAV_ITEMS
@@ -120,7 +130,7 @@ fun FoodApp(appState: AppState) {
     // On force le rail dès que la largeur est >= MEDIUM
     val isWidthAtLeastMedium = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
-    val windowAdaptiveInfo =
+    val navigationSuiteType =
         if (!showNavigationSuite) {
             NavigationSuiteType.None
         } else if (isWidthAtLeastMedium) {
@@ -129,7 +139,7 @@ fun FoodApp(appState: AppState) {
             NavigationSuiteType.NavigationBar
         }
 
-    val useNavigationRail = windowAdaptiveInfo == NavigationSuiteType.NavigationRail
+    val useNavigationRail = navigationSuiteType == NavigationSuiteType.NavigationRail
 
     // La TopAppBar se cache au scroll vers le bas et réapparaît dès qu'on scrolle vers le haut.
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -143,6 +153,18 @@ fun FoodApp(appState: AppState) {
         navigationRailItemColors = NavigationRailItemDefaults.colors(
             selectedIconColor = Orange,
             selectedTextColor = Orange,
+        ),
+    )
+
+    // Item "Add" : rond orange custom → on supprime la pastille d'indicateur Material.
+    val navAddItemColors = NavigationSuiteDefaults.itemColors(
+        navigationBarItemColors = NavigationBarItemDefaults.colors(
+            selectedTextColor = Orange,
+            indicatorColor = Color.Transparent,
+        ),
+        navigationRailItemColors = NavigationRailItemDefaults.colors(
+            selectedTextColor = Orange,
+            indicatorColor = Color.Transparent,
         ),
     )
 
@@ -210,7 +232,7 @@ fun FoodApp(appState: AppState) {
 
     CompositionLocalProvider(LocalShouldShowBanners provides shouldShowBanners) {
         NavigationSuiteScaffold(
-            layoutType = windowAdaptiveInfo,
+            layoutType = navigationSuiteType,
             navigationSuiteItems = {
                 if (showNavigationSuite) {
                     val currentNavItems =
@@ -220,17 +242,36 @@ fun FoodApp(appState: AppState) {
                             TOP_LEVEL_NAV_ITEMS.filterNot { it.value == FAVORITES }
                         }
                     currentNavItems.forEach { (navKey, navItem) ->
+                        val isAdd = navItem == ADD
+                        val isSelected = navKey == appState.navigationState.currentTopLevelKey
                         item(
-                            selected = navKey == appState.navigationState.currentTopLevelKey,
+                            selected = isSelected,
                             onClick = { navigator.navigate(navKey) },
                             icon = {
-                                Icon(
-                                    imageVector = navItem.selectedIcon,
-                                    contentDescription = null,
-                                )
+                                if (isAdd) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                            .background(Orange),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Add,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(32.dp),
+                                        )
+                                    }
+                                } else {
+                                    Icon(
+                                        imageVector = if (isSelected) navItem.selectedIcon else navItem.unselectedIcon,
+                                        contentDescription = null,
+                                    )
+                                }
                             },
-                            label = { Text(stringResource(navItem.titleTextId)) },
-                            colors = navItemColors,
+                            label = { if (!isAdd) { Text(text = stringResource(navItem.titleTextId), fontWeight = FontWeight.Normal) } },
+                            colors = if (isAdd) navAddItemColors else navItemColors,
                         )
                     }
                 }
@@ -275,13 +316,18 @@ fun FoodApp(appState: AppState) {
                     }
 
                     Box(
-                        modifier = Modifier.consumeWindowInsets(
-                            if (shouldShowTopAppBar) {
-                                WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
-                            } else {
-                                WindowInsets(0, 0, 0, 0)
-                            },
-                        ),
+                        modifier = Modifier
+                            .consumeWindowInsets(
+                                if (shouldShowTopAppBar) {
+                                    WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+                                } else {
+                                    WindowInsets(0, 0, 0, 0)
+                                },
+                            )
+                            // Gestion IME centralisée : le Scaffold parent a contentWindowInsets = 0,
+                            // donc les écrans à TextField (login, search, register, reset…) sont
+                            // remontés ici au-dessus du clavier. Placé avant tout scroll interne.
+                            .imePadding(),
                     ) {
                         val alreadyNavigated = remember { mutableStateOf(false) }
                         LaunchedEffect(appState.resetPasswordToken) {
@@ -306,6 +352,7 @@ fun FoodApp(appState: AppState) {
                             }
                         }
                     }
+                    if (useNavigationRail) HideBottomSystemBar()
                 }
             }
         }

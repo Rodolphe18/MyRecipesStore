@@ -2,6 +2,7 @@ package com.francotte.myrecipesstore
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.activity.ComponentActivity
@@ -56,6 +57,13 @@ class MainActivity : ComponentActivity() {
                 darkScrim = darkScrim,
             ),
         )
+
+        // Bottom bar (NavigationSuiteScaffold) edge-to-edge : on empêche le système d'ajouter
+        // un scrim translucide sur la barre de navigation, pour que les couleurs de la bottom bar
+        // s'étendent jusqu'en bas de l'écran.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
 
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }

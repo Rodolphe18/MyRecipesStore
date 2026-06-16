@@ -1,14 +1,9 @@
 package com.francotte.favorites
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
@@ -40,13 +35,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,12 +52,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
-import com.francotte.ui.nbSectionColumns
-import com.francotte.ui.nbSectionFavorites
-import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.RecipeItem
+import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.TrackScrollJank
+import com.francotte.ui.nbSectionColumns
+import com.francotte.ui.nbSectionFavorites
 import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,32 +73,13 @@ fun FavoritesScreen(
     val focusManager = LocalFocusManager.current
     val pullRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
-    var showSearchBar by remember { mutableStateOf(true) }
-    val lastScrollOffset = remember { mutableIntStateOf(0) }
-
     LaunchedEffect(state.searchText) {
         if (state.searchText.isEmpty()) {
             delay(3000)
             focusManager.clearFocus()
         }
     }
-    LaunchedEffect(lazyGridState) {
-        snapshotFlow { lazyGridState.firstVisibleItemScrollOffset }
-            .collect { offset ->
-                if (offset > lastScrollOffset.intValue) {
-                    showSearchBar = false // Scroll vers le bas
-                } else if (offset < lastScrollOffset.intValue) {
-                    showSearchBar = true // Scroll vers le haut
-                }
-                lastScrollOffset.intValue = offset
-            }
-    }
     Column {
-        AnimatedVisibility(
-            visible = showSearchBar,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically(),
-        ) {
             OutlinedTextField(
                 modifier =
                     Modifier
@@ -131,7 +102,7 @@ fun FavoritesScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 colors = OutlinedTextFieldDefaults.colors(),
             )
-        }
+
         when (val content = state.content) {
             FavoriteUiState.Loading -> CustomCircularProgressIndicator()
             FavoriteUiState.Error -> SectionErrorScreen { onAction(FavoritesAction.OnReload) }

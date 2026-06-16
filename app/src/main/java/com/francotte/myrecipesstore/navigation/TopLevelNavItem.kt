@@ -8,6 +8,11 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
@@ -36,14 +41,14 @@ data class TopLevelNavItem(
 
 val HOME = TopLevelNavItem(
     selectedIcon = Icons.Filled.Home,
-    unselectedIcon = Icons.Filled.Lock,
+    unselectedIcon = Icons.Outlined.Home,
     R.string.home,
     R.string.home,
 )
 
 val CATEGORIES = TopLevelNavItem(
     selectedIcon = Icons.Filled.ShoppingCart,
-    unselectedIcon = Icons.Filled.Lock,
+    unselectedIcon = Icons.Outlined.ShoppingCart,
     R.string.categories,
     R.string.categories,
 )
@@ -57,21 +62,21 @@ val ADD = TopLevelNavItem(
 
 val SEARCH = TopLevelNavItem(
     selectedIcon = Icons.Filled.Search,
-    unselectedIcon = Icons.Filled.Lock,
+    unselectedIcon = Icons.Outlined.Search,
     R.string.search,
     R.string.search,
 )
 
 val FAVORITES = TopLevelNavItem(
     selectedIcon = Icons.Filled.Favorite,
-    unselectedIcon = Icons.Filled.Lock,
+    unselectedIcon = Icons.Outlined.FavoriteBorder,
     R.string.favorites,
     R.string.favorites
 )
 
 val LOGIN = TopLevelNavItem(
     selectedIcon = Icons.Filled.Lock,
-    unselectedIcon = Icons.Filled.Lock,
+    unselectedIcon = Icons.Outlined.Lock,
     R.string.login,
     R.string.login
 )

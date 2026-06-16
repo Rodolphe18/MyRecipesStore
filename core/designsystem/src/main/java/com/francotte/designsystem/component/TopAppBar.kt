@@ -41,7 +41,7 @@ fun TopAppBar(
     navigationIcon: ImageVector = ImageVector.vectorResource(R.drawable.ic_back),
     navigationIconColor: Color = MaterialTheme.colorScheme.onSurface,
     actionIconContentDescription: String? = "",
-    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
     onActionClick: () -> Unit = {},
     onNavigationClick: () -> Unit = {},
     navigationIconEnabled: Boolean = false,
