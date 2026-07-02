@@ -30,9 +30,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
 }
 
 dependencies {
@@ -56,6 +54,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.kotlinx.serialization.json.okio)
-    implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.play.services.auth)
+
 }

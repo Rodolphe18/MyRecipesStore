@@ -1,25 +1,18 @@
 package com.francotte.categories
 
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.compose.composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.francotte.api.CategoriesNavKey
 import com.francotte.api.CategoryNavKey
 import com.francotte.api.navigateToDetail
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
-import kotlinx.serialization.Serializable
+import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.categoryEntry(
@@ -28,13 +21,12 @@ fun EntryProviderScope<NavKey>.categoryEntry(
 ) {
     entry<CategoryNavKey> { key ->
         CategoryRoute(
-            viewModel = hiltViewModel<CategoryViewModel, CategoryViewModel.Factory>(key = key.category,
-            ) { factory ->
+            viewModel = hiltViewModel<CategoryViewModel, CategoryViewModel.Factory>(key = key.category) { factory ->
                 factory.create(key.category)
             },
             onOpenRecipe = navigator::navigateToDetail,
             onToggleFavorite = onToggleFavorite,
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }
@@ -47,20 +39,30 @@ fun CategoryRoute(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
 ) {
-    val uiState by viewModel.categoryUiState.collectAsStateWithLifecycle()
-    val title = viewModel.category
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackBarHost = LocalSnackbarHostState.current
 
-    CategoryScreen(
-        categoryUiState = uiState,
-        title = title,
-        onReload = {
-            viewModel.refresh()
-        },
-        onOpenRecipe = onOpenRecipe,
-        onToggleFavorite = onToggleFavorite,
-        onBack
-    )
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CategoryEvent.NavigateToRecipe -> onOpenRecipe(event.ids, event.index, event.title)
+                CategoryEvent.NavigateBack -> onBack()
+                is CategoryEvent.ShowSnackbar -> snackBarHost.showSnackbar(event.message)
+            }
+        }
+    }
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }
+
+    CategoryScreen(
+        state = state,
+        onAction = { action ->
+            when (action) {
+                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
+                is CategoryAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
+                else -> viewModel.onAction(action)
+            }
+        },
+    )
 }

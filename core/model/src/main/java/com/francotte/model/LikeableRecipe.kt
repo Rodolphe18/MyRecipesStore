@@ -1,5 +1,8 @@
 package com.francotte.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class LikeableRecipe(
     val recipe: AbstractRecipe,
     val favoriteState: FavoriteState
@@ -7,14 +10,10 @@ data class LikeableRecipe(
     val isFavorite: Boolean
         get() = favoriteState != FavoriteState.NotFavorite
 
-    val isPending: Boolean
-        get() = favoriteState == FavoriteState.PendingAdd || favoriteState == FavoriteState.PendingRemove
-
     constructor(recipe: AbstractRecipe, userData: UserData) : this(
         recipe = recipe,
         favoriteState = computeFavoriteState(recipe.idMeal, userData),
     )
-
 
 }
 
@@ -34,6 +33,7 @@ private fun computeFavoriteState(recipeId: String, userData: UserData): Favorite
     }
 }
 
+@Immutable
 enum class FavoriteState { NotFavorite, PendingAdd, PendingRemove, FavoriteSynced }
 
 fun List<LightRecipe>.mapToLikeableLightRecipes(userData: UserData): List<LikeableRecipe> = mapNotNull { LikeableRecipe(it, userData) }

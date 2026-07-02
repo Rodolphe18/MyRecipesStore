@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -20,58 +20,47 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
+import com.francotte.designsystem.theme.Playfair
 import com.francotte.model.LikeableRecipe
-import com.francotte.model.Recipe
-import com.francotte.testing.util.HomeTags
 import com.francotte.ui.BigRecipeItem
 import com.francotte.ui.DeviceMode
-import com.francotte.ui.ErrorScreen
+import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.HorizontalRecipesList
-import com.francotte.ui.LocalAppLayout
+import com.francotte.ui.LikeableRecipesWrapper
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
 import com.francotte.ui.VideoRecipeItem
 import com.francotte.ui.nbHomeColumns
+import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    uiState: HomeUiState,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
-    onOpenSection: (String) -> Unit,
-    onVideoButtonClick: (String) -> Unit,
-    onRefreshAll: () -> Unit,
-    onRetryLatest: () -> Unit,
-    onRetryJapanese: () -> Unit,
-    onRetryAreas: () -> Unit,
-    onRetryEnglish: () -> Unit,
-    onCurrentPageChange: (Int) -> Unit
+    state: HomeState,
+    onAction: (HomeAction) -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val onToggleFavorite: (LikeableRecipe) -> Unit = { onAction(HomeAction.OnToggleFavorite(it)) }
+
+    val mode = rememberDeviceMode()
     val localBannerProvider = LocalBannerProvider.current
     val spanSize = GridItemSpan(mode.nbHomeColumns)
     val scrollState = rememberLazyGridState()
     val pullRefreshState = rememberPullToRefreshState()
-    val isDataReady = uiState.latest.hasRecipes
-    val areaSections =
-        remember(uiState.areas) { uiState.areas.recipes.toList().sortedBy { it.first } }
+    val isDataReady = state.latest.hasRecipes
     PullToRefreshBox(
         modifier =
             Modifier
@@ -85,8 +74,8 @@ fun HomeScreen(
                         Modifier
                     },
                 ),
-        isRefreshing = uiState.isRefreshing,
-        onRefresh = onRefreshAll,
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onAction(HomeAction.OnRefreshAll) },
         state = pullRefreshState,
     ) {
         LazyVerticalGrid(
@@ -107,23 +96,23 @@ fun HomeScreen(
                         showNavIcon = false,
                     )
                     when {
-                        uiState.latest.error -> ErrorScreen { onRetryLatest() }
-                        uiState.latest.loading -> {
-                            CustomCircularProgressIndicator()
+                        state.latest.error -> SectionErrorScreen { onAction(HomeAction.OnRetryLatest) }
+                        state.latest.loading -> {
+                         //   CustomCircularProgressIndicator()
                         }
 
-                        uiState.latest.hasRecipes -> {
+                        state.latest.hasRecipes -> {
                             if (mode == DeviceMode.PhonePortrait) {
                                 val pagerState =
                                     rememberPagerState(
-                                        initialPage = uiState.latest.currentPage,
-                                        pageCount = { uiState.latest.recipes.size },
+                                        initialPage = state.latest.currentPage,
+                                        pageCount = { state.latest.recipes.size },
                                     )
 
                                 LaunchedEffect(pagerState) {
                                     snapshotFlow { pagerState.currentPage }
                                         .distinctUntilChanged()
-                                        .collect(onCurrentPageChange)
+                                        .collect { onAction(HomeAction.OnCurrentPageChange(it)) }
                                 }
                                 HorizontalPager(state = pagerState) { index ->
                                     VideoRecipeItem(
@@ -134,39 +123,27 @@ fun HomeScreen(
                                                     contentDescription =
                                                         "VideoRecipeItem_$index"
                                                 },
-                                        likeableRecipe = uiState.latest.recipes[index],
+                                        likeableRecipe = state.latest.recipes[index],
                                         onOpenRecipe = {
-                                            onOpenRecipe(
-                                                uiState.latest.recipes.map { it.recipe.idMeal },
-                                                index,
-                                                uiState.latest.recipes[index].recipe.strMeal,
-                                            )
+                                            onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Latest, index))
                                         },
                                         onToggleFavorite = onToggleFavorite,
                                         onVideoButtonClick = {
-                                            onVideoButtonClick((uiState.latest.recipes[index].recipe as Recipe).strYoutube)
+                                            onAction(HomeAction.OnVideoClick(index))
                                         },
                                     )
                                 }
                             } else {
                                 SimpleHorizontalRecipesList(
-                                    recipes = uiState.latest.recipes,
-                                    onOpenRecipe = onOpenRecipe,
+                                    likeableRecipesWrapper = LikeableRecipesWrapper(state.latest.recipes),
+                                    onOpenRecipe = { index ->
+                                        onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Latest, index))
+                                    },
                                     onToggleFavorite = onToggleFavorite,
                                 )
                             }
                         }
                     }
-                }
-            }
-            if (mode != DeviceMode.PhoneLandscape) {
-                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
-                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                    BannerAd(
-                        placement = BannerPlacement.HOME_POS_1,
-                        provider = localBannerProvider,
-                        horizontalPadding = 16.dp,
-                    )
                 }
             }
             item(
@@ -175,38 +152,51 @@ fun HomeScreen(
                 span = { spanSize },
             ) {
                 when {
-                    uiState.japanese.error -> ErrorScreen { onRetryJapanese() }
-                    uiState.japanese.loading -> {
-                        CustomCircularProgressIndicator()
+                    state.japanese.error -> SectionErrorScreen { onAction(HomeAction.OnRetryJapanese) }
+                    state.japanese.loading -> {
+                      //  CustomCircularProgressIndicator()
                     }
 
-                    uiState.japanese.hasRecipes -> {
+                    state.japanese.hasRecipes -> {
                         HorizontalRecipesList(
-                            "Japanese",
-                            uiState.japanese.recipes,
-                            onOpenRecipe = onOpenRecipe,
-                            onOpenSection = onOpenSection,
+                            title = "Japanese",
+                            likeableRecipesWrapper = LikeableRecipesWrapper(state.japanese.recipes),
+                            onOpenRecipe = { index ->
+                                onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Japanese, index))
+                            },
+                            onOpenSection = { onAction(HomeAction.OnOpenSection(it)) },
                             onToggleFavorite = onToggleFavorite,
                         )
                     }
                 }
             }
-
+//            if (mode != DeviceMode.PhoneLandscape) {
+//                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
+//                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+//                    BannerAd(
+//                        placement = BannerPlacement.HOME_POS_1,
+//                        provider = localBannerProvider,
+//                        horizontalPadding = 16.dp,
+//                    )
+//                }
+//            }
             when {
-                uiState.areas.error -> item(span = { spanSize }) { ErrorScreen { onRetryAreas() } }
-                uiState.areas.loading -> item { }
-                uiState.areas.hasRecipes -> {
-                    areaSections.forEach { (key, list) ->
+                state.areas.error -> item(span = { spanSize }) { SectionErrorScreen { onAction(HomeAction.OnRetryAreas) } }
+                state.areas.loading -> item { }
+                state.areas.hasRecipes -> {
+                    state.areas.sortedSections.forEach { (key, list) ->
                         item(
                             key = "area_section_$key",
                             contentType = "section",
                             span = { spanSize },
                         ) {
                             HorizontalRecipesList(
-                                key,
-                                list,
-                                onOpenRecipe = onOpenRecipe,
-                                onOpenSection = { onOpenSection(key) },
+                                title = key,
+                                likeableRecipesWrapper = LikeableRecipesWrapper(list),
+                                onOpenRecipe = { index ->
+                                    onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Area(key), index))
+                                },
+                                onOpenSection = { onAction(HomeAction.OnOpenSection(key)) },
                                 onToggleFavorite = onToggleFavorite,
                             )
                         }
@@ -214,21 +204,22 @@ fun HomeScreen(
                 }
             }
             item(span = { spanSize }) { Spacer(Modifier.height(4.dp)) }
-            item(
-                key = "banner_mid",
-                contentType = "ad",
-                span = { spanSize },
-            ) {
-                BannerAd(
-                    placement = BannerPlacement.HOME_POS_2,
-                    provider = localBannerProvider,
-                    horizontalPadding = 16.dp,
-                )
-            }
+//            item(
+//                key = "banner_mid",
+//                contentType = "ad",
+//                span = { spanSize },
+//            ) {
+//                BannerAd(
+//                    placement = BannerPlacement.HOME_POS_2,
+//                    provider = localBannerProvider,
+//                    horizontalPadding = 16.dp,
+//                )
+//            }
             item(span = { spanSize }) { Spacer(Modifier.height(4.dp)) }
             item(span = { spanSize }) {
                 Text(
                     text = "English recipes",
+                    fontFamily = Playfair,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -236,23 +227,21 @@ fun HomeScreen(
                 )
             }
             when {
-                uiState.english.error -> item { ErrorScreen { onRetryEnglish() } }
-                uiState.english.loading -> item { CustomCircularProgressIndicator() }
-                uiState.english.hasRecipes -> {
-                    items(
-                        items = uiState.english.recipes,
-                        key = { it.recipe.idMeal },
-                        contentType = { "recipe_big" },
-                    ) { recipe ->
+                state.english.error -> item { SectionErrorScreen { onAction(HomeAction.OnRetryEnglish) } }
+                state.english.loading -> item {
+                // CustomCircularProgressIndicator()
+                }
+                state.english.hasRecipes -> {
+                    itemsIndexed(
+                        items = state.english.recipes,
+                        key = { _, recipe -> recipe.recipe.idMeal },
+                        contentType = { _, _ -> "recipe_big" },
+                    ) { index, recipe ->
                         BigRecipeItem(
                             recipe,
                             onToggleFavorite = onToggleFavorite,
                             onOpenRecipe = {
-                                onOpenRecipe(
-                                    uiState.english.recipes.map { it.recipe.idMeal },
-                                    uiState.english.recipes.indexOf(recipe),
-                                    recipe.recipe.strMeal,
-                                )
+                                onAction(HomeAction.OnRecipeClick(HomeRecipeSource.English, index))
                             },
                         )
                     }
@@ -261,5 +250,3 @@ fun HomeScreen(
         }
     }
 }
-
-

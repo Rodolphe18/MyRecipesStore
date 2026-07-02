@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,10 +32,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import javax.inject.Inject
 import javax.inject.Singleton
 
 enum class BannerPlacement {
@@ -55,7 +53,8 @@ interface BannerConfigProvider {
     fun configFor(placement: BannerPlacement): BannerConfig
 }
 
-class DefaultBannerConfigProvider : BannerConfigProvider {
+@Singleton
+class DefaultBannerConfigProvider @Inject constructor() : BannerConfigProvider {
     override fun configFor(placement: BannerPlacement): BannerConfig =
         when (placement) {
             BannerPlacement.HOME_POS_1 ->
@@ -144,6 +143,7 @@ private fun Dp.getAdSizeFromHeight(): AdSize =
         else -> AdSize.BANNER
     }
 
+@Stable
 interface BannerAdProvider {
     @Composable
     fun Banner(
@@ -154,9 +154,11 @@ interface BannerAdProvider {
     )
 }
 
-class AdMobBannerAdProvider(
-    private val bannerConfigProvider: BannerConfigProvider = DefaultBannerConfigProvider(),
+@Singleton
+class AdMobBannerAdProvider @Inject constructor(
+    private val bannerConfigProvider: BannerConfigProvider,
 ) : BannerAdProvider {
+
     @Composable
     override fun Banner(
         placement: BannerPlacement,
@@ -244,14 +246,6 @@ fun PlaceHolder(height: Dp = 120.dp) {
             tint = Color.Gray
         )
     }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object AdsModule {
-    @Provides
-    @Singleton
-    fun provideBannerAdProvider(): BannerAdProvider = AdMobBannerAdProvider()
 }
 
 

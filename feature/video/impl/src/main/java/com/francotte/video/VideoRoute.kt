@@ -1,25 +1,36 @@
 package com.francotte.video
 
-import android.view.Window
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.francotte.common.counters.ScreenCounter
 import com.francotte.feature.video.api.VideoNavKey
-import com.francotte.navigation.Navigator
-import kotlinx.serialization.Serializable
 
 
-
-fun EntryProviderScope<NavKey>.videoEntry(window: Window) {
-    entry<VideoNavKey> {
-        val youTubeUrl = it.youTubeUrl
-        VideoFullScreen(youtubeUrl = youTubeUrl, window = window)
+fun EntryProviderScope<NavKey>.videoEntry() {
+    entry<VideoNavKey> { key ->
+        VideoRoute(
+            viewModel = hiltViewModel<VideoViewModel, VideoViewModel.Factory>(
+                key = key.youTubeUrl,
+            ) { factory ->
+                factory.create(key.youTubeUrl)
+            },
+        )
     }
 }
 
+
+@Composable
+fun VideoRoute(
+    viewModel: VideoViewModel,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    VideoFullScreen(videoId = state.videoId)
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
+}

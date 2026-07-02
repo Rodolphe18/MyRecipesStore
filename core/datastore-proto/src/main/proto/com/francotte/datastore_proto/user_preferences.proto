@@ -16,4 +16,7 @@ message UserPreferences {
   map<string, bool> favorites_ids = 2;
   UserInfo user_info = 3;
   map<string, PendingFavoriteAction> pendingFavorites = 4;
+  int32 launch_count = 5;
+  bool has_rated = 6;
+  int32 last_prompt_launch = 7;
 }

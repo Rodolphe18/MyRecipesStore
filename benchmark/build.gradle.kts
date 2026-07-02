@@ -50,9 +50,3 @@ androidComponents {
         it.enable = it.buildType == "benchmark"
     }
 }
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}

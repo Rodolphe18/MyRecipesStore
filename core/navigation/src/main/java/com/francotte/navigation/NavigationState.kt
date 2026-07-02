@@ -1,6 +1,5 @@
 package com.francotte.navigation
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -74,7 +73,7 @@ class NavigationState(
 
 
 @Composable
-fun NavigationState.toEntries(
+fun NavigationState.toNavEntries(
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ): SnapshotStateList<NavEntry<NavKey>> {
 

@@ -3,7 +3,7 @@ package com.francotte.categories
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -19,7 +19,7 @@ fun EntryProviderScope<NavKey>.categoriesEntry(
     navigator: Navigator
 ) {
     entry<CategoriesNavKey> {
-        CategoriesRoute(onOpenCategory = { category -> navigator.navigateToCategory(category.strCategory)})
+        CategoriesRoute(onOpenCategory = { category -> navigator.navigateToCategory(category.strCategory) })
     }
 }
 
@@ -29,21 +29,23 @@ fun CategoriesRoute(
     viewModel: CategoriesViewModel = hiltViewModel(),
     onOpenCategory: (AbstractCategory) -> Unit,
 ) {
-    val homeUiState by viewModel.categories.collectAsStateWithLifecycle()
-    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHost = LocalSnackbarHostState.current
+
     LaunchedEffect(viewModel) {
-            viewModel.snackBarMessage.collect {message ->
-                snackBarHost.showSnackbar(message)
+        viewModel.events.collect { event ->
+            when (event) {
+                is CategoriesEvent.NavigateToCategory -> onOpenCategory(event.category)
+                is CategoriesEvent.ShowSnackbar -> snackBarHost.showSnackbar(event.message)
             }
+        }
     }
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }
+
     CategoriesScreen(
-        categoryUiState = homeUiState,
-        onOpenCategory = onOpenCategory,
-        isRefreshing = isRefreshing,
-        onRefresh = { viewModel.refresh() }
+        state = state,
+        onAction = viewModel::onAction,
     )
 }

@@ -30,9 +30,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getDrawable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.francotte.feature.ads.R
-import com.francotte.ui.LocalBillingController
+import com.francotte.ui.LocalShouldShowBanners
 
 @Composable
 fun BannerAd(
@@ -40,9 +39,7 @@ fun BannerAd(
     placement: BannerPlacement,
     provider: BannerAdProvider,
 ) {
-    val localBilling = LocalBillingController.current
-    val isPremium by localBilling.isPremium.collectAsStateWithLifecycle()
-    if (isPremium) return
+    if (!LocalShouldShowBanners.current) return
 
     Row(Modifier.height(100.dp)) {
         provider.Banner(
@@ -58,32 +55,6 @@ fun BannerAd(
 
 
 
-
-@Composable
-fun <T> ListWithBanners(
-    items: List<T>,
-    horizontalPadding: Dp,
-    bannerInterval: Int = 5,
-    placement: BannerPlacement,
-    provider: BannerAdProvider,
-    itemContent: @Composable (index: Int, item: T) -> Unit,
-) {
-    val totalItemCount = items.size + (items.size / bannerInterval)
-    for (index in 0 until totalItemCount) {
-        val actualItemIndex = index - (index / (bannerInterval + 1))
-        if ((index + 1) % (bannerInterval + 1) == 0) {
-            provider.Banner(
-                placement = placement,
-                useAdaptiveSize = true,
-                horizontalPadding = horizontalPadding,
-                heightFallback = 50.dp,
-            )
-        } else if (actualItemIndex in items.indices) {
-            itemContent(index, items[actualItemIndex])
-        }
-    }
-}
-
 @Composable
 fun <T> LazyListWithBanners(
     items: List<T>,
@@ -92,10 +63,14 @@ fun <T> LazyListWithBanners(
     provider: BannerAdProvider,
     itemContent: @Composable (item: T) -> Unit,
 ) {
+    val shouldShowBanners = LocalShouldShowBanners.current
+    if (!shouldShowBanners) {
+        LazyColumn { items(items.size) { itemContent(items[it]) } }
+        return
+    }
     LazyColumn {
         val totalCount = items.size + items.size / bannerInterval
         items(totalCount) { index ->
-            // Calculer la position dans la liste réelle
             val actualItemIndex = index - index / (bannerInterval + 1)
             if ((index + 1) % (bannerInterval + 1) == 0) {
                 provider.Banner(
@@ -126,7 +101,7 @@ fun LazyGridWithBanners(
     itemKey: (index: Int) -> Any,
     itemContentType: (index: Int) -> Any = { "item" },
     bannerKey: (bannerIndex: Int) -> Any = { i -> "banner-$i" },
-    bannerContentType: Any = "banner",
+    bannerContentType: String = "banner",
     bannerContent: @Composable () -> Unit,
     itemContent: @Composable LazyGridItemScope.(index: Int) -> Unit,
 ) {

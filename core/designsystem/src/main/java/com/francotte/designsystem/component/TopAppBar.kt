@@ -1,6 +1,7 @@
 package com.francotte.designsystem.component
 
 import androidx.annotation.StringRes
+import com.francotte.model.NO_PROFILE_IMAGE_URL
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.offset
@@ -40,7 +41,7 @@ fun TopAppBar(
     navigationIcon: ImageVector = ImageVector.vectorResource(R.drawable.ic_back),
     navigationIconColor: Color = MaterialTheme.colorScheme.onSurface,
     actionIconContentDescription: String? = "",
-    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
     onActionClick: () -> Unit = {},
     onNavigationClick: () -> Unit = {},
     navigationIconEnabled: Boolean = false,
@@ -82,7 +83,7 @@ fun TopAppBar(
         },
         navigationIcon = {
             if (navigationIconEnabled) {
-                if (profileImage != null && profileImage != "https://app.myrecipesstore18.com/null") {
+                if (profileImage != null && profileImage != NO_PROFILE_IMAGE_URL) {
                     DesignAsyncImage(
                         model = profileImage,
                         width = 45.dp,

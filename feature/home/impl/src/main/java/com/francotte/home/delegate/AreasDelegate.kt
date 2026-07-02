@@ -1,7 +1,8 @@
 package com.francotte.home.delegate
 
 import android.util.Log
-import com.francotte.data.repository.UserHomeRepository
+import androidx.compose.runtime.Immutable
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.home.RefreshMode
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,9 +22,7 @@ interface AreasRecipesDelegate {
 class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserHomeRepository):AreasRecipesDelegate {
 
     private val _areasRecipes = MutableStateFlow(AreasRecipes())
-
     override val areasRecipes: StateFlow<AreasRecipes> = _areasRecipes.asStateFlow()
-
 
     override suspend fun observeAreasRecipes() {
         repository.observeFoodAreaSections().collect { areas ->
@@ -49,14 +48,10 @@ class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserH
         } finally {
             _areasRecipes.update { it.copy(loading = false, refreshing = false) }
         }
-
-
     }
-
 }
 
-
-
+@Immutable
 data class AreasRecipes (
     val loading:Boolean = true,
     val refreshing: Boolean = false,
@@ -66,4 +61,8 @@ data class AreasRecipes (
 
     val hasRecipes: Boolean
         get() = recipes.isNotEmpty()
+
+    /** Area sections sorted by name — derivation lives here, not in the Composable. */
+    val sortedSections: List<Pair<String, List<LikeableRecipe>>>
+        get() = recipes.toList().sortedBy { it.first }
 }

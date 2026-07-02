@@ -1,66 +1,82 @@
 package com.francotte.categories
 
-import android.util.Log
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.francotte.data.repository.CategoriesRepository
+import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.model.AbstractCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CategoriesViewModel @Inject constructor(private val repository: CategoriesRepository) :
-    ViewModel() {
+class CategoriesViewModel @Inject constructor(
+    private val repository: CategoriesRepository,
+) : ViewModel() {
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing.asStateFlow()
+    private val _state = MutableStateFlow(CategoriesState())
+    val state = _state.asStateFlow()
 
-    private val _snackBarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val snackBarMessage = _snackBarMessage.asSharedFlow()
+    private val _events = Channel<CategoriesEvent>()
+    val events = _events.receiveAsFlow()
 
+    private var refreshJob: Job? = null
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val categories =
-        combine(repository.observeAllMealCategories(), _isRefreshing) { categories, reloading ->
-            if (categories.isEmpty()) {
-                CategoriesUiState.Empty
-            } else {
-                CategoriesUiState.Success(categories, reloading)
+    init {
+        repository.observeAllMealCategories()
+            .onEach { categories ->
+                _state.update { it.copy(categories = categories, isLoading = false) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun onAction(action: CategoriesAction) {
+        when (action) {
+            CategoriesAction.OnRefresh -> refresh()
+            is CategoriesAction.OnCategoryClick -> viewModelScope.launch {
+                _events.send(CategoriesEvent.NavigateToCategory(action.category))
             }
         }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                CategoriesUiState.Loading
-            )
+    }
 
-
-    fun refresh() {
-        viewModelScope.launch {
-            _isRefreshing.value = true
+    private fun refresh() {
+        // Annule un refresh déjà en cours avant d'en relancer un : évite que deux fetch
+        // concurrents se terminent dans le désordre et laissent isRefreshing/state incohérents.
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
+            _state.update { it.copy(isRefreshing = true) }
             val message = repository.refreshAllMealCategories(true)
-            message?.let {
-                _snackBarMessage.tryEmit(it)
-            }
-            _isRefreshing.value = false
+            message?.let { _events.send(CategoriesEvent.ShowSnackbar(it)) }
+            _state.update { it.copy(isRefreshing = false) }
         }
     }
 }
 
+@Immutable
+data class CategoriesState(
+    val categories: List<AbstractCategory> = emptyList(),
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+) {
+    val isEmpty: Boolean get() = !isLoading && categories.isEmpty()
+}
 
-sealed interface CategoriesUiState {
-    data object Loading : CategoriesUiState
-    data object Empty : CategoriesUiState
-    data class Success(val categories: List<AbstractCategory>, val isReloading: Boolean) :
-        CategoriesUiState
+@Immutable
+sealed interface CategoriesAction {
+    data object OnRefresh : CategoriesAction
+    data class OnCategoryClick(val category: AbstractCategory) : CategoriesAction
+}
+
+@Immutable
+sealed interface CategoriesEvent {
+    data class NavigateToCategory(val category: AbstractCategory) : CategoriesEvent
+    data class ShowSnackbar(val message: String) : CategoriesEvent
 }

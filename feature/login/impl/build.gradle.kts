@@ -31,9 +31,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
 }
 
 dependencies {
@@ -43,6 +41,7 @@ dependencies {
     api(project(":feature:register:api"))
     api(project(":feature:reset:api"))
 
+    api(project(":core:auth"))
     api(project(":core:data"))
     api(project(":core:model"))
     api(project(":core:common"))
@@ -52,7 +51,9 @@ dependencies {
     api(project(":core:ui"))
 
     implementation("com.google.android.material:material:1.11.0")
-    implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.android.identity.googleid)
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

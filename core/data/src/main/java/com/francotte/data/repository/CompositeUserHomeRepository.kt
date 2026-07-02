@@ -1,18 +1,21 @@
 package com.francotte.data.repository
 
-import com.francotte.datastore.UserDataRepository
+import com.francotte.common.utils.DataResult
+import com.francotte.data.interfaces.HomeRepository
+import com.francotte.data.interfaces.UserHomeRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableFullRecipes
 import com.francotte.model.mapToLikeableLightRecipes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+
 class CompositeUserHomeRepository @Inject constructor(
-    private val offlineFirstHomeRepository: OfflineFirstHomeRepository,
+    private val offlineFirstHomeRepository: HomeRepository,
     private val userDataRepository: UserDataRepository,
 ) : UserHomeRepository {
 
@@ -97,24 +100,16 @@ class CompositeUserHomeRepository @Inject constructor(
     ): Boolean {
         return offlineFirstHomeRepository.refreshRecipesByCategory(category, force)
     }
+
+    override suspend fun getRecipesByCategory(category: String): DataResult<List<LikeableRecipe>> {
+        val userData = userDataRepository.userData.first()
+        return when (val result = offlineFirstHomeRepository.getRecipesByCategory(category)) {
+            is DataResult.Success -> DataResult.Success(result.data.mapToLikeableLightRecipes(userData))
+            is DataResult.Failure -> result
+        }
+    }
 }
 
-interface UserHomeRepository {
-    fun observeLatestRecipes(): Flow<List<LikeableRecipe>>
 
-    suspend fun refreshLatestRecipes(force: Boolean): String?
-
-    fun observeEnglishAreaRecipes(): Flow<List<LikeableRecipe>>
-
-    fun observeJapaneseAreaRecipes(): Flow<List<LikeableRecipe>>
-
-    fun observeFoodAreaSections(): Flow<Map<String, List<LikeableRecipe>>>
-    suspend fun refreshSpecificFoodAreaSection(area: String, force: Boolean): String?
-    suspend fun refreshMultipleFoodAreaSection(force: Boolean): Boolean
-    fun observeFoodAreaSection(sectionName: String): Flow<List<LikeableRecipe>>
-
-    suspend fun refreshRecipesByCategory(category: String, force: Boolean): Boolean
-    fun observeRecipesByCategory(category: String): Flow<List<LikeableRecipe>>
-}
 
 private enum class FoodAreaSection(val title: String) { CHINESE("Chinese"), PORTUGUESE("Portuguese"),URUGUAYAN("Uruguayan") }

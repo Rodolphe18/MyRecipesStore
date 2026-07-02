@@ -111,7 +111,7 @@
         android:resource="@xml/shortcuts" />
     </activity>
     <service
-      android:name=".notifications.MyFirebaseMessagingService"
+      android:name="com.francotte.notifications.MyFirebaseMessagingService"
       android:exported="false">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT" />

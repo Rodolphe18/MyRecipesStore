@@ -1,5 +1,8 @@
 package com.francotte.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 sealed class AbstractRecipe {
     abstract val strMeal: String
     abstract val strMealThumb: String?

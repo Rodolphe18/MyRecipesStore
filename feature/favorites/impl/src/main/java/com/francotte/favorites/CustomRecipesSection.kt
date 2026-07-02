@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -16,16 +17,19 @@ import com.francotte.model.CustomRecipe
 import com.francotte.ui.CustomRecipeItem
 import com.francotte.ui.SectionTitle
 
+@Immutable
+data class CustomRecipesWrapper(val recipes: List<CustomRecipe>?)
+
 @Composable
 fun CustomRecipesSection(
     modifier: Modifier = Modifier,
-    recipes: List<CustomRecipe>?,
+    customRecipesWrapper: CustomRecipesWrapper,
     onOpenRecipe: (String) -> Unit,
 ) {
     Column(modifier = modifier) {
         SectionTitle(
             title = stringResource(R.string.my_recipes),
-            count = recipes?.size,
+            count = customRecipesWrapper.recipes?.size,
             showNavIcon = false,
             paddingStart = 16.dp,
         )
@@ -35,7 +39,7 @@ fun CustomRecipesSection(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            recipes?.let { customRecipes ->
+            customRecipesWrapper.recipes?.let { customRecipes ->
                 items(
                     items = customRecipes,
                     key = { it.id },

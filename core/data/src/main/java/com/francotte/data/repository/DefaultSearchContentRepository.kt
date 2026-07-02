@@ -1,8 +1,7 @@
 package com.francotte.data.repository
 
 import android.util.Log
-import com.francotte.common.extension.Dispatcher
-import com.francotte.common.extension.FoodDispatchers
+import com.francotte.data.interfaces.SearchContentsRepository
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.AreaDao
 import com.francotte.database.dao.FullCategoryDao
@@ -14,8 +13,6 @@ import com.francotte.database.dao.fts.IngredientFtsDao
 import com.francotte.database.dao.fts.RecipeFtsDao
 import com.francotte.database.model.asFtsEntity
 import com.francotte.model.SearchResult
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -23,16 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
-
-
-interface SearchContentsRepository {
-    suspend fun populateFtsData()
-    fun searchContents(searchQuery: String): Flow<SearchResult>
-    fun searchContentsIsReady(): Flow<Boolean>
-    suspend fun ensureFtsReady(minCount: Int)
-}
 
 
 class DefaultSearchContentsRepository @Inject constructor(

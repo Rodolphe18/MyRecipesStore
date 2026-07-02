@@ -33,8 +33,8 @@ android {
         applicationId = "com.francotte.myrecipesstore"
         minSdk = 26
         targetSdk = 36
-        versionCode = 23
-        versionName = "1.2.8"
+        versionCode = 24
+        versionName = "1.2.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -87,9 +87,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     buildFeatures {
         compose = true
     }
@@ -120,6 +117,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
+    implementation(project(":core:auth"))
     implementation(project(":core:data"))
     implementation(project(":core:datastore"))
     implementation(project(":core:common"))
@@ -172,6 +170,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3.window.size)
+    implementation(libs.androidx.compose.material3.adaptive)
+    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)

@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.ksp)
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -29,9 +31,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
 }
 
 dependencies {
@@ -44,7 +44,7 @@ dependencies {
     api(project(":core:common"))
 
     api(project(":feature:reset:api"))
-    api(project(":feature:login:impl"))
+    implementation(project(":core:auth"))
 
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

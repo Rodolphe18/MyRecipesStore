@@ -15,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,19 +25,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.francotte.designsystem.component.TopAppBar
-import com.francotte.login.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RequestResetPasswordScreen(
-    viewModel: LoginViewModel = hiltViewModel(),
-    onBack: () -> Unit,
+    state: RequestResetState,
+    onAction: (RequestResetAction) -> Unit,
 ) {
     var email by remember { mutableStateOf("") }
-    val resetState by viewModel.resetState.collectAsState()
     val focus = LocalFocusManager.current
+
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+            email = ""
+            focus.clearFocus()
+        }
+    }
 
     val topAppBarScrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -48,7 +52,7 @@ fun RequestResetPasswordScreen(
                 title = "Password forgotten ?",
                 navigationIconEnabled = true,
                 navigationIcon = Icons.Filled.Close,
-                onNavigationClick = onBack,
+                onNavigationClick = { onAction(RequestResetAction.OnBackClick) },
                 scrollBehavior = topAppBarScrollBehavior,
             )
         },
@@ -63,22 +67,16 @@ fun RequestResetPasswordScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(16.dp))
-            Button(onClick = { viewModel.requestReset(email) }) {
+            Button(
+                onClick = { onAction(RequestResetAction.OnSendClick(email)) },
+                enabled = !state.isLoading,
+            ) {
                 Text("Send Email")
             }
 
-            resetState?.let {
-                when {
-                    it.isSuccess -> {
-                        Text("Email sent successfully ✅", color = Color.Green)
-                        email = ""
-                        focus.clearFocus()
-                    }
-
-                    it.isFailure -> {
-                        Text("An error occured. Try again", color = Color.Red)
-                    }
-                }
+            when {
+                state.isSuccess -> Text("Email sent successfully ✅", color = Color.Green)
+                state.errorMessage != null -> Text(state.errorMessage, color = Color.Red)
             }
         }
     }

@@ -2,11 +2,12 @@ package com.francotte.data.repository
 
 import com.francotte.common.utils.DataResult
 import com.francotte.common.utils.userMessage
+import com.francotte.data.interfaces.IngredientsAndAreasRepository
 import com.francotte.data.mapper.dto.asEntity
 import com.francotte.data.mapper.entity.asExternalModel
 import com.francotte.database.dao.AreaDao
 import com.francotte.database.dao.IngredientDao
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.mapToLikeableLightRecipes
 import com.francotte.network.api.RecipeApi
@@ -16,13 +17,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
     private val homeRepository: OfflineFirstHomeRepository,
     private val recipeApi: RecipeApi,
@@ -131,23 +131,19 @@ class OfflineFirstIngredientsAndAreasRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun getRecipesByArea(area: String): DataResult<List<LikeableRecipe>> {
+        val userData = userDataRepository.userData.first()
+        return when (val result = homeRepository.getRecipesByArea(area)) {
+            is DataResult.Success -> DataResult.Success(result.data.mapToLikeableLightRecipes(userData))
+            is DataResult.Failure -> result
+        }
+    }
 
-}
-
-interface IngredientsAndAreasRepository {
-    fun observeAllIngredients(): Flow<List<String>>
-
-    fun observeAllAreas(): Flow<List<String>>
-
-    suspend fun refreshAllIngredients(force: Boolean): String?
-
-    suspend fun refreshAllAreas(force: Boolean): String?
-
-    suspend fun refreshRecipesByArea(area:String,force:Boolean):String?
-
-    fun observeRecipesByArea(area: String): Flow<Result<List<LikeableRecipe>>>
-
-    suspend fun refreshRecipesByIngredients(ingredients: List<String>,force: Boolean): String?
-
-    fun observeRecipesByIngredients(ingredients: List<String>): Flow<Result<List<LikeableRecipe>>>
+    override suspend fun getRecipesByIngredients(ingredients: List<String>): DataResult<List<LikeableRecipe>> {
+        val userData = userDataRepository.userData.first()
+        return when (val result = homeRepository.getRecipesByIngredients(ingredients)) {
+            is DataResult.Success -> DataResult.Success(result.data.mapToLikeableLightRecipes(userData))
+            is DataResult.Failure -> result
+        }
+    }
 }

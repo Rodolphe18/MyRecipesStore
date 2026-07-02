@@ -1,6 +1,7 @@
 package com.francotte.home.delegate
 
-import com.francotte.data.repository.UserHomeRepository
+import androidx.compose.runtime.Immutable
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.home.RefreshMode
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,11 +27,10 @@ class LatestRecipesDelegateImpl @Inject constructor(
 ) : LatestRecipesDelegate {
 
     private val _latestRecipes = MutableStateFlow(LatestRecipes())
-
     override val latestRecipes: StateFlow<LatestRecipes> = _latestRecipes.asStateFlow()
 
     private val _snackBarEvent = MutableSharedFlow<String>()
-    override val snackBarEvent = _snackBarEvent.asSharedFlow()
+    override val snackBarEvent: SharedFlow<String> = _snackBarEvent.asSharedFlow()
 
     override suspend fun observeLatestRecipes() {
         repository.observeLatestRecipes()
@@ -61,7 +61,6 @@ class LatestRecipesDelegateImpl @Inject constructor(
             }
         }
 
-
         try {
             repository.refreshLatestRecipes(true)?.let { message ->
                 _snackBarEvent.emit(message)
@@ -73,7 +72,6 @@ class LatestRecipesDelegateImpl @Inject constructor(
         }
     }
 
-
     override fun setLatestRecipesCurrentPage(page: Int) {
         _latestRecipes.update { current ->
             current.copy(currentPage = page)
@@ -81,7 +79,7 @@ class LatestRecipesDelegateImpl @Inject constructor(
     }
 }
 
-
+@Immutable
 data class LatestRecipes(
     val recipes: List<LikeableRecipe> = emptyList(),
     val loading: Boolean = true,

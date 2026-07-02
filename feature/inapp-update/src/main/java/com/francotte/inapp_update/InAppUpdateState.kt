@@ -1,18 +1,10 @@
 package com.francotte.inapp_update
 
-import com.google.android.play.core.appupdate.AppUpdateInfo
-import com.google.android.play.core.install.model.AppUpdateType
+import androidx.compose.runtime.Immutable
 
-enum class InAppUpdateState {
-    IDLE,
-    CHECKING,
-    ASKING,
-    DOWNLOADING,
-    DOWNLOADED,
-    INSTALLING,
-    FAILED,
-}
+enum class InAppUpdateState { IDLE, CHECKING, ASKING, DOWNLOADING, DOWNLOADED, INSTALLING, FAILED }
 
+@Immutable
 data class InAppUpdateUiState(
     val state: InAppUpdateState = InAppUpdateState.IDLE,
     val isUpdateDownloaded: Boolean = false,
@@ -20,8 +12,5 @@ data class InAppUpdateUiState(
 )
 
 sealed interface InAppUpdateEffect {
-    data class LaunchUpdateFlow(
-        val info: AppUpdateInfo,
-        @AppUpdateType val type: Int,
-    ) : InAppUpdateEffect
+    data class LaunchUpdateFlow(val type: UpdateType) : InAppUpdateEffect
 }

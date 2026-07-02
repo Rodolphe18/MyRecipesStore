@@ -25,6 +25,15 @@ val LightColorScheme =
         secondary = NeutralBlack,
         onSecondary = NeutralMediumGrey,
         primaryContainer = Color.DarkGray,
+        secondaryContainer = LightOrange.copy(alpha = 0.1f),
+        // Famille surface aplatie sur `surface` → aucune teinte tonale (supprime le violet de base).
+        surfaceBright = NeutralWhite,
+        surfaceDim = NeutralWhite,
+        surfaceContainerLowest = NeutralWhite,
+        surfaceContainerLow = NeutralWhite,
+        surfaceContainer = NeutralWhite,
+        surfaceContainerHigh = NeutralWhite,
+        surfaceContainerHighest = NeutralWhite,
     )
 
 @VisibleForTesting
@@ -44,6 +53,15 @@ val DarkColorScheme =
         secondary = NeutralLightGrey,
         onSecondary = NeutralSoftGrey,
         primaryContainer = Color.LightGray,
+        secondaryContainer = LightOrange.copy(alpha = 0.1f),
+        // Famille surface aplatie sur `surface` → aucune teinte tonale (supprime le violet de base).
+        surfaceBright = NeutralBlack,
+        surfaceDim = NeutralBlack,
+        surfaceContainerLowest = NeutralBlack,
+        surfaceContainerLow = NeutralBlack,
+        surfaceContainer = NeutralBlack,
+        surfaceContainerHigh = NeutralBlack,
+        surfaceContainerHighest = NeutralBlack,
     )
 
 @Composable
@@ -54,6 +72,7 @@ fun FoodTheme(
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     MaterialTheme(
         colorScheme = colorScheme,
+        typography = Typography,
         content = content,
     )
 }

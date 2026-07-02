@@ -55,16 +55,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 
+private fun shareApp(context: Context) {
+    val sendIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TEXT, "Try this app! it is incredible!")
+        putExtra(Intent.EXTRA_TITLE, "My recipes Store")
+        putExtra(Intent.EXTRA_SUBJECT, "Food recipes")
+        type = "text/plain"
+    }
+    context.startActivity(Intent.createChooser(sendIntent, null))
+}
+
+private fun openPrivacyPolicy(context: Context) {
+    openUrlRobust(context, "https://myrecipesstore18.com/privacy-policy.html")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsBottomSheet(
     onDismiss: () -> Unit,
     onLogout: () -> Unit,
     onPremiumClick: () -> Unit,
-    onShareApp: () -> Unit,
     onDeleteClick: () -> Unit,
-    onOpenPrivacyPolicy: () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val configuration = LocalConfiguration.current
     val sheetHeight = (configuration.screenHeightDp.dp * (3f / 4f))
 
@@ -111,7 +125,7 @@ fun SettingsBottomSheet(
             SettingsActionItem(
                 icon = Icons.Default.Lock,
                 text = stringResource(R.string.feature_settings_privacy_policy),
-                onClick = onOpenPrivacyPolicy,
+                onClick = { openPrivacyPolicy(context) },
             )
 
             SettingsActionItem(
@@ -135,7 +149,7 @@ fun SettingsBottomSheet(
             SettingsActionItem(
                 icon = Icons.Default.Share,
                 text = stringResource(R.string.feature_settings_share),
-                onClick = onShareApp,
+                onClick = { shareApp(context) },
             )
 
             SettingsActionItem(
@@ -249,26 +263,21 @@ fun openUrlRobust(
     context: Context,
     url: String,
 ) {
-    val uri = Uri.parse(url)
+    val uri = url.toUri()
     val activity = context.findActivity()
 
-    val customTabsIntent =
-        CustomTabsIntent
-            .Builder()
-            .setShowTitle(true)
-            .build()
+    val customTabsIntent = CustomTabsIntent.Builder().setShowTitle(true).build()
 
     // Mets la data explicitement sur l’intent (plus fiable que launchUrl seul)
-    val intent =
-        customTabsIntent.intent.apply {
-            data = uri
+    val intent = customTabsIntent.intent.apply {
+        data = uri
 
-            // Si on n’a pas d’Activity, on doit lancer dans une nouvelle task
-            if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        // Si on n’a pas d’Activity, on doit lancer dans une nouvelle task
+        if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-            // (optionnel) forcer Chrome si tu veux, sinon commente cette ligne
-            // `package` = "com.android.chrome"
-        }
+        // (optionnel) forcer Chrome si tu veux, sinon commente cette ligne
+        // `package` = "com.android.chrome"
+    }
 
     val canHandle = intent.resolveActivity(context.packageManager) != null
     Log.d(TAG, "activity=${activity != null} canHandle=$canHandle intent=$intent")

@@ -29,26 +29,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
-
-    api(project(":core:data"))
-    api(project(":core:network"))
-
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
 
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.hilt.work)
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
 }

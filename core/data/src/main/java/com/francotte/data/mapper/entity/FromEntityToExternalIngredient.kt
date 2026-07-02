@@ -7,6 +7,5 @@ fun IngredientEntity.asExternalModel() =
     Ingredient(
         name = name,
         description = description,
-        imageUrl = imageUrl,
-        savedTimeStamp = savedTimeStamp
+        imageUrl = imageUrl
     )

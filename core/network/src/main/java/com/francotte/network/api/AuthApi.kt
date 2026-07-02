@@ -64,7 +64,4 @@ interface AuthApi {
     suspend fun authGoogle(
         @Body request: GoogleIdTokenRequest,
     ): Response<AuthResponse>
-
-    @DELETE("users/all")
-    suspend fun deleteAllUsers()
 }

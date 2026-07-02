@@ -1,6 +1,7 @@
 package com.francotte.home.delegate
 
-import com.francotte.data.repository.UserHomeRepository
+import androidx.compose.runtime.Immutable
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.home.RefreshMode
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,9 +22,7 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
     private val repository: UserHomeRepository
 ) : JapaneseRecipesDelegate {
 
-    private val _japaneseRecipes: MutableStateFlow<JapaneseRecipes> =
-        MutableStateFlow(JapaneseRecipes())
-
+    private val _japaneseRecipes = MutableStateFlow(JapaneseRecipes())
     override val japaneseRecipes: StateFlow<JapaneseRecipes> = _japaneseRecipes.asStateFlow()
 
     override suspend fun observeJapaneseRecipes() {
@@ -37,7 +36,6 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
             }
         }
     }
-
 
     override suspend fun refreshJapaneseRecipes(mode: RefreshMode) {
         when (mode) {
@@ -68,9 +66,9 @@ class JapaneseRecipesDelegateImpl @Inject constructor(
             }
         }
     }
-
 }
 
+@Immutable
 data class JapaneseRecipes(
     val loading: Boolean = true,
     val refreshing:Boolean = false,
@@ -81,4 +79,3 @@ data class JapaneseRecipes(
     val hasRecipes: Boolean
         get() = recipes.isNotEmpty()
 }
-

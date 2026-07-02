@@ -1,13 +1,12 @@
 package com.francotte.login
 
-import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.LocalActivity
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.api.navigateToFavorites
@@ -16,9 +15,7 @@ import com.francotte.api.navigateToRequestReset
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.feature.login.api.LoginNavKey
 import com.francotte.navigation.Navigator
-
-const val LOGIN_ROUTE = "login_route"
-
+import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.loginEntry(navigator: Navigator) {
@@ -31,25 +28,6 @@ fun EntryProviderScope<NavKey>.loginEntry(navigator: Navigator) {
     }
 }
 
-
-fun NavController.navigateToLoginScreen(navOptions: NavOptions? = null) {
-    this.navigate(LOGIN_ROUTE, navOptions)
-}
-
-fun NavGraphBuilder.loginScreen(
-    onOpenResetPassword: () -> Unit,
-    onRegister: () -> Unit,
-    navigateToFavoriteScreen: () -> Unit,
-) {
-    composable(route = LOGIN_ROUTE) {
-        LoginRoute(
-            onRegister = onRegister,
-            onOpenResetPassword = onOpenResetPassword,
-            navigateToFavoriteScreen = { navigateToFavoriteScreen() },
-        )
-    }
-}
-
 @Composable
 fun LoginRoute(
     onOpenResetPassword: () -> Unit,
@@ -57,14 +35,35 @@ fun LoginRoute(
     navigateToFavoriteScreen: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    val googleSignIn = rememberLauncherForActivityResult(GoogleSignInContract()) { task ->
-            viewModel.doGoogleLogin(task)
+    val activity = LocalActivity.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = LocalSnackbarHostState.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                LoginEvent.NavigateToFavorites -> navigateToFavoriteScreen()
+                is LoginEvent.ShowSnackbar -> snackbarHostState.showSnackbar(
+                    message = event.message,
+                    duration = SnackbarDuration.Short,
+                )
+            }
         }
+    }
+
+    LoginScreen(
+        state = state,
+        onAction = { action ->
+            when (action) {
+                // Google login needs an Activity; register/reset are pure navigation.
+                LoginAction.OnGoogleLoginClick -> activity?.let { viewModel.doGoogleLogin(it) }
+                LoginAction.OnRegisterClick -> onRegister()
+                LoginAction.OnResetPasswordClick -> onOpenResetPassword()
+                else -> viewModel.onAction(action)
+            }
+        },
+    )
     LaunchedEffect(Unit) {
-        viewModel.authSuccess.collect { navigateToFavoriteScreen() }
+        ScreenCounter.increment()
     }
-    LoginScreen(onOpenResetPassword = onOpenResetPassword, onLogin = viewModel::loginWithMailAndPassword, onRegister = onRegister) {
-        googleSignIn.launch(viewModel.googleSignInIntent)
-    }
-    ScreenCounter.increment()
 }

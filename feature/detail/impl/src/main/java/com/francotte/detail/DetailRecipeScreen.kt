@@ -1,23 +1,10 @@
 package com.francotte.detail
 
-import android.content.Context
 import android.content.Intent
-import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.webkit.ConsoleMessage
-import android.webkit.CookieManager
-import android.webkit.PermissionRequest
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -33,26 +21,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -61,9 +44,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -71,192 +55,72 @@ import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.DesignAsyncImage
-import com.francotte.designsystem.component.TopAppBar
+import com.francotte.designsystem.component.YouTubeWebViewPlayer
+import com.francotte.domain.YouTubeUrlParser
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import com.francotte.ui.FavButton
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.LocalBannerProvider
-import kotlinx.coroutines.delay
+import com.francotte.ui.DeviceMode
+import com.francotte.ui.rememberDeviceMode
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailRecipeScreen(
-    viewModel: DetailRecipeViewModel,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
-    onBackCLick: () -> Unit,
+    state: DetailState,
+    onAction: (DetailAction) -> Unit,
+    onNavigationClick: () -> Unit
 ) {
-    val mode = LocalAppLayout.current.mode
-    val localBannerProvider = LocalBannerProvider.current
-    val scope = rememberCoroutineScope()
-    val topAppBarScrollBehavior =
-        TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    val title by viewModel.title.collectAsStateWithLifecycle()
-    val pageCount = viewModel.pageCount
-    val pagerState =
-        rememberPagerState(initialPage = viewModel.index ?: 0, pageCount = { pageCount })
-    val context = LocalContext.current
-    val deepLink by viewModel.deeplinkRecipe.collectAsStateWithLifecycle()
-    Scaffold(
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = title,
-                scrollBehavior = topAppBarScrollBehavior,
-                navigationIconEnabled = true,
-                onNavigationClick = {
-                    scope.launch {
-                        while (pagerState.isScrollInProgress) {
-                            delay(50)
-                        }
-                        onBackCLick()
-                    }
-                },
-            )
-        },
-    ) { padding ->
+    val onToggleFavorite: (LikeableRecipe) -> Unit = { onAction(DetailAction.OnToggleFavorite(it)) }
+    val mode = rememberDeviceMode()
+    val pageCount = state.pageCount
+    val pagerState = rememberPagerState(initialPage = state.initialPage, pageCount = { pageCount })
+    val deepLink = state.deeplinkRecipe
+    // Pas de TopAppBar : le titre est déjà affiché dans le contenu de la recette, et le retour
+    // se fait via le back système (NavDisplay onBack = navigator::goBack).
+    Scaffold { padding ->
         if (deepLink != null) {
-            deepLink?.also { link ->
-                val ingredients =
-                    remember(link.recipe) {
-                        (1..20).mapNotNull { i ->
-                            val ingredient =
-                                (link.recipe as? Recipe)
-                                    ?.javaClass
-                                    ?.getDeclaredField("strIngredient$i")
-                                    ?.apply { isAccessible = true }
-                                    ?.get(link.recipe) as? String
-                            val measure =
-                                (link.recipe as Recipe)
-                                    .javaClass
-                                    .getDeclaredField("strMeasure$i")
-                                    .apply { isAccessible = true }
-                                    .get(link.recipe) as? String
-                            if (!ingredient.isNullOrBlank()) {
-                                ingredient to (measure ?: "")
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(
-                                top = padding.calculateTopPadding() + 12.dp,
-                                bottom = 12.dp,
-                            )
-                            .testTag("full_detail_screen")
-                            .semantics { contentDescription = "full_detail_screen" },
-                ) {
-                    DetailVideoScreen(link)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(Modifier.padding(horizontal = 12.dp)) {
-                        DetailScreenMainSectionTitle(link, onToggleFavorite)
-                        DetailScreenSectionTitle(R.string.ingredients)
-                        BannerAd(
-                            placement = BannerPlacement.RECIPE_POS_1,
-                            provider = localBannerProvider,
-                        )
-                        IngredientRow(ingredients)
-                        DetailRecipeShareRecipeButton(link, ingredients, context)
-                        BannerAd(
-                            placement = BannerPlacement.RECIPE_POS_2,
-                            provider = localBannerProvider,
-                        )
-                        DetailScreenSectionTitle(R.string.instructions)
-                        Text(
-                            text = (link.recipe as Recipe).strInstructions.orEmpty(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            lineHeight = 22.sp,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
-                }
-            }
+            RecipeContent(
+                likeableRecipe = deepLink,
+                onToggleFavorite = onToggleFavorite,
+                onNavigationClick = onNavigationClick,
+                topPadding = padding.calculateTopPadding() + 12.dp,
+                bottomPadding = padding.calculateBottomPadding() + 12.dp,
+                modifier = Modifier
+                    .testTag("full_detail_screen")
+                    .semantics { contentDescription = "full_detail_screen" },
+            )
         } else {
-            LaunchedEffect(pagerState) {
-                snapshotFlow { pagerState.settledPage }
-                    .distinctUntilChanged()
-                    .collectLatest { newPage ->
-                        if (!viewModel.recipesMap.containsKey(newPage)) {
-                            viewModel.currentPage = newPage
-                            viewModel.getRecipe()
+            val isLandscape =
+                mode == DeviceMode.PhoneLandscape || mode == DeviceMode.TabletLandscape
+            if (isLandscape) {
+                RecipeListDetailLayout(
+                    state = state,
+                    contentPadding = padding,
+                    onAction = onAction,
+                )
+            } else {
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.settledPage }
+                        .distinctUntilChanged()
+                        .collectLatest { newPage ->
+                            onAction(DetailAction.OnPageChanged(newPage))
                         }
-                    }
-            }
-            HorizontalPager(
-                state = pagerState,
-                beyondViewportPageCount = 1,
-                modifier = Modifier.fillMaxSize(),
-            ) { index ->
-                viewModel.recipesMap.getOrDefault(index, null)?.let { likeableRecipe ->
-                    val ingredients =
-                        remember(likeableRecipe) {
-                            (1..20).mapNotNull { i ->
-                                val ingredient =
-                                    (likeableRecipe.recipe as? Recipe)
-                                        ?.javaClass
-                                        ?.getDeclaredField(
-                                            "strIngredient$i",
-                                        )?.apply { isAccessible = true }
-                                        ?.get(likeableRecipe.recipe) as? String
-                                val measure =
-                                    (likeableRecipe.recipe as Recipe)
-                                        .javaClass
-                                        .getDeclaredField("strMeasure$i")
-                                        .apply { isAccessible = true }
-                                        .get(likeableRecipe.recipe) as? String
-                                if (!ingredient.isNullOrBlank()) {
-                                    ingredient to (measure ?: "")
-                                } else {
-                                    null
-                                }
-                            }
-                        }
-                    Column(
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
-                                .padding(
-                                    top = padding.calculateTopPadding() + 12.dp,
-                                    bottom = 12.dp,
-                                ),
-                    ) {
-                        DetailVideoScreen(likeableRecipe)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Column {
-                            DetailScreenMainSectionTitle(likeableRecipe, onToggleFavorite)
-                            BannerAd(
-                                horizontalPadding = 12.dp,
-                                placement = BannerPlacement.RECIPE_POS_1,
-                                provider = localBannerProvider,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            DetailScreenSectionTitle(R.string.ingredients)
-                            IngredientRow(ingredients)
-                            DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
-                            BannerAd(
-                                horizontalPadding = 12.dp,
-                                placement = BannerPlacement.RECIPE_POS_2,
-                                provider = localBannerProvider,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            DetailScreenSectionTitle(R.string.instructions)
-                            Text(
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                lineHeight = 22.sp,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
+                }
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 1,
+                    modifier = Modifier.fillMaxSize(),
+                ) { index ->
+                    state.recipes[index]?.let { likeableRecipe ->
+                        RecipeContent(
+                            likeableRecipe = likeableRecipe,
+                            onToggleFavorite = onToggleFavorite,
+                            onNavigationClick = onNavigationClick,
+                            topPadding = padding.calculateTopPadding() + 12.dp,
+                            bottomPadding = padding.calculateBottomPadding() + 12.dp
+                        )
                     }
                 }
             }
@@ -265,137 +129,77 @@ fun DetailRecipeScreen(
 }
 
 @Composable
+internal fun RecipeContent(
+    likeableRecipe: LikeableRecipe,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
+    onNavigationClick:()->Unit= {},
+    topPadding: Dp,
+    bottomPadding:Dp,
+    modifier: Modifier = Modifier,
+) {
+    val localBannerProvider = LocalBannerProvider.current
+    val ingredients = rememberIngredients(likeableRecipe)
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(top = topPadding, bottom = bottomPadding),
+    ) {
+        DetailScreenMainSectionTitle(likeableRecipe)
+        Spacer(modifier = Modifier.height(8.dp))
+        DetailVideoScreen(likeableRecipe)
+        Spacer(modifier = Modifier.height(8.dp))
+//        BannerAd(
+//            horizontalPadding = 12.dp,
+//            placement = BannerPlacement.RECIPE_POS_1,
+//            provider = localBannerProvider,
+//        )
+        Spacer(modifier = Modifier.height(8.dp))
+        DetailScreenIngredientTitle(likeableRecipe,R.string.ingredients,onToggleFavorite)
+        IngredientRow(ingredients)
+        DetailRecipeShareRecipeButton(likeableRecipe, ingredients)
+        Spacer(modifier = Modifier.height(8.dp))
+        DetailScreenSectionTitle(R.string.instructions)
+        Text(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            text = (likeableRecipe.recipe as Recipe).strInstructions.orEmpty(),
+            style = MaterialTheme.typography.bodyLarge,
+            lineHeight = 22.sp,
+            color = MaterialTheme.colorScheme.secondary,
+        )
+    }
+}
+
+@Immutable
+data class RecipeIngredient(val name: String, val measure: String)
+
+@Immutable
+data class RecipeIngredients(val items: List<RecipeIngredient>)
+
+@Composable
+private fun rememberIngredients(likeableRecipe: LikeableRecipe): RecipeIngredients =
+    remember(likeableRecipe.recipe) {
+        val items = (1..20).mapNotNull { i ->
+            val recipe = likeableRecipe.recipe as? Recipe ?: return@mapNotNull null
+            val ingredient = recipe.javaClass.getDeclaredField("strIngredient$i")
+                .apply { isAccessible = true }.get(recipe) as? String
+            val measure = recipe.javaClass.getDeclaredField("strMeasure$i")
+                .apply { isAccessible = true }.get(recipe) as? String
+            if (!ingredient.isNullOrBlank()) RecipeIngredient(ingredient, measure ?: "") else null
+        }
+        RecipeIngredients(items)
+    }
+
+@Composable
 private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
     val youtubeUrl = (likeableRecipe.recipe as Recipe).strYoutube
-    val videoId =
-        remember(youtubeUrl) {
-            when {
-                youtubeUrl.contains("watch?v=") ->
-                    youtubeUrl.substringAfter("v=").substringBefore("&")
-
-                youtubeUrl.contains("youtu.be/") ->
-                    youtubeUrl.substringAfter("youtu.be/").substringBefore("?").substringBefore("&")
-
-                youtubeUrl.contains("/shorts/") ->
-                    youtubeUrl.substringAfter("/shorts/").substringBefore("?").substringBefore("&")
-
-                youtubeUrl.contains("/embed/") ->
-                    youtubeUrl.substringAfter("/embed/").substringBefore("?").substringBefore("&")
-
-                else -> ""
-            }
-        }
+    val videoId = remember(youtubeUrl) { YouTubeUrlParser.extractVideoId(youtubeUrl) }
     if (videoId.isNotBlank()) {
-        val origin = "https://app.local" // n'importe quel https stable, mais garde-le partout
-        val embedUrl =
-            "https://www.youtube.com/embed/$videoId" +
-                "?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&origin=$origin"
-
-        val html =
-            """
-<!doctype html><html>
-<head>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>html,body{margin:0;background:#000;height:100%}#wrap{position:fixed;inset:0}</style>
-</head>
-<body>
-  <div id="wrap">
-    <iframe
-      src="$embedUrl"
-      title="YouTube video player"
-      allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
-      allowfullscreen
-      referrerpolicy="origin-when-cross-origin"
-      style="border:0;width:100%;height:100%"></iframe>
-  </div>
-</body>
-</html>
-            """.trimIndent()
-        var webView by remember { mutableStateOf<WebView?>(null) }
-        DisposableEffect(videoId) {
-            onDispose {
-                webView?.apply {
-                    stopLoading()
-                    loadUrl("about:blank")
-                    postDelayed({
-                        removeAllViews()
-                        destroy()
-                    }, 100)
-                }
-                webView = null
-            }
-        }
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    layoutParams =
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            220,
-                        )
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.mediaPlaybackRequiresUserGesture = false
-                    settings.javaScriptCanOpenWindowsAutomatically = true
-
-                    // UA : repartir d'un UA Chrome standard + suffixe
-                    settings.userAgentString =
-                        WebSettings.getDefaultUserAgent(context) + " YTWebView/1.0"
-
-                    webChromeClient =
-                        object : WebChromeClient() {
-                            override fun onPermissionRequest(request: PermissionRequest?) {
-                                // Autoriser audio/vidéo pour l'iFrame
-                                request?.grant(request.resources)
-                            }
-
-                            override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
-                                Log.d("YTWebView", "${msg?.message()} @${msg?.lineNumber()}")
-                                return super.onConsoleMessage(msg)
-                            }
-                        }
-                    webViewClient =
-                        object : WebViewClient() {
-                            override fun onReceivedError(
-                                v: WebView,
-                                r: WebResourceRequest,
-                                e: WebResourceError,
-                            ) {
-                                Log.e("YTWebView", "WebError ${e.errorCode}: ${e.description}")
-                            }
-
-                            override fun onReceivedHttpError(
-                                v: WebView,
-                                r: WebResourceRequest,
-                                resp: WebResourceResponse,
-                            ) {
-                                Log.e("YTWebView", "HTTP ${resp.statusCode} ${resp.reasonPhrase}")
-                            }
-                        }
-
-                    CookieManager.getInstance().setAcceptCookie(true)
-                    CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-
-                    // Accélération matérielle conseillée
-                    setLayerType(View.LAYER_TYPE_HARDWARE, null)
-
-                    loadDataWithBaseURL(origin, html, "text/html", "utf-8", null)
-                    webView = this
-                }
-            },
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-            update = { view ->
-                view.loadDataWithBaseURL(
-                    origin,
-                    html,
-                    "text/html",
-                    "utf-8",
-                    null,
-                )
-            },
+        YouTubeWebViewPlayer(
+            videoId = videoId,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp),
         )
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -415,16 +219,16 @@ private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
 @Composable
 private fun DetailRecipeShareRecipeButton(
     likeableRecipe: LikeableRecipe,
-    ingredients: List<Pair<String, String>>,
-    context: Context,
+    ingredients: RecipeIngredients,
 ) {
+    val context = LocalContext.current
     Button(
         onClick = {
             val shoppingListText =
                 buildString {
                     appendLine("🛒 Groceries list : ${likeableRecipe.recipe.strMeal}")
                     appendLine()
-                    ingredients.forEach { (ingredient, measure) ->
+                    ingredients.items.forEach { (ingredient, measure) ->
                         appendLine("- $ingredient: $measure")
                     }
                 }
@@ -462,18 +266,36 @@ private fun DetailRecipeShareRecipeButton(
             contentDescription = "Share",
             modifier = Modifier.padding(end = 8.dp),
         )
-        Text("Share the groceries list")
+        Text(
+            text = "Share the groceries list",
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }
 
 @Composable
-fun DetailScreenMainSectionTitle(
+fun DetailScreenMainSectionTitle(likeableRecipe: LikeableRecipe) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+        Text(
+            text = likeableRecipe.recipe.strMeal,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.secondary,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+    }
+}
+
+@Composable
+fun DetailScreenIngredientTitle(
     likeableRecipe: LikeableRecipe,
+    @StringRes stringRes: Int,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     Row(Modifier.padding(horizontal = 12.dp)) {
         Text(
-            text = likeableRecipe.recipe.strMeal,
+            text = stringResource(stringRes),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.secondary,
             fontWeight = FontWeight.Bold,
@@ -508,8 +330,8 @@ private fun DetailScreenSectionTitle(
 }
 
 @Composable
-private fun IngredientRow(ingredients: List<Pair<String, String>>) {
-    ingredients.forEach { (ingredient, measure) ->
+private fun IngredientRow(ingredients: RecipeIngredients) {
+    ingredients.items.forEach { (ingredient, measure) ->
         Row(
             modifier =
                 Modifier

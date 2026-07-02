@@ -1,6 +1,7 @@
 package com.francotte.myrecipesstore.permissions
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
@@ -12,11 +13,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.francotte.common.extension.findActivity
+import com.francotte.myrecipesstore.R
 
 @Composable
-fun NotificationPermissionEffect() {
+fun NotificationPermissionEffect(context: Context) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
-    val context = LocalContext.current
     val permissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
@@ -24,7 +25,7 @@ fun NotificationPermissionEffect() {
                 Toast
                     .makeText(
                         context,
-                        if (isGranted) "Permission granted ✅" else "Permission denied ❌",
+                        if (isGranted) context.getString(R.string.permission_granted) else context.getString(R.string.permission_denied),
                         Toast.LENGTH_SHORT,
                     ).show()
             },

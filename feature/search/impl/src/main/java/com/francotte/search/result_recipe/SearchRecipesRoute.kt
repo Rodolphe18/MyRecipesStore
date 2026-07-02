@@ -1,8 +1,9 @@
 package com.francotte.search.result_recipe
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -12,14 +13,16 @@ import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 
 
-fun EntryProviderScope<NavKey>.searchRecipesEntry(navigator: Navigator,
-                                                  onToggleFavorite: (LikeableRecipe) -> Unit,) {
+fun EntryProviderScope<NavKey>.searchRecipesEntry(
+    navigator: Navigator,
+    onToggleFavorite: (LikeableRecipe) -> Unit,
+) {
     entry<SearchRecipesNavKey> { key ->
-        SearchRecipesRoute(viewModel =
-            androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel<SearchRecipesViewModel, SearchRecipesViewModel.Factory>(
+        SearchRecipesRoute(
+            viewModel = hiltViewModel<SearchRecipesViewModel, SearchRecipesViewModel.Factory>(
                 key = key.mode.title,
             ) { factory ->
-                factory.create(key.item,key.mode)
+                factory.create(key.item, key.mode)
             },
             onOpenRecipe = navigator::navigateToDetail,
             onToggleFavorite = onToggleFavorite,
@@ -36,8 +39,25 @@ fun SearchRecipesRoute(
     onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
 ) {
-    val uiState by viewModel.searchRecipesUiState.collectAsStateWithLifecycle()
-    val title = viewModel.item
-    SearchRecipesScreen(searchRecipesUiState = uiState, title = title, onReload = {
-    }, onOpenRecipe = onOpenRecipe, onToggleFavorite = onToggleFavorite, onBack = onBack)
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is SearchRecipesEvent.NavigateToRecipe -> onOpenRecipe(event.ids, event.index, event.title)
+                SearchRecipesEvent.NavigateBack -> onBack()
+            }
+        }
+    }
+
+    SearchRecipesScreen(
+        state = state,
+        onAction = { action ->
+            when (action) {
+                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
+                is SearchRecipesAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
+                else -> viewModel.onAction(action)
+            }
+        },
+    )
 }

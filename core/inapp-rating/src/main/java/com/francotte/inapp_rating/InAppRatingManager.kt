@@ -1,34 +1,35 @@
 package com.francotte.inapp_rating
 
 import android.app.Activity
-import com.francotte.common.counters.LaunchCounter
+import com.francotte.data.interfaces.UserDataRepository
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-class InAppRatingManager
-    @Inject
-    constructor(
-        private val inAppRatingPreferences: InAppRatingPreferences,
-        private val inAppReview: InAppReview,
-        private val playStoreOpener: PlayStoreOpener,
-        private val launchCounter: LaunchCounter,
-    ) {
-        val count = launchCounter.getLaunchCount()
-        val hasRated = inAppRatingPreferences.hasRatedOrNotAskAgain()
-        val lastPrompt = inAppRatingPreferences.lastPromptLaunch()
+class InAppRatingManager @Inject constructor(
+    private val userDataRepository: UserDataRepository,
+    private val inAppReviewLauncher: InAppReviewLauncher,
+    private val playStoreLauncher: PlayStoreLauncher,
+) : InAppRatingRepository {
 
-        fun shouldTryToShowInAppReview(): Boolean = !hasRated && count % 3 == 0
-
-        fun shouldShowCustomRatingBottomSheet(): Boolean = !hasRated && count % 10 == 0 && count != lastPrompt
-
-        fun inAppRatingDialogShown() {
-            inAppRatingPreferences.setLastPromptLaunch(launchCounter.getLaunchCount())
-        }
-
-        fun setHasBeenRatedOrNotAskAgainToTrue() {
-            inAppRatingPreferences.setHasRatedOrNotAskAgain(true)
-        }
-
-        suspend fun requestReviewOnPlayStore(activity: Activity): Boolean = playStoreOpener.launchPlayStore(activity)
-
-        suspend fun requestInAppReview(activity: Activity): Boolean = inAppReview.launchInAppReview(activity)
+    override suspend fun shouldTryToShowInAppReview(): Boolean {
+        val data = userDataRepository.userData.first()
+        return !data.hasRated && data.launchCount % 3 == 0
     }
+
+    override suspend fun shouldShowCustomRatingBottomSheet(): Boolean {
+        val data = userDataRepository.userData.first()
+        return !data.hasRated && data.launchCount % 6 == 0 && data.launchCount != data.lastPromptLaunch
+    }
+
+    override suspend fun inAppRatingDialogShown() {
+        userDataRepository.setLastPromptLaunch(userDataRepository.userData.first().launchCount)
+    }
+
+    override suspend fun setHasBeenRatedOrNotAskAgainToTrue() {
+        userDataRepository.setHasRated(true)
+    }
+
+    override fun launchPlayStoreForReview(activity: Activity): Boolean = playStoreLauncher.launchPlayStore(activity)
+
+    override suspend fun launchInAppReview(activity: Activity): Boolean = inAppReviewLauncher.launchInAppReview(activity)
+}

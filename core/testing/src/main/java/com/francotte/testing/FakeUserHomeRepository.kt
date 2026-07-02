@@ -1,6 +1,7 @@
 package com.francotte.testing
 
-import com.francotte.data.repository.UserHomeRepository
+import com.francotte.common.utils.DataResult
+import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.model.LikeableRecipe
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -56,6 +57,10 @@ class FakeUserHomeRepository : UserHomeRepository {
     }
 
     override fun observeRecipesByCategory(category: String): Flow<List<LikeableRecipe>> = categoryFlow(category)
+
+    override suspend fun getRecipesByCategory(category: String): DataResult<List<LikeableRecipe>> {
+        TODO("Not yet implemented")
+    }
 
     fun sendLatestRecipes(result: List<LikeableRecipe>) {
         latestFlow.tryEmit(result)

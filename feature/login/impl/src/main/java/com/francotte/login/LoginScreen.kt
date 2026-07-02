@@ -44,21 +44,21 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.designsystem.component.CustomButton
+import com.francotte.designsystem.theme.Lora
 import com.francotte.designsystem.theme.Orange
+import com.francotte.designsystem.theme.Playfair
 import com.francotte.ui.CustomTextField
 import com.francotte.ui.DeviceMode
-import com.francotte.ui.LocalAppLayout
 import com.francotte.ui.PasswordField
+import com.francotte.ui.rememberDeviceMode
 import com.francotte.ui.favButtonDimension
 
 @Composable
 fun LoginScreen(
-    onRegister: () -> Unit,
-    onLogin:(String?,String?)->Unit,
-    onOpenResetPassword: () -> Unit,
-    doGoogleLogin: () -> Unit,
+    state: LoginState,
+    onAction: (LoginAction) -> Unit,
 ) {
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val dimension = remember(mode) { googleButtonDimension(mode) }
     var loginUserNameOrMail by remember { mutableStateOf("") }
     var loginPassword by remember { mutableStateOf("") }
@@ -75,6 +75,7 @@ fun LoginScreen(
             Text(
                 text = stringResource(id = R.string.club_login_page_join_description),
                 textAlign = TextAlign.Center,
+                fontFamily = Playfair,
                 fontSize = 22.sp,
                 lineHeight = 30.sp,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -89,7 +90,7 @@ fun LoginScreen(
             ButtonGoogle(
                 modifier = Modifier.fillMaxWidth(),
                 dimension = dimension,
-                onClick = doGoogleLogin
+                onClick = { onAction(LoginAction.OnGoogleLoginClick) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,7 +134,7 @@ fun LoginScreen(
                 ButtonGoogle(
                     modifier = Modifier.weight(1f),
                     dimension = dimension,
-                    onClick = doGoogleLogin
+                    onClick = { onAction(LoginAction.OnGoogleLoginClick) }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column (Modifier.weight(1f)){
@@ -153,15 +154,16 @@ fun LoginScreen(
             modifier =
                 Modifier
                     .padding(top = 10.dp)
-                    .clickable { onOpenResetPassword() },
+                    .clickable { onAction(LoginAction.OnResetPasswordClick) },
             textDecoration = TextDecoration.Underline,
+            fontFamily = Lora,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(modifier = Modifier.height(16.dp))
         CustomButton(
-            onClick = { onLogin(loginUserNameOrMail, loginPassword) },
-            enabled = canConnect,
+            onClick = { onAction(LoginAction.OnLoginClick(loginUserNameOrMail, loginPassword)) },
+            enabled = canConnect && !state.isLoading,
             contentText = R.string.sign_in_connexion_button,
         )
         Text(
@@ -171,10 +173,11 @@ fun LoginScreen(
                     .padding(top = 16.dp)
                     .fillMaxWidth()
                     .wrapContentWidth(Alignment.CenterHorizontally)
-                    .clickable { onRegister() },
+                    .clickable { onAction(LoginAction.OnRegisterClick) },
             color = Orange.copy(0.75f),
             style =
                 TextStyle(
+                    fontFamily = Lora,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     textDecoration = TextDecoration.Underline,
@@ -194,7 +197,6 @@ fun ButtonGoogle(
         modifier =
             modifier
                 .height(dimension.height)
-                .aspectRatio(dimension.ratio)
                 .border(Dp.Hairline, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(12.dp))
                 .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,

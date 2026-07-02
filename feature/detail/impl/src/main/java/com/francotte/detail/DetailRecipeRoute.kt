@@ -7,6 +7,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
@@ -64,7 +66,7 @@ fun EntryProviderScope<NavKey>.detailRecipeEntry(
                 factory.create(key.ids,key.index,key.title)
             },
             onToggleFavorite = onToggleFavorite,
-            onBackCLick = navigator::goBack,
+            onBackClick = navigator::goBack,
         )
     }
 }
@@ -87,15 +89,22 @@ fun NavGraphBuilder.deepLinkRecipeScreen(
         val recipeId = backStackEntry.arguments?.getString("id")
 
         val viewModel: DetailRecipeViewModel = hiltViewModel()
+        val state by viewModel.state.collectAsStateWithLifecycle()
 
         LaunchedEffect(recipeId) {
-            recipeId?.let { viewModel.loadRecipeById(it) }
+            recipeId?.let { viewModel.loadDeeplink(it) }
         }
 
         DetailRecipeScreen(
-            viewModel = viewModel,
-            onToggleFavorite = onToggleFavorite,
-            onBackCLick = onBackClick,
+            state = state,
+            onNavigationClick = {},
+            onAction = { action ->
+                when (action) {
+                    is DetailAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
+                    DetailAction.OnBackClick -> onBackClick()
+                    else -> viewModel.onAction(action)
+                }
+            },
         )
     }
 }
@@ -103,10 +112,22 @@ fun NavGraphBuilder.deepLinkRecipeScreen(
 @Composable
 internal fun DetailRecipeRoute(
     viewModel: DetailRecipeViewModel = hiltViewModel(),
-    onBackCLick: () -> Unit,
+    onBackClick: () -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
-    DetailRecipeScreen(viewModel, onToggleFavorite, onBackCLick)
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    DetailRecipeScreen(
+        state = state,
+        onNavigationClick = onBackClick,
+        onAction = { action ->
+            when (action) {
+                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
+                is DetailAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
+                else -> viewModel.onAction(action)
+            }
+        },
+    )
     LaunchedEffect(Unit) {
         ScreenCounter.increment()
     }

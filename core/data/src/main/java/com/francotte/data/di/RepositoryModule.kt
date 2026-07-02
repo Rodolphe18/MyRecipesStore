@@ -1,115 +1,67 @@
 package com.francotte.data.di
 
-import com.francotte.common.extension.Dispatcher
-import com.francotte.common.extension.FoodDispatchers
-import com.francotte.data.repository.CategoriesRepository
+import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.data.repository.CompositeUserFullRecipeRepository
 import com.francotte.data.repository.CompositeUserHomeRepository
 import com.francotte.data.repository.DefaultSearchContentsRepository
+import com.francotte.data.interfaces.FavoritesRepository
+import com.francotte.data.repository.FavoritesRepositoryImpl
 import com.francotte.data.repository.OfflineFirstCategoriesRepositoryImpl
-import com.francotte.data.repository.OfflineFirstFavoritesRepository
+import com.francotte.data.interfaces.OfflineFirstFavoritesRepository
 import com.francotte.data.repository.OfflineFirstFavoritesRepositoryImpl
-import com.francotte.data.repository.OfflineFirstFullRecipeRepository
+import com.francotte.data.interfaces.OfflineFirstFullRecipeRepository
 import com.francotte.data.repository.OfflineFirstFullRecipeRepositoryImpl
 import com.francotte.data.repository.OfflineFirstHomeRepository
 import com.francotte.data.repository.OfflineFirstIngredientsAndAreasRepositoryImpl
-import com.francotte.data.repository.RecipesRepository
-import com.francotte.data.repository.IngredientsAndAreasRepository
-import com.francotte.data.repository.SearchContentsRepository
-import com.francotte.data.repository.UserFullRecipeRepository
-import com.francotte.data.repository.UserHomeRepository
-import com.francotte.database.dao.AreaDao
-import com.francotte.database.dao.FullCategoryDao
-import com.francotte.database.dao.FullRecipeDao
-import com.francotte.database.dao.IngredientDao
-import com.francotte.database.dao.LightRecipeDao
-import com.francotte.database.dao.fts.AreaFtsDao
-import com.francotte.database.dao.fts.CategoryFtsDao
-import com.francotte.database.dao.fts.IngredientFtsDao
-import com.francotte.database.dao.fts.RecipeFtsDao
-import com.francotte.datastore.UserDataRepository
-import com.francotte.network.api.FavoriteApi
-import com.francotte.network.api.RecipeApi
+import com.francotte.data.interfaces.IngredientsAndAreasRepository
+import com.francotte.data.favorite.FavoriteManager
+import com.francotte.data.interfaces.FavoriteHelper
+import com.francotte.data.interfaces.HomeRepository
+import com.francotte.data.interfaces.SearchContentsRepository
+import com.francotte.data.interfaces.UserDataRepository
+import com.francotte.data.interfaces.UserFullRecipeRepository
+import com.francotte.data.interfaces.UserHomeRepository
+import com.francotte.data.repository.LocalUserDataRepository
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
-import javax.inject.Inject
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
+abstract class RepositoryModule {
 
-    @Singleton
-    @Provides
-    fun provideIngredientsAndAreasRepository(
-        homeRepository: OfflineFirstHomeRepository,
-        api: RecipeApi,
-        ingredientDao: IngredientDao,
-        areaDao: AreaDao,
-        userDataRepository: UserDataRepository,
-    ): IngredientsAndAreasRepository = OfflineFirstIngredientsAndAreasRepositoryImpl(homeRepository, api, ingredientDao,areaDao,userDataRepository)
+    @Binds @Singleton
+    abstract fun bindIngredientsAndAreasRepository(impl: OfflineFirstIngredientsAndAreasRepositoryImpl): IngredientsAndAreasRepository
 
+    @Binds @Singleton
+    abstract fun bindSearchContentsRepository(impl: DefaultSearchContentsRepository): SearchContentsRepository
 
-    @Singleton
-    @Provides
-    fun provideSearchContentsRepository(
-        lightRecipeDao: LightRecipeDao,
-        recipeFtsDao: RecipeFtsDao,
-        categoryFtsDao: CategoryFtsDao,
-        areaFtsDao: AreaFtsDao,
-        ingredientFtsDao: IngredientFtsDao,
-        categoriesDao: FullCategoryDao,
-        areasDao: AreaDao,
-        ingredientDao: IngredientDao,
-    ) : SearchContentsRepository = DefaultSearchContentsRepository(lightRecipeDao,recipeFtsDao,categoryFtsDao,areaFtsDao,ingredientFtsDao,categoriesDao,areasDao,ingredientDao)
+    @Binds @Singleton
+    abstract fun bindUserFullRecipeRepository(impl: CompositeUserFullRecipeRepository): UserFullRecipeRepository
 
-    @Singleton
-    @Provides
-    fun provideLikeableFullRecipeRepository(
-        offlineFullRecipeData: OfflineFirstFullRecipeRepository,
-        userDataRepository: UserDataRepository,
-    ): UserFullRecipeRepository = CompositeUserFullRecipeRepository(offlineFullRecipeData, userDataRepository)
+    @Binds @Singleton
+    abstract fun bindOfflineFirstFullRecipeRepository(impl: OfflineFirstFullRecipeRepositoryImpl): OfflineFirstFullRecipeRepository
 
-    @Singleton
-    @Provides
-    fun provideOfflineFirstFullRecipeRepository(
-        api: RecipeApi,
-        dao: FullRecipeDao,
-    ): OfflineFirstFullRecipeRepository = OfflineFirstFullRecipeRepositoryImpl(api, dao)
+    @Binds @Singleton
+    abstract fun bindOfflineFirstFavoritesRepository(impl: OfflineFirstFavoritesRepositoryImpl): OfflineFirstFavoritesRepository
 
-    @Singleton
-    @Provides
-    fun provideOfflineFirstFavoritesRepository(
-        dao: FullRecipeDao,
-        favoriteApi: FavoriteApi,
-        recipeApi: RecipeApi,
-        userDataRepository: UserDataRepository,
-    ): OfflineFirstFavoritesRepository = OfflineFirstFavoritesRepositoryImpl(dao, favoriteApi,recipeApi, userDataRepository)
+    @Binds @Singleton
+    abstract fun bindRecipesRepository(impl: OfflineFirstHomeRepository): HomeRepository
 
-    @Singleton
-    @Provides
-    fun provideOfflineFirstHomeRepository(
-        api: RecipeApi,
-        lightRecipeDao: LightRecipeDao,
-        fullRecipeDao: FullRecipeDao,
-    ): RecipesRepository = OfflineFirstHomeRepository(lightRecipeDao, fullRecipeDao, api)
+    @Binds @Singleton
+    abstract fun bindUserHomeRepository(impl: CompositeUserHomeRepository): UserHomeRepository
 
-    @Singleton
-    @Provides
-    fun provideHomeRepository(
-        homeRepository: OfflineFirstHomeRepository,
-        userDataRepository: UserDataRepository,
-    ): UserHomeRepository = CompositeUserHomeRepository(homeRepository, userDataRepository)
+    @Binds @Singleton
+    abstract fun bindCategoriesRepository(impl: OfflineFirstCategoriesRepositoryImpl): CategoriesRepository
 
-    @Singleton
-    @Provides
-    fun provideCategoriesRepository(
-        api: RecipeApi,
-        dao: FullCategoryDao,
-    ): CategoriesRepository = OfflineFirstCategoriesRepositoryImpl(api, dao)
+    @Binds @Singleton
+    abstract fun bindFavoritesRepository(impl: FavoritesRepositoryImpl): FavoritesRepository
 
+    @Binds @Singleton
+    abstract fun bindFavoriteToggler(impl: FavoriteManager): FavoriteHelper
 
+    @Binds
+    abstract fun bindsUserDataRepository(userDataRepository: LocalUserDataRepository): UserDataRepository
 }

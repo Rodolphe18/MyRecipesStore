@@ -1,23 +1,20 @@
 package com.francotte.reset
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.api.RequestResetNavKey
 import com.francotte.common.counters.ScreenCounter
-import com.francotte.login.LoginViewModel
 import com.francotte.navigation.Navigator
-
 
 
 fun EntryProviderScope<NavKey>.requestResetEntry(navigator: Navigator) {
     entry<RequestResetNavKey> {
-        RequestResetPasswordRoute(navigator::goBack)
+        RequestResetPasswordRoute(onBackPressed = navigator::goBack)
     }
 }
 
@@ -25,8 +22,20 @@ fun EntryProviderScope<NavKey>.requestResetEntry(navigator: Navigator) {
 @Composable
 fun RequestResetPasswordRoute(
     onBackPressed: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel(),
+    viewModel: RequestResetPasswordViewModel = hiltViewModel(),
 ) {
-    RequestResetPasswordScreen(viewModel, onBackPressed)
-    ScreenCounter.increment()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    RequestResetPasswordScreen(
+        state = state,
+        onAction = { action ->
+            when (action) {
+                RequestResetAction.OnBackClick -> onBackPressed()
+                else -> viewModel.onAction(action)
+            }
+        },
+    )
+    LaunchedEffect(Unit) {
+        ScreenCounter.increment()
+    }
 }

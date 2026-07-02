@@ -214,7 +214,7 @@ fun HorizontalRecipeItem(
     val density = LocalDensity.current
     val shape = RoundedCornerShape(16.dp)
 
-    val mode = LocalAppLayout.current.mode
+    val mode = rememberDeviceMode()
     val dimension = remember(mode) { horizontalRecipeItemDimension(mode) }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(

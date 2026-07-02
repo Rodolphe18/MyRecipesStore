@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -17,25 +18,28 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.francotte.model.LikeableRecipe
 
+@Immutable
+data class LikeableRecipesWrapper(val recipes: List<LikeableRecipe>)
+
 @Composable
 fun HorizontalRecipesList(
     title: String,
-    recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    likeableRecipesWrapper:LikeableRecipesWrapper,
+    onOpenRecipe: (Int) -> Unit,
     onOpenSection: (String) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     val listState = rememberLazyListState()
     TrackScrollJank(scrollableState = listState, stateName = "section:row:list")
     Column(modifier = Modifier.padding(top = 10.dp)) {
-        if (recipes.isNotEmpty()) {
+        if (likeableRecipesWrapper.recipes.isNotEmpty()) {
             SectionTitle(
                 modifier =
                     Modifier.testTag("SectionTitle_$title").semantics {
                         contentDescription = "SectionTitle_$title"
                     },
                 title = title,
-                count = recipes.size,
+                count = likeableRecipesWrapper.recipes.size,
                 onOpenMore = onOpenSection,
             )
             LazyRow(
@@ -45,12 +49,12 @@ fun HorizontalRecipesList(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 itemsIndexed(
-                    items = recipes,
+                    items = likeableRecipesWrapper.recipes,
                     key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal },
                 ) { index, likeableRecipe ->
                     HorizontalRecipeItem(
                         likeableRecipe = likeableRecipe,
-                        onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
+                        onOpenRecipe = { onOpenRecipe(index) },
                         onToggleFavorite = onToggleFavorite,
                     )
                 }
@@ -61,13 +65,13 @@ fun HorizontalRecipesList(
 
 @Composable
 fun SimpleHorizontalRecipesList(
-    recipes: List<LikeableRecipe>,
-    onOpenRecipe: (List<String>, Int, String) -> Unit,
+    likeableRecipesWrapper:LikeableRecipesWrapper,
+    onOpenRecipe: (Int) -> Unit,
     onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     val listState = rememberLazyListState()
     Column(modifier = Modifier.padding(top = 10.dp)) {
-        if (recipes.isNotEmpty()) {
+        if (likeableRecipesWrapper.recipes.isNotEmpty()) {
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -75,12 +79,12 @@ fun SimpleHorizontalRecipesList(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 itemsIndexed(
-                    items = recipes,
+                    items = likeableRecipesWrapper.recipes,
                     key = { index, likeableRecipe -> likeableRecipe.recipe.idMeal },
                 ) { index, likeableRecipe ->
                     HorizontalRecipeItem(
                         likeableRecipe = likeableRecipe,
-                        onOpenRecipe = { onOpenRecipe(recipes.map { it.recipe.idMeal }, index, likeableRecipe.recipe.strMeal) },
+                        onOpenRecipe = { onOpenRecipe(index) },
                         onToggleFavorite = onToggleFavorite
                     )
                 }

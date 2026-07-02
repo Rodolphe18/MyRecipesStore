@@ -1,6 +1,6 @@
 package com.francotte.testing
 
-import com.francotte.datastore.UserDataRepository
+import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.ConnectionMethod
 import com.francotte.model.UserData
 import kotlinx.coroutines.channels.BufferOverflow
@@ -103,6 +103,22 @@ class TestUserDataRepository : UserDataRepository {
     }
 
     override suspend fun clearPendingFavorites() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setPremium(isPremium: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun incrementLaunchCount(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setHasRated(hasRated: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setLastPromptLaunch(lastPromptLaunch: Int) {
         TODO("Not yet implemented")
     }
 
