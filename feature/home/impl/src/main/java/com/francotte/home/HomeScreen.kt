@@ -32,11 +32,13 @@ import androidx.compose.ui.unit.sp
 import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
+import com.francotte.designsystem.theme.Playfair
 import com.francotte.model.LikeableRecipe
 import com.francotte.ui.BigRecipeItem
 import com.francotte.ui.DeviceMode
 import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.HorizontalRecipesList
+import com.francotte.ui.LikeableRecipesWrapper
 import com.francotte.ui.LocalBannerProvider
 import com.francotte.ui.SectionTitle
 import com.francotte.ui.SimpleHorizontalRecipesList
@@ -96,7 +98,7 @@ fun HomeScreen(
                     when {
                         state.latest.error -> SectionErrorScreen { onAction(HomeAction.OnRetryLatest) }
                         state.latest.loading -> {
-                            CustomCircularProgressIndicator()
+                         //   CustomCircularProgressIndicator()
                         }
 
                         state.latest.hasRecipes -> {
@@ -133,7 +135,7 @@ fun HomeScreen(
                                 }
                             } else {
                                 SimpleHorizontalRecipesList(
-                                    recipes = state.latest.recipes,
+                                    likeableRecipesWrapper = LikeableRecipesWrapper(state.latest.recipes),
                                     onOpenRecipe = { index ->
                                         onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Latest, index))
                                     },
@@ -144,16 +146,6 @@ fun HomeScreen(
                     }
                 }
             }
-            if (mode != DeviceMode.PhoneLandscape) {
-                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
-                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                    BannerAd(
-                        placement = BannerPlacement.HOME_POS_1,
-                        provider = localBannerProvider,
-                        horizontalPadding = 16.dp,
-                    )
-                }
-            }
             item(
                 key = "japanese_section",
                 contentType = "section",
@@ -162,13 +154,13 @@ fun HomeScreen(
                 when {
                     state.japanese.error -> SectionErrorScreen { onAction(HomeAction.OnRetryJapanese) }
                     state.japanese.loading -> {
-                        CustomCircularProgressIndicator()
+                      //  CustomCircularProgressIndicator()
                     }
 
                     state.japanese.hasRecipes -> {
                         HorizontalRecipesList(
-                            "Japanese",
-                            state.japanese.recipes,
+                            title = "Japanese",
+                            likeableRecipesWrapper = LikeableRecipesWrapper(state.japanese.recipes),
                             onOpenRecipe = { index ->
                                 onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Japanese, index))
                             },
@@ -178,7 +170,16 @@ fun HomeScreen(
                     }
                 }
             }
-
+//            if (mode != DeviceMode.PhoneLandscape) {
+//                item(span = { spanSize }) { Spacer(Modifier.height(16.dp)) }
+//                item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+//                    BannerAd(
+//                        placement = BannerPlacement.HOME_POS_1,
+//                        provider = localBannerProvider,
+//                        horizontalPadding = 16.dp,
+//                    )
+//                }
+//            }
             when {
                 state.areas.error -> item(span = { spanSize }) { SectionErrorScreen { onAction(HomeAction.OnRetryAreas) } }
                 state.areas.loading -> item { }
@@ -190,8 +191,8 @@ fun HomeScreen(
                             span = { spanSize },
                         ) {
                             HorizontalRecipesList(
-                                key,
-                                list,
+                                title = key,
+                                likeableRecipesWrapper = LikeableRecipesWrapper(list),
                                 onOpenRecipe = { index ->
                                     onAction(HomeAction.OnRecipeClick(HomeRecipeSource.Area(key), index))
                                 },
@@ -203,21 +204,22 @@ fun HomeScreen(
                 }
             }
             item(span = { spanSize }) { Spacer(Modifier.height(4.dp)) }
-            item(
-                key = "banner_mid",
-                contentType = "ad",
-                span = { spanSize },
-            ) {
-                BannerAd(
-                    placement = BannerPlacement.HOME_POS_2,
-                    provider = localBannerProvider,
-                    horizontalPadding = 16.dp,
-                )
-            }
+//            item(
+//                key = "banner_mid",
+//                contentType = "ad",
+//                span = { spanSize },
+//            ) {
+//                BannerAd(
+//                    placement = BannerPlacement.HOME_POS_2,
+//                    provider = localBannerProvider,
+//                    horizontalPadding = 16.dp,
+//                )
+//            }
             item(span = { spanSize }) { Spacer(Modifier.height(4.dp)) }
             item(span = { spanSize }) {
                 Text(
                     text = "English recipes",
+                    fontFamily = Playfair,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -226,7 +228,9 @@ fun HomeScreen(
             }
             when {
                 state.english.error -> item { SectionErrorScreen { onAction(HomeAction.OnRetryEnglish) } }
-                state.english.loading -> item { CustomCircularProgressIndicator() }
+                state.english.loading -> item {
+                // CustomCircularProgressIndicator()
+                }
                 state.english.hasRecipes -> {
                     itemsIndexed(
                         items = state.english.recipes,

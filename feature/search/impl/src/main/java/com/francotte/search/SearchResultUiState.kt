@@ -1,7 +1,9 @@
 package com.francotte.search
 
+import androidx.compose.runtime.Immutable
 import com.francotte.model.LikeableRecipe
 
+@Immutable
 sealed interface SearchResultUiState {
     data object Loading : SearchResultUiState
 

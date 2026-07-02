@@ -1,5 +1,6 @@
 package com.francotte.favorites
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.FavoritesRepository
@@ -88,12 +89,14 @@ class FavoritesViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class FavoritesState(
     val searchText: String = "",
     val isReloading: Boolean = false,
     val content: FavoriteUiState = FavoriteUiState.Loading,
 )
 
+@Immutable
 sealed interface FavoriteUiState {
     data class Success(
         val favoritesRecipes: List<LikeableRecipe>,
@@ -105,6 +108,8 @@ sealed interface FavoriteUiState {
     data object Loading : FavoriteUiState
 }
 
+
+@Immutable
 sealed interface FavoritesAction {
     data class OnSearchChange(val text: String) : FavoritesAction
     data object OnReload : FavoritesAction

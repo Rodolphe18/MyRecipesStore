@@ -1,10 +1,10 @@
 package com.francotte.detail
 
-import android.content.Context
 import android.content.Intent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -21,10 +22,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -67,12 +70,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun DetailRecipeScreen(
     state: DetailState,
     onAction: (DetailAction) -> Unit,
+    onNavigationClick: () -> Unit
 ) {
     val onToggleFavorite: (LikeableRecipe) -> Unit = { onAction(DetailAction.OnToggleFavorite(it)) }
     val mode = rememberDeviceMode()
     val pageCount = state.pageCount
-    val pagerState =
-        rememberPagerState(initialPage = state.initialPage, pageCount = { pageCount })
+    val pagerState = rememberPagerState(initialPage = state.initialPage, pageCount = { pageCount })
     val deepLink = state.deeplinkRecipe
     // Pas de TopAppBar : le titre est déjà affiché dans le contenu de la recette, et le retour
     // se fait via le back système (NavDisplay onBack = navigator::goBack).
@@ -81,7 +84,9 @@ fun DetailRecipeScreen(
             RecipeContent(
                 likeableRecipe = deepLink,
                 onToggleFavorite = onToggleFavorite,
+                onNavigationClick = onNavigationClick,
                 topPadding = padding.calculateTopPadding() + 12.dp,
+                bottomPadding = padding.calculateBottomPadding() + 12.dp,
                 modifier = Modifier
                     .testTag("full_detail_screen")
                     .semantics { contentDescription = "full_detail_screen" },
@@ -112,7 +117,9 @@ fun DetailRecipeScreen(
                         RecipeContent(
                             likeableRecipe = likeableRecipe,
                             onToggleFavorite = onToggleFavorite,
+                            onNavigationClick = onNavigationClick,
                             topPadding = padding.calculateTopPadding() + 12.dp,
+                            bottomPadding = padding.calculateBottomPadding() + 12.dp
                         )
                     }
                 }
@@ -125,36 +132,32 @@ fun DetailRecipeScreen(
 internal fun RecipeContent(
     likeableRecipe: LikeableRecipe,
     onToggleFavorite: (LikeableRecipe) -> Unit,
+    onNavigationClick:()->Unit= {},
     topPadding: Dp,
+    bottomPadding:Dp,
     modifier: Modifier = Modifier,
 ) {
     val localBannerProvider = LocalBannerProvider.current
-    val context = LocalContext.current
     val ingredients = rememberIngredients(likeableRecipe)
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(top = topPadding, bottom = 12.dp),
+            .padding(top = topPadding, bottom = bottomPadding),
     ) {
         DetailScreenMainSectionTitle(likeableRecipe)
         Spacer(modifier = Modifier.height(8.dp))
         DetailVideoScreen(likeableRecipe)
         Spacer(modifier = Modifier.height(8.dp))
-        BannerAd(
-            horizontalPadding = 12.dp,
-            placement = BannerPlacement.RECIPE_POS_1,
-            provider = localBannerProvider,
-        )
+//        BannerAd(
+//            horizontalPadding = 12.dp,
+//            placement = BannerPlacement.RECIPE_POS_1,
+//            provider = localBannerProvider,
+//        )
         Spacer(modifier = Modifier.height(8.dp))
         DetailScreenIngredientTitle(likeableRecipe,R.string.ingredients,onToggleFavorite)
         IngredientRow(ingredients)
-        DetailRecipeShareRecipeButton(likeableRecipe, ingredients, context)
-        BannerAd(
-            horizontalPadding = 12.dp,
-            placement = BannerPlacement.RECIPE_POS_2,
-            provider = localBannerProvider,
-        )
+        DetailRecipeShareRecipeButton(likeableRecipe, ingredients)
         Spacer(modifier = Modifier.height(8.dp))
         DetailScreenSectionTitle(R.string.instructions)
         Text(
@@ -167,17 +170,24 @@ internal fun RecipeContent(
     }
 }
 
+@Immutable
+data class RecipeIngredient(val name: String, val measure: String)
+
+@Immutable
+data class RecipeIngredients(val items: List<RecipeIngredient>)
+
 @Composable
-private fun rememberIngredients(likeableRecipe: LikeableRecipe): List<Pair<String, String>> =
+private fun rememberIngredients(likeableRecipe: LikeableRecipe): RecipeIngredients =
     remember(likeableRecipe.recipe) {
-        (1..20).mapNotNull { i ->
+        val items = (1..20).mapNotNull { i ->
             val recipe = likeableRecipe.recipe as? Recipe ?: return@mapNotNull null
             val ingredient = recipe.javaClass.getDeclaredField("strIngredient$i")
                 .apply { isAccessible = true }.get(recipe) as? String
             val measure = recipe.javaClass.getDeclaredField("strMeasure$i")
                 .apply { isAccessible = true }.get(recipe) as? String
-            if (!ingredient.isNullOrBlank()) ingredient to (measure ?: "") else null
+            if (!ingredient.isNullOrBlank()) RecipeIngredient(ingredient, measure ?: "") else null
         }
+        RecipeIngredients(items)
     }
 
 @Composable
@@ -209,16 +219,16 @@ private fun DetailVideoScreen(likeableRecipe: LikeableRecipe) {
 @Composable
 private fun DetailRecipeShareRecipeButton(
     likeableRecipe: LikeableRecipe,
-    ingredients: List<Pair<String, String>>,
-    context: Context,
+    ingredients: RecipeIngredients,
 ) {
+    val context = LocalContext.current
     Button(
         onClick = {
             val shoppingListText =
                 buildString {
                     appendLine("🛒 Groceries list : ${likeableRecipe.recipe.strMeal}")
                     appendLine()
-                    ingredients.forEach { (ingredient, measure) ->
+                    ingredients.items.forEach { (ingredient, measure) ->
                         appendLine("- $ingredient: $measure")
                     }
                 }
@@ -256,18 +266,21 @@ private fun DetailRecipeShareRecipeButton(
             contentDescription = "Share",
             modifier = Modifier.padding(end = 8.dp),
         )
-        Text("Share the groceries list")
+        Text(
+            text = "Share the groceries list",
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }
 
 @Composable
 fun DetailScreenMainSectionTitle(likeableRecipe: LikeableRecipe) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
         Text(
             text = likeableRecipe.recipe.strMeal,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.secondary,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 8.dp),
         )
@@ -317,8 +330,8 @@ private fun DetailScreenSectionTitle(
 }
 
 @Composable
-private fun IngredientRow(ingredients: List<Pair<String, String>>) {
-    ingredients.forEach { (ingredient, measure) ->
+private fun IngredientRow(ingredients: RecipeIngredients) {
+    ingredients.items.forEach { (ingredient, measure) ->
         Row(
             modifier =
                 Modifier

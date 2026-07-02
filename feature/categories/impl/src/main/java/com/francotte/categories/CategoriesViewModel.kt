@@ -1,10 +1,12 @@
 package com.francotte.categories
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.CategoriesRepository
 import com.francotte.model.AbstractCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +28,8 @@ class CategoriesViewModel @Inject constructor(
     private val _events = Channel<CategoriesEvent>()
     val events = _events.receiveAsFlow()
 
+    private var refreshJob: Job? = null
+
     init {
         repository.observeAllMealCategories()
             .onEach { categories ->
@@ -44,7 +48,10 @@ class CategoriesViewModel @Inject constructor(
     }
 
     private fun refresh() {
-        viewModelScope.launch {
+        // Annule un refresh déjà en cours avant d'en relancer un : évite que deux fetch
+        // concurrents se terminent dans le désordre et laissent isRefreshing/state incohérents.
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true) }
             val message = repository.refreshAllMealCategories(true)
             message?.let { _events.send(CategoriesEvent.ShowSnackbar(it)) }
@@ -53,6 +60,7 @@ class CategoriesViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class CategoriesState(
     val categories: List<AbstractCategory> = emptyList(),
     val isLoading: Boolean = true,
@@ -61,11 +69,13 @@ data class CategoriesState(
     val isEmpty: Boolean get() = !isLoading && categories.isEmpty()
 }
 
+@Immutable
 sealed interface CategoriesAction {
     data object OnRefresh : CategoriesAction
     data class OnCategoryClick(val category: AbstractCategory) : CategoriesAction
 }
 
+@Immutable
 sealed interface CategoriesEvent {
     data class NavigateToCategory(val category: AbstractCategory) : CategoriesEvent
     data class ShowSnackbar(val message: String) : CategoriesEvent

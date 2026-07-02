@@ -1,7 +1,9 @@
 package com.francotte.model
 
+import androidx.compose.runtime.Immutable
 import kotlin.Long
 
+@Immutable
 data class UserData(
     val userId: Long,
     val userName: String,
@@ -21,6 +23,7 @@ data class UserData(
         get() = isConnected && !token.isNullOrBlank()
 }
 
+@Immutable
 enum class ConnectionMethod {
     EMAIL,
     FACEBOOK,

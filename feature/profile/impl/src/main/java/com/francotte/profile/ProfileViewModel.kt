@@ -1,6 +1,7 @@
 package com.francotte.profile
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.auth.SessionRepository
@@ -62,6 +63,7 @@ class ProfileViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class ProfileState(
     val user: UserData? = null,
     val editedName: String = "",
@@ -74,6 +76,7 @@ data class ProfileState(
         get() = user != null && editedName != user.userName
 }
 
+@Immutable
 sealed interface ProfileAction {
     data class OnNameChange(val name: String) : ProfileAction
     data class OnImageChange(val uri: Uri?) : ProfileAction

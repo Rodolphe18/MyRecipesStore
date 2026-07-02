@@ -1,5 +1,6 @@
 package com.francotte.search.result_recipe
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.common.utils.DataResult
@@ -117,6 +118,7 @@ class SearchRecipesViewModel @AssistedInject constructor(
     }
 }
 
+@Immutable
 data class SearchRecipesState(
     val title: String = "",
     val recipes: List<LikeableRecipe> = emptyList(),
@@ -124,6 +126,7 @@ data class SearchRecipesState(
     val isError: Boolean = false,
 )
 
+@Immutable
 sealed interface SearchRecipesAction {
     data object OnReload : SearchRecipesAction
     data object OnBackClick : SearchRecipesAction
@@ -131,6 +134,7 @@ sealed interface SearchRecipesAction {
     data class OnToggleFavorite(val recipe: LikeableRecipe) : SearchRecipesAction
 }
 
+@Immutable
 sealed interface SearchRecipesEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : SearchRecipesEvent
     data object NavigateBack : SearchRecipesEvent

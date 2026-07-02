@@ -1,6 +1,7 @@
 package com.francotte.register
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.auth.RegistrationRepository
@@ -10,11 +11,15 @@ import com.francotte.domain.passwordValidator
 import com.francotte.domain.userNameValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,7 +28,31 @@ class RegisterViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RegisterState())
-    val state = _state.asStateFlow()
+    val state: StateFlow<RegisterState> = _state.asStateFlow()
+
+
+    val seq = listOf(1, 2, 3, 4, 5)
+        .asSequence()
+        .filter {
+            println("filter $it")
+            it % 2 == 0
+        }
+        .map {
+            println("map $it")
+            it * 10
+        }
+        .take(1)
+
+    val ss = flow {
+        yield()
+        delay(3)
+        emit(3)
+    }
+
+    val s = sequence {
+        yield(3) }
+
+    val d = flow { emit(3) }
 
     private val _events = Channel<RegisterEvent>()
     val events = _events.receiveAsFlow()
@@ -57,6 +86,7 @@ class RegisterViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class RegisterState(
     val name: String = "",
     val email: String = "",
@@ -77,6 +107,7 @@ data class RegisterState(
         get() = isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid
 }
 
+@Immutable
 sealed interface RegisterAction {
     data class OnNameChange(val name: String) : RegisterAction
     data class OnEmailChange(val email: String) : RegisterAction

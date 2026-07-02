@@ -1,10 +1,10 @@
 package com.francotte.model
 
-import java.time.Instant
+import androidx.compose.runtime.Immutable
 
+@Immutable
 class Ingredient(
     val name: String,
     val description:String,
-    val imageUrl:String,
-    val savedTimeStamp: Instant?=null
+    val imageUrl:String
 )

@@ -15,10 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -45,7 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.francotte.designsystem.R as DesignR
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -257,7 +257,7 @@ fun FoodApp(appState: AppState) {
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Filled.Add,
+                                            painter = painterResource(DesignR.drawable.ic_add),
                                             contentDescription = null,
                                             tint = Color.White,
                                             modifier = Modifier.size(32.dp),
@@ -265,7 +265,9 @@ fun FoodApp(appState: AppState) {
                                     }
                                 } else {
                                     Icon(
-                                        imageVector = if (isSelected) navItem.selectedIcon else navItem.unselectedIcon,
+                                        painter = painterResource(
+                                            if (isSelected) navItem.selectedIcon else navItem.unselectedIcon
+                                        ),
                                         contentDescription = null,
                                     )
                                 }
@@ -305,11 +307,11 @@ fun FoodApp(appState: AppState) {
                                 .padding(horizontal = 4.dp),
                             profileImage = userImage,
                             titleRes = destination.titleTextId,
-                            actionIcon = Icons.Outlined.Settings,
+                            actionIcon = ImageVector.vectorResource(DesignR.drawable.ic_settings),
                             actionIconContentDescription = "settings",
                             onActionClick = { showSettingsDialog = true },
                             navigationIconEnabled = isAuthenticated,
-                            navigationIcon = Icons.Filled.AccountCircle,
+                            navigationIcon = ImageVector.vectorResource(DesignR.drawable.ic_profile),
                             onNavigationClick = navigator::navigateToProfile,
                             scrollBehavior = topBarScrollBehavior,
                         )

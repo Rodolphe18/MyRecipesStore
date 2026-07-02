@@ -1,6 +1,7 @@
 package com.francotte.home.delegate
 
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.home.RefreshMode
 import com.francotte.model.LikeableRecipe
@@ -50,6 +51,7 @@ class AreasRecipesDelegateImpl @Inject constructor(private val repository: UserH
     }
 }
 
+@Immutable
 data class AreasRecipes (
     val loading:Boolean = true,
     val refreshing: Boolean = false,

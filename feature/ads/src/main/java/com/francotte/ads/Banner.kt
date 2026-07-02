@@ -101,7 +101,7 @@ fun LazyGridWithBanners(
     itemKey: (index: Int) -> Any,
     itemContentType: (index: Int) -> Any = { "item" },
     bannerKey: (bannerIndex: Int) -> Any = { i -> "banner-$i" },
-    bannerContentType: Any = "banner",
+    bannerContentType: String = "banner",
     bannerContent: @Composable () -> Unit,
     itemContent: @Composable LazyGridItemScope.(index: Int) -> Unit,
 ) {

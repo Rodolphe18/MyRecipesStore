@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.designsystem.component.TopAppBar
+import com.francotte.designsystem.theme.Lora
 import com.francotte.designsystem.theme.SearchItemColor1
 import com.francotte.designsystem.theme.SearchItemColor2
 import com.francotte.designsystem.theme.SearchItemColor3
@@ -115,6 +116,7 @@ fun SelectableChip(
         Text(
             text = label,
             color = Color(0xFF6D4C41),
+            fontFamily = Lora,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
             textAlign = TextAlign.Center,

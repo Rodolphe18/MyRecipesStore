@@ -1,5 +1,8 @@
 package com.francotte.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class Recipe(
     override val idMeal: String,
     override val strMeal: String,

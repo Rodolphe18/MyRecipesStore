@@ -96,12 +96,12 @@ fun SearchScreen(
                 onToggleFavorite = { onAction(SearchAction.OnToggleFavorite(it)) }
             )
         } else {
-            BannerAd(
-                placement = BannerPlacement.SEARCH,
-                provider = localBannerProvider,
-                horizontalPadding = 16.dp,
-            )
-            Spacer(Modifier.height(dimension.spacer1))
+//            BannerAd(
+//                placement = BannerPlacement.SEARCH,
+//                provider = localBannerProvider,
+//                horizontalPadding = 16.dp,
+//            )
+//            Spacer(Modifier.height(dimension.spacer1))
             Text(
                 stringResource(R.string.search_recipes_question),
                 textAlign = TextAlign.Center,

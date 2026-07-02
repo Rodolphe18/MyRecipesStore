@@ -1,5 +1,6 @@
 package com.francotte.search
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -108,11 +109,13 @@ class SearchViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class SearchState(
     val query: String = "",
     val result: SearchResultUiState = SearchResultUiState.Loading,
 )
 
+@Immutable
 sealed interface SearchAction {
     data class OnQueryChange(val query: String) : SearchAction
     data class OnSearchModeClick(val mode: SearchMode) : SearchAction
@@ -121,6 +124,7 @@ sealed interface SearchAction {
     data class OnToggleFavorite(val recipe: LikeableRecipe) : SearchAction
 }
 
+@Immutable
 sealed interface SearchEvent {
     data class NavigateToSearchMode(val mode: SearchMode) : SearchEvent
     data class NavigateToSearchRecipes(val item: String, val mode: SearchMode) : SearchEvent

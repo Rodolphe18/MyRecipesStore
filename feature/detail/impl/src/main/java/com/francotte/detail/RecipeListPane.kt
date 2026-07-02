@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,9 +26,13 @@ import com.francotte.designsystem.theme.Orange
 import com.francotte.model.AbstractRecipe
 import com.francotte.model.LikeableRecipe
 
+
+@Immutable
+data class RecipesWrapper(val recipes: Map<Int, LikeableRecipe>)
+
 @Composable
 internal fun RecipeListPane(
-    recipes: Map<Int, LikeableRecipe>,
+    recipesWrapper: RecipesWrapper,
     count: Int,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -36,7 +41,7 @@ internal fun RecipeListPane(
     LazyColumn(modifier = Modifier.fillMaxSize().padding(top = topPadding, bottom = 12.dp)) {
         items(count) { index ->
             RecipeListItem(
-                recipe = recipes[index]?.recipe,
+                recipe = recipesWrapper.recipes[index]?.recipe,
                 selected = index == selectedIndex,
                 onClick = { onSelect(index) },
             )

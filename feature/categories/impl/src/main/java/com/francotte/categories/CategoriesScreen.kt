@@ -40,6 +40,7 @@ import com.francotte.ads.BannerAd
 import com.francotte.ads.BannerPlacement
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.CustomCircularProgressIndicator
+import com.francotte.designsystem.theme.Playfair
 import com.francotte.ui.nbCategoriesColumns
 import com.francotte.model.Category
 import com.francotte.ui.SectionErrorScreen
@@ -73,30 +74,30 @@ fun CategoriesScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 ) {
-                    if (mode != DeviceMode.PhoneLandscape) {
-                        item(key = "banner_top", contentType = "ad", span = { spanSize }) {
-                            Box(
-                                modifier =
-                                    Modifier.layout { measurable, constraints ->
-                                        val placeable =
-                                            measurable.measure(
-                                                constraints.copy(
-                                                    maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
-                                                ),
-                                            )
-                                        layout(placeable.width, placeable.height) {
-                                            placeable.place(0, 0)
-                                        }
-                                    },
-                            ) {
-                                BannerAd(
-                                    placement = BannerPlacement.FOOD_LIST,
-                                    provider = localBannerProvider,
-                                    horizontalPadding = 16.dp,
-                                )
-                            }
-                        }
-                    }
+//                    if (mode != DeviceMode.PhoneLandscape) {
+//                        item(key = "banner_top", contentType = "ad", span = { spanSize }) {
+//                            Box(
+//                                modifier =
+//                                    Modifier.layout { measurable, constraints ->
+//                                        val placeable =
+//                                            measurable.measure(
+//                                                constraints.copy(
+//                                                    maxWidth = constraints.maxWidth + 32.dp.roundToPx(),
+//                                                ),
+//                                            )
+//                                        layout(placeable.width, placeable.height) {
+//                                            placeable.place(0, 0)
+//                                        }
+//                                    },
+//                            ) {
+//                                BannerAd(
+//                                    placement = BannerPlacement.FOOD_LIST,
+//                                    provider = localBannerProvider,
+//                                    horizontalPadding = 16.dp,
+//                                )
+//                            }
+//                        }
+//                    }
                     items(
                         key = { it.strCategory },
                         contentType = { "categories" },
@@ -163,6 +164,7 @@ fun CategoryMetaData(
     Text(
         modifier = modifier,
         text = title,
+        fontFamily = Playfair,
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurface,

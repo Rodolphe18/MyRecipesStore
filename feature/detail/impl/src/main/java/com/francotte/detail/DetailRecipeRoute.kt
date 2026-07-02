@@ -97,6 +97,7 @@ fun NavGraphBuilder.deepLinkRecipeScreen(
 
         DetailRecipeScreen(
             state = state,
+            onNavigationClick = {},
             onAction = { action ->
                 when (action) {
                     is DetailAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
@@ -116,16 +117,9 @@ internal fun DetailRecipeRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel) {
-        viewModel.events.collect { event ->
-            when (event) {
-                DetailEvent.NavigateBack -> onBackClick()
-            }
-        }
-    }
-
     DetailRecipeScreen(
         state = state,
+        onNavigationClick = onBackClick,
         onAction = { action ->
             when (action) {
                 // Favorite toggling stays outside the VM (FavoriteManager decoupling).

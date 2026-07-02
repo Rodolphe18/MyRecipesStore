@@ -1,5 +1,6 @@
 package com.francotte.search.result_mode
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.IngredientsAndAreasRepository
@@ -77,18 +78,21 @@ class SearchModeViewModel @AssistedInject constructor(
     }
 }
 
+@Immutable
 data class SearchModeState(
     val title: String = "",
     val items: List<String> = emptyList(),
     val isRefreshing: Boolean = false,
 )
 
+@Immutable
 sealed interface SearchModeAction {
     data object OnRefresh : SearchModeAction
     data object OnBackClick : SearchModeAction
     data class OnItemClick(val item: String) : SearchModeAction
 }
 
+@Immutable
 sealed interface SearchModeEvent {
     data class NavigateToRecipes(val item: String, val mode: SearchMode) : SearchModeEvent
     data object NavigateBack : SearchModeEvent

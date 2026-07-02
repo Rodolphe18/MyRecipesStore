@@ -1,5 +1,8 @@
 package com.francotte.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class CustomRecipe(
     val id: String,
     val title: String,
@@ -8,6 +11,7 @@ data class CustomRecipe(
     val imageUrl: String?,
 )
 
+@Immutable
 data class CustomIngredient(
     val name: String,
     val quantity: String,

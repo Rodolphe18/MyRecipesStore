@@ -1,5 +1,6 @@
 package com.francotte.section
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.UserHomeRepository
@@ -104,6 +105,7 @@ class SectionViewModel @AssistedInject constructor(
     }
 }
 
+@Immutable
 data class SectionState(
     val title: String = "",
     val recipes: List<LikeableRecipe> = emptyList(),
@@ -112,6 +114,7 @@ data class SectionState(
     val error: String? = null,
 )
 
+@Immutable
 sealed interface SectionAction {
     data object OnReload : SectionAction
     data object OnBackClick : SectionAction
@@ -119,6 +122,7 @@ sealed interface SectionAction {
     data class OnToggleFavorite(val recipe: LikeableRecipe) : SectionAction
 }
 
+@Immutable
 sealed interface SectionEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : SectionEvent
     data object NavigateBack : SectionEvent

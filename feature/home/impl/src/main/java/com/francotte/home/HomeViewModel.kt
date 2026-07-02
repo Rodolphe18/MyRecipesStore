@@ -1,5 +1,6 @@
 package com.francotte.home
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.home.delegate.AreasRecipes
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class HomeState(
     val latest: LatestRecipes = LatestRecipes(),
     val japanese: JapaneseRecipes = JapaneseRecipes(),
@@ -152,6 +154,7 @@ class HomeViewModel @Inject constructor(
     }
 }
 
+@Immutable
 sealed interface HomeRecipeSource {
     data object Latest : HomeRecipeSource
     data object Japanese : HomeRecipeSource
@@ -159,6 +162,7 @@ sealed interface HomeRecipeSource {
     data class Area(val areaName: String) : HomeRecipeSource
 }
 
+@Immutable
 sealed interface HomeAction {
     data object OnRefreshAll : HomeAction
     data object OnRetryLatest : HomeAction

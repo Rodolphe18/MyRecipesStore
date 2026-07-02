@@ -2,6 +2,7 @@ package com.francotte.login
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -101,10 +102,12 @@ class LoginViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class LoginState(
     val isLoading: Boolean = false,
 )
 
+@Immutable
 sealed interface LoginAction {
     data class OnLoginClick(val usernameOrMail: String, val password: String) : LoginAction
     data object OnGoogleLoginClick : LoginAction

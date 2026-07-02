@@ -44,7 +44,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.francotte.designsystem.component.CustomButton
+import com.francotte.designsystem.theme.Lora
 import com.francotte.designsystem.theme.Orange
+import com.francotte.designsystem.theme.Playfair
 import com.francotte.ui.CustomTextField
 import com.francotte.ui.DeviceMode
 import com.francotte.ui.PasswordField
@@ -73,6 +75,7 @@ fun LoginScreen(
             Text(
                 text = stringResource(id = R.string.club_login_page_join_description),
                 textAlign = TextAlign.Center,
+                fontFamily = Playfair,
                 fontSize = 22.sp,
                 lineHeight = 30.sp,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -153,6 +156,7 @@ fun LoginScreen(
                     .padding(top = 10.dp)
                     .clickable { onAction(LoginAction.OnResetPasswordClick) },
             textDecoration = TextDecoration.Underline,
+            fontFamily = Lora,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -173,6 +177,7 @@ fun LoginScreen(
             color = Orange.copy(0.75f),
             style =
                 TextStyle(
+                    fontFamily = Lora,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     textDecoration = TextDecoration.Underline,
@@ -192,7 +197,6 @@ fun ButtonGoogle(
         modifier =
             modifier
                 .height(dimension.height)
-                .aspectRatio(dimension.ratio)
                 .border(Dp.Hairline, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(12.dp))
                 .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,

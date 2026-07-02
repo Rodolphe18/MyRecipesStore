@@ -1,5 +1,6 @@
 package com.francotte.detail
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.UserFullRecipeRepository
@@ -8,11 +9,9 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -36,9 +35,6 @@ class DetailRecipeViewModel @AssistedInject constructor(
     )
     val state = _state.asStateFlow()
 
-    private val _events = Channel<DetailEvent>()
-    val events = _events.receiveAsFlow()
-
     private var currentPage = index ?: 0
 
     /** Pages with an active observer — avoids re-subscribing the same id twice. */
@@ -53,11 +49,8 @@ class DetailRecipeViewModel @AssistedInject constructor(
         when (action) {
             is DetailAction.OnPageChanged -> selectRecipe(action.page)
             is DetailAction.OnRecipeSelected -> selectRecipe(action.index)
-            DetailAction.OnBackClick -> viewModelScope.launch {
-                _events.send(DetailEvent.NavigateBack)
-            }
             // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
-            is DetailAction.OnToggleFavorite -> Unit
+            else -> Unit
         }
     }
 
@@ -103,6 +96,7 @@ class DetailRecipeViewModel @AssistedInject constructor(
     }
 }
 
+@Immutable
 data class DetailState(
     val title: String = "",
     val pageCount: Int = 0,
@@ -112,6 +106,7 @@ data class DetailState(
     val deeplinkRecipe: LikeableRecipe? = null,
 )
 
+@Immutable
 sealed interface DetailAction {
     data class OnPageChanged(val page: Int) : DetailAction
     data class OnRecipeSelected(val index: Int) : DetailAction
@@ -119,6 +114,3 @@ sealed interface DetailAction {
     data object OnBackClick : DetailAction
 }
 
-sealed interface DetailEvent {
-    data object NavigateBack : DetailEvent
-}

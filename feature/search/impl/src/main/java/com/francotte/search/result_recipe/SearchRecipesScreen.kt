@@ -40,6 +40,7 @@ import com.francotte.designsystem.component.CustomCircularProgressIndicator
 import com.francotte.designsystem.component.TopAppBar
 import com.francotte.ui.nbSectionColumns
 import com.francotte.designsystem.theme.LightYellow
+import com.francotte.designsystem.theme.Playfair
 import com.francotte.search.R
 import com.francotte.ui.SectionErrorScreen
 import com.francotte.ui.RecipeItem
@@ -119,6 +120,7 @@ private fun EmptyRecipesScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(30.dp))
         Text(
             text = stringResource(R.string.empty_recipes_screen),
+            fontFamily = Playfair,
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,

@@ -1,5 +1,8 @@
 package com.francotte.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class SearchResult(
     val categories: List<String> = emptyList(),
     val areas: List<String> = emptyList(),

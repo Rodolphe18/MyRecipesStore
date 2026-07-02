@@ -1,6 +1,7 @@
 package com.francotte.settings
 
 import android.app.Activity
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
@@ -24,6 +25,7 @@ enum class PremiumPlan(val basePlanId: String) {
     Yearly("premium-yearly"),
 }
 
+@Immutable
 data class PremiumOfferUi(
     val plan: PremiumPlan,
     val title: String,
@@ -31,6 +33,7 @@ data class PremiumOfferUi(
     val offerToken: String?,
 )
 
+@Immutable
 data class PremiumUiState(
     val isLoading: Boolean = true,
     val isPremium: Boolean = false,
@@ -38,6 +41,7 @@ data class PremiumUiState(
     val message: String? = null,
 )
 
+@Immutable
 sealed interface PremiumEffect {
     data class LaunchPurchase(val offerToken: String) : PremiumEffect
 }

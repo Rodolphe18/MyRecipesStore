@@ -1,5 +1,6 @@
 package com.francotte.reset
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.auth.PasswordResetRepository
@@ -38,6 +39,7 @@ class ResetPasswordViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class ResetPasswordState(
     val message: String = "",
     val isSuccess: Boolean = false,

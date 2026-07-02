@@ -1,6 +1,7 @@
 package com.francotte.favorites
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.FavoritesRepository
@@ -115,6 +116,7 @@ class CustomRecipeDetailViewModel @AssistedInject constructor(
     }
 }
 
+@Immutable
 data class CustomRecipeDetailState(
     val recipe: CustomRecipe? = null,
     val isEditing: Boolean = false,
@@ -130,6 +132,7 @@ data class CustomRecipeDetailState(
         get() = title.isNotBlank() && instructions.isNotBlank() && ingredients.isNotEmpty()
 }
 
+@Immutable
 sealed interface CustomRecipeDetailAction {
     data object OnStartEdit : CustomRecipeDetailAction
     data class OnTitleChange(val title: String) : CustomRecipeDetailAction

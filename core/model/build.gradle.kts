@@ -28,4 +28,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+
+
+}
+
+dependencies {
+
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.runtime.annotation)
+
 }

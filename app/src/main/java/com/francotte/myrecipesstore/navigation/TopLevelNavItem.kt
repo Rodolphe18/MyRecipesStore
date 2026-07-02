@@ -1,82 +1,62 @@
 package com.francotte.myrecipesstore.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
-import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.NavBackStackEntry
-import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import com.francotte.api.AddRecipeNavKey
 import com.francotte.api.CategoriesNavKey
-import com.francotte.api.DetailRecipeNavKey
 import com.francotte.api.FavoritesNavKey
 import com.francotte.feature.home.api.HomeNavKey
 import com.francotte.feature.login.api.LoginNavKey
 import com.francotte.feature.search.api.SearchNavKey
 import com.francotte.myrecipesstore.R
+import com.francotte.designsystem.R as DesignR
 
 
 data class TopLevelNavItem(
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector,
-    @StringRes val iconTextId: Int,
-    @StringRes val titleTextId: Int,
+    @param:DrawableRes val selectedIcon: Int,
+    @param:DrawableRes val unselectedIcon: Int,
+    @param:StringRes val iconTextId: Int,
+    @param:StringRes val titleTextId: Int,
 )
 
 val HOME = TopLevelNavItem(
-    selectedIcon = Icons.Filled.Home,
-    unselectedIcon = Icons.Outlined.Home,
+    selectedIcon = DesignR.drawable.ic_home_filled,
+    unselectedIcon = DesignR.drawable.ic_home,
     R.string.home,
     R.string.home,
 )
 
 val CATEGORIES = TopLevelNavItem(
-    selectedIcon = Icons.Filled.ShoppingCart,
-    unselectedIcon = Icons.Outlined.ShoppingCart,
+    selectedIcon = DesignR.drawable.ic_categories_filled,
+    unselectedIcon = DesignR.drawable.ic_categories,
     R.string.categories,
     R.string.categories,
 )
 
 val ADD = TopLevelNavItem(
-    selectedIcon = Icons.Filled.Add,
-    unselectedIcon = Icons.Filled.Lock,
+    selectedIcon = DesignR.drawable.ic_add,
+    unselectedIcon = DesignR.drawable.ic_add,
     R.string.add,
     R.string.add,
 )
 
 val SEARCH = TopLevelNavItem(
-    selectedIcon = Icons.Filled.Search,
-    unselectedIcon = Icons.Outlined.Search,
+    selectedIcon = DesignR.drawable.ic_search_filled,
+    unselectedIcon = DesignR.drawable.ic_search,
     R.string.search,
     R.string.search,
 )
 
 val FAVORITES = TopLevelNavItem(
-    selectedIcon = Icons.Filled.Favorite,
-    unselectedIcon = Icons.Outlined.FavoriteBorder,
+    selectedIcon = DesignR.drawable.ic_favorites_filled,
+    unselectedIcon = DesignR.drawable.ic_favorites,
     R.string.favorites,
     R.string.favorites
 )
 
 val LOGIN = TopLevelNavItem(
-    selectedIcon = Icons.Filled.Lock,
-    unselectedIcon = Icons.Outlined.Lock,
+    selectedIcon = DesignR.drawable.ic_login_filled,
+    unselectedIcon = DesignR.drawable.ic_login,
     R.string.login,
     R.string.login
 )

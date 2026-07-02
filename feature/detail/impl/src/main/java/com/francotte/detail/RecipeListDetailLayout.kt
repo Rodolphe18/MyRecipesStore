@@ -64,7 +64,7 @@ internal fun RecipeListDetailLayout(
         listPane = {
             AnimatedPane {
                 RecipeListPane(
-                    recipes = state.recipes,
+                    recipesWrapper = RecipesWrapper(state.recipes),
                     count = state.pageCount,
                     selectedIndex = state.selectedIndex,
                     onSelect = { onAction(DetailAction.OnRecipeSelected(it)) },
@@ -79,6 +79,8 @@ internal fun RecipeListDetailLayout(
                         likeableRecipe = recipe,
                         onToggleFavorite = onToggleFavorite,
                         topPadding = contentPadding.calculateTopPadding() + 12.dp,
+                        bottomPadding = contentPadding.calculateBottomPadding() + 12.dp,
+                        onNavigationClick = {},
                     )
                 }
             }

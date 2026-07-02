@@ -1,6 +1,7 @@
 package com.francotte.add_recipe
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.FavoritesRepository
@@ -102,6 +103,7 @@ class AddRecipeViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class AddRecipeState(
     val isAuthenticated: Boolean = false,
     val imageUri: Uri? = null,

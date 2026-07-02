@@ -152,7 +152,7 @@ fun FavoritesScreen(
                                                 placeable.place(0, 0)
                                             }
                                         },
-                                        customRecipes,
+                                        CustomRecipesWrapper(customRecipes),
                                         { onAction(FavoritesAction.OnCustomRecipeClick(it)) },
                                     )
                                 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -142,6 +143,7 @@ private fun Dp.getAdSizeFromHeight(): AdSize =
         else -> AdSize.BANNER
     }
 
+@Stable
 interface BannerAdProvider {
     @Composable
     fun Banner(

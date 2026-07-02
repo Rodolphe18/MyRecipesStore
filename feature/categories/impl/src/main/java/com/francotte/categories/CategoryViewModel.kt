@@ -1,5 +1,6 @@
 package com.francotte.categories
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.francotte.common.utils.onFailure
@@ -111,6 +112,7 @@ class CategoryViewModel @AssistedInject constructor(
     }
 }
 
+@Immutable
 data class CategoryState(
     val title: String = "",
     val recipes: List<LikeableRecipe> = emptyList(),
@@ -119,6 +121,7 @@ data class CategoryState(
     val error: String? = null,
 )
 
+@Immutable
 sealed interface CategoryAction {
     data object OnReload : CategoryAction
     data class OnRecipeClick(val index: Int) : CategoryAction
@@ -126,6 +129,7 @@ sealed interface CategoryAction {
     data object OnBackClick : CategoryAction
 }
 
+@Immutable
 sealed interface CategoryEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : CategoryEvent
     data object NavigateBack : CategoryEvent
