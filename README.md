@@ -14,10 +14,36 @@ A native Android app that serves cooking recipes from around the world. Create a
 
 ## 📸 Screenshots
 
-<!-- TODO: add screenshots or a screen-recording GIF here -->
-| Home | Categories | Detail | Favorites |
-|------|-----------|--------|-----------|
-| _tbd_ | _tbd_ | _tbd_ | _tbd_ |
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162147.png" width="160" alt="Home"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162211.png" width="160" alt="Cuisine section"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162235.png" width="160" alt="Categories"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162255.png" width="160" alt="Category recipes"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162307.png" width="160" alt="Search modes"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Home</b><br/>latest &amp; cuisine feeds</td>
+    <td align="center"><b>Cuisine section</b><br/>browse by area</td>
+    <td align="center"><b>Categories</b></td>
+    <td align="center"><b>Category recipes</b></td>
+    <td align="center"><b>Search</b><br/>by ingredients / country</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162338.png" width="160" alt="Search results"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162406.png" width="160" alt="Register"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162504.png" width="160" alt="Favorites"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162539.png" width="160" alt="Add recipe"></td>
+    <td align="center"><img src="docs/screenshots/Screenshot_20260713_162610.png" width="160" alt="Recipe detail"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Search results</b></td>
+    <td align="center"><b>Register</b></td>
+    <td align="center"><b>Favorites</b></td>
+    <td align="center"><b>Add recipe</b></td>
+    <td align="center"><b>Recipe detail</b><br/>ingredients &amp; sharing</td>
+  </tr>
+</table>
 
 ---
 
@@ -28,7 +54,7 @@ A native Android app that serves cooking recipes from around the world. Create a
 - **Recipe detail** — ingredients, instructions and embedded video, with an adaptive list/detail layout in landscape
 - **Favorites** — save recipes to a personal list (offline-first, syncs when back online)
 - **Add your own recipes** — create and edit custom recipes with images
-- **Accounts** — email/password, Google Sign-In and Facebook login; profile management and password reset
+- **Accounts** — email/password, Google Sign-In ; profile management and password reset
 - **Premium** — subscriptions via Google Play Billing
 - **Adaptive UI** — phone (bottom bar) and large-screen/tablet (navigation rail) layouts, edge-to-edge
 - **Plus** — push notifications (FCM), in-app updates & reviews, ads with consent management
@@ -49,7 +75,7 @@ UI (Screen / ViewModel)  →  Domain (Use Cases)  →  Data (Repositories → Ne
 - **DI:** Hilt
 - **Navigation:** Navigation3 for Compose — type-safe and declarative, with a custom `Navigator` managing multiple back stacks
 - **Data:** Repository pattern aggregating Room (local) and Retrofit/OkHttp (remote)
-- **Persistence:** Room (structured) + Proto DataStore (encrypted key-value)
+- **Persistence:** Room (structured) + Proto DataStore
 - **Background:** WorkManager for deferrable work and data sync
 
 ### Feature module pattern
@@ -88,16 +114,16 @@ feature/<name>/impl/src/main/java/com/francotte/<name>/
 | `:core:network` | Retrofit + OkHttp, API interfaces, Kotlinx Serialization |
 | `:core:database` | Room database, DAOs, migrations, schemas |
 | `:core:data` | Repositories aggregating network + database |
-| `:core:datastore` / `:core:datastore-proto` | Proto DataStore for encrypted key-value storage |
+| `:core:datastore` / `:core:datastore-proto` | Proto DataStore |
 | `:core:domain` | Use cases / business logic |
 | `:core:common` | Shared utilities, extensions |
 | `:core:ui` | Shared Composables (outside the design system) |
 | `:core:designsystem` | Material 3 theme, typography, colors, design tokens |
-| `:core:auth` | Email/Password, Google Sign-In, Facebook SDK |
+| `:core:auth` | Email/Password, Google Sign-In |
 | `:core:billing` | Google Play Billing |
 | `:core:notifications` | Firebase Cloud Messaging |
 | `:core:navigation` | Type-safe navigation state |
-| `:core:ads` / `:core:cmp` | Ad networks (AdMob, Prebid, Criteo, APS) + consent management |
+| `:core:ads` / `:core:cmp` | AdMob + consent management |
 | `:core:premium` | Premium/subscription features |
 | `:core:web` | WebView integration |
 | `:core:inapp-update` / `:core:inapp-rating` | Google Play In-App Update & Review |
@@ -196,8 +222,11 @@ Signing secrets: `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_
 
 ## 📄 License
 
-<!-- TODO: choose a license (e.g. MIT / Apache-2.0) and add a LICENSE file, or state "All rights reserved". -->
-_Not yet specified._
+© Rodolphe Francotte. All rights reserved.
+
+This source code is published for portfolio and demonstration purposes only. It may not be
+copied, modified, redistributed, or used to build a derivative or competing product without
+the author's prior written permission.
 
 ---
 
