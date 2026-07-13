@@ -46,6 +46,7 @@ dependencies {
     api(project(":core:navigation"))
     api(project(":feature:ads"))
     api(project(":feature:detail:api"))
+    api(project(":feature:login:api"))
 
 
     implementation(libs.androidx.hilt.lifecycle.viewModelCompose)

@@ -6,10 +6,7 @@ import android.app.Activity
 import com.francotte.auth.AuthEvent
 import com.francotte.auth.SessionRepository
 import com.francotte.data.interfaces.UserDataRepository
-import com.francotte.data.favorite.ToggleFavoriteResult
-import com.francotte.data.interfaces.FavoriteHelper
 import com.francotte.inapp_rating.InAppRatingRepository
-import com.francotte.model.LikeableRecipe
 import com.francotte.ads.BannerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,16 +21,14 @@ import javax.inject.Inject
 
 sealed interface MainEffect {
     data class ShowSnackBar(val message: String) : MainEffect
-    data object NavigateToLogin : MainEffect
 }
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
-    private val favoriteHelper: FavoriteHelper,
     private val sessionRepository: SessionRepository,
     private val inAppRatingRepository: InAppRatingRepository,
-    private val bannerRepository: BannerRepository,
+    bannerRepository: BannerRepository,
 ) : ViewModel() {
 
     private val _effects = MutableSharedFlow<MainEffect>(extraBufferCapacity = 1)
@@ -76,18 +71,4 @@ class MainViewModel @Inject constructor(
     suspend fun logout() = sessionRepository.logout()
 
     suspend fun deleteAccount() = sessionRepository.deleteAccount()
-
-    fun toggleFavorite(recipe: LikeableRecipe) {
-        viewModelScope.launch {
-            when (val result = favoriteHelper.toggleRecipeFavorite(recipe)) {
-                is ToggleFavoriteResult.Success -> _effects.emit(
-                    MainEffect.ShowSnackBar(if (result.added) "Recipe added to favorites" else "Recipe removed from favorites")
-                )
-                ToggleFavoriteResult.Offline -> _effects.emit(
-                    MainEffect.ShowSnackBar("Offline: favorites will sync when back online")
-                )
-                ToggleFavoriteResult.Unauthenticated -> _effects.emit(MainEffect.NavigateToLogin)
-            }
-        }
-    }
 }

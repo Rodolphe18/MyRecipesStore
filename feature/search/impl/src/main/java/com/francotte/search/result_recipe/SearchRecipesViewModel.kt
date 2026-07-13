@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.francotte.common.utils.DataResult
 import com.francotte.common.utils.onFailure
 import com.francotte.common.utils.onSuccess
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.data.interfaces.IngredientsAndAreasRepository
 import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.data.interfaces.UserHomeRepository
@@ -31,7 +33,8 @@ class SearchRecipesViewModel @AssistedInject constructor(
     private val userDataRepository: UserDataRepository,
     @Assisted val mode: SearchMode,
     @Assisted val item: String,
-) : ViewModel() {
+    private val favoriteDelegate: FavoriteDelegate,
+) : ViewModel(), FavoriteDelegate by favoriteDelegate {
 
     private val _state = MutableStateFlow(SearchRecipesState(title = item))
     val state = _state.asStateFlow()
@@ -42,6 +45,17 @@ class SearchRecipesViewModel @AssistedInject constructor(
     init {
         loadRecipes()
         observeFavorites()
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> SearchRecipesEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> SearchRecipesEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
     }
 
     fun onAction(action: SearchRecipesAction) {
@@ -63,8 +77,7 @@ class SearchRecipesViewModel @AssistedInject constructor(
                     )
                 }
             }
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
-            is SearchRecipesAction.OnToggleFavorite -> Unit
+            is SearchRecipesAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
         }
     }
 
@@ -138,4 +151,6 @@ sealed interface SearchRecipesAction {
 sealed interface SearchRecipesEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : SearchRecipesEvent
     data object NavigateBack : SearchRecipesEvent
+    data class ShowSnackbar(val message: String) : SearchRecipesEvent
+    data object NavigateToLogin : SearchRecipesEvent
 }

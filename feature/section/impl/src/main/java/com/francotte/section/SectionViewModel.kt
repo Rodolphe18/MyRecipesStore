@@ -3,6 +3,8 @@ package com.francotte.section
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.model.LikeableRecipe
 import dagger.assisted.Assisted
@@ -25,7 +27,8 @@ private const val SECTION_LOAD_ERROR = "An error occurred while loading the sect
 class SectionViewModel @AssistedInject constructor(
     private val repository: UserHomeRepository,
     @Assisted val sectionName: String,
-) : ViewModel() {
+    private val favoriteDelegate: FavoriteDelegate,
+) : ViewModel(), FavoriteDelegate by favoriteDelegate {
 
     private val _state = MutableStateFlow(SectionState(title = sectionName))
     val state = _state.asStateFlow()
@@ -35,6 +38,17 @@ class SectionViewModel @AssistedInject constructor(
 
     init {
         observeSection()
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> SectionEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> SectionEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
     }
 
     fun onAction(action: SectionAction) {
@@ -55,9 +69,7 @@ class SectionViewModel @AssistedInject constructor(
                     )
                 }
             }
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling);
-            // intercepted by SectionRoute before reaching onAction.
-            is SectionAction.OnToggleFavorite -> Unit
+            is SectionAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
         }
     }
 
@@ -127,4 +139,5 @@ sealed interface SectionEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : SectionEvent
     data object NavigateBack : SectionEvent
     data class ShowSnackbar(val message: String) : SectionEvent
+    data object NavigateToLogin : SectionEvent
 }

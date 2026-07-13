@@ -1,11 +1,7 @@
 package com.francotte.datastore
 
-import android.content.Context
 import android.util.Log
-import androidx.datastore.core.DataMigration
 import androidx.datastore.core.DataStore
-import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.dataStoreFile
 import com.francotte.datastore_proto.User
 import com.francotte.datastore_proto.UserPreferences
 import com.francotte.datastore_proto.copy
@@ -14,20 +10,10 @@ import com.francotte.datastore_proto.user
 import com.francotte.datastore_proto.userInfo
 import com.francotte.model.ConnectionMethod
 import com.francotte.model.UserData
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
-import java.util.concurrent.ExecutorService
 import javax.inject.Inject
-import javax.inject.Singleton
 
 class FoodPreferencesDataSource @Inject constructor(private val userPreferences: DataStore<UserPreferences>) {
 

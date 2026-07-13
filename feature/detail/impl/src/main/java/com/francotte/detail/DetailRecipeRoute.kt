@@ -20,8 +20,10 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.api.DetailRecipeNavKey
 import com.francotte.common.counters.ScreenCounter
+import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
+import com.francotte.ui.LocalSnackbarHostState
 import kotlinx.serialization.Serializable
 import kotlin.String
 import kotlin.collections.List
@@ -38,7 +40,6 @@ data class DetailRecipeRoute(
 
 fun EntryProviderScope<NavKey>.detailRecipeEntry(
     navigator: Navigator,
-    onToggleFavorite: (LikeableRecipe) -> Unit
 ) {
     entry<DetailRecipeNavKey>(metadata = NavDisplay.transitionSpec {
         (slideInHorizontally(
@@ -65,8 +66,8 @@ fun EntryProviderScope<NavKey>.detailRecipeEntry(
             ) { factory ->
                 factory.create(key.ids,key.index,key.title)
             },
-            onToggleFavorite = onToggleFavorite,
             onBackClick = navigator::goBack,
+            onNavigateToLogin = navigator::navigateToLogin,
         )
     }
 }
@@ -113,20 +114,24 @@ fun NavGraphBuilder.deepLinkRecipeScreen(
 internal fun DetailRecipeRoute(
     viewModel: DetailRecipeViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
+    onNavigateToLogin: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackBarHost = LocalSnackbarHostState.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is DetailEvent.ShowSnackbar -> snackBarHost.showSnackbar(event.message)
+                DetailEvent.NavigateToLogin -> onNavigateToLogin()
+            }
+        }
+    }
 
     DetailRecipeScreen(
         state = state,
         onNavigationClick = onBackClick,
-        onAction = { action ->
-            when (action) {
-                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
-                is DetailAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
-                else -> viewModel.onAction(action)
-            }
-        },
+        onAction = viewModel::onAction,
     )
     LaunchedEffect(Unit) {
         ScreenCounter.increment()

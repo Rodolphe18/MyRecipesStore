@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.data.interfaces.SearchContentsRepository
 import com.francotte.domain.GetSearchContentsUseCase
 import com.francotte.feature.search.api.SearchMode
@@ -29,8 +31,9 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     getSearchContentsUseCase: GetSearchContentsUseCase,
     private val searchContentsRepository: SearchContentsRepository,
-    private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+    private val savedStateHandle: SavedStateHandle,
+    private val favoriteDelegate: FavoriteDelegate,
+) : ViewModel(), FavoriteDelegate by favoriteDelegate {
 
     private val searchQuery = savedStateHandle.getStateFlow(key = SEARCH_QUERY, initialValue = "")
 
@@ -75,6 +78,20 @@ class SearchViewModel @Inject constructor(
     private val _events = Channel<SearchEvent>()
     val events = _events.receiveAsFlow()
 
+    init {
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> SearchEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> SearchEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
+    }
+
     fun onAction(action: SearchAction) {
         when (action) {
             is SearchAction.OnQueryChange -> savedStateHandle[SEARCH_QUERY] = action.query
@@ -97,8 +114,7 @@ class SearchViewModel @Inject constructor(
                     )
                 }
             }
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
-            is SearchAction.OnToggleFavorite -> Unit
+            is SearchAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
         }
     }
 
@@ -129,6 +145,8 @@ sealed interface SearchEvent {
     data class NavigateToSearchMode(val mode: SearchMode) : SearchEvent
     data class NavigateToSearchRecipes(val item: String, val mode: SearchMode) : SearchEvent
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : SearchEvent
+    data class ShowSnackbar(val message: String) : SearchEvent
+    data object NavigateToLogin : SearchEvent
 }
 
 

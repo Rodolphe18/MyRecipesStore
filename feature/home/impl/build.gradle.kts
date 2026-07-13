@@ -69,6 +69,7 @@ dependencies {
     api(project(":feature:home:api"))
     api(project(":feature:video:api"))
     api(project(":feature:section:api"))
+    api(project(":feature:login:api"))
 
     implementation(libs.coil.compose)
     implementation("com.google.android.material:material:1.11.0")

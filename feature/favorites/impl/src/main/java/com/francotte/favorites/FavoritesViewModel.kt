@@ -3,6 +3,8 @@ package com.francotte.favorites
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.data.interfaces.FavoritesRepository
 import com.francotte.model.CustomRecipe
 import com.francotte.model.LikeableRecipe
@@ -24,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val favoritesRepository: FavoritesRepository,
-) : ViewModel() {
+    private val favoriteDelegate: FavoriteDelegate,
+) : ViewModel(), FavoriteDelegate by favoriteDelegate {
 
     private val searchTextFlow = MutableStateFlow("")
     private val isReloadingFlow = MutableStateFlow(false)
@@ -54,6 +57,20 @@ class FavoritesViewModel @Inject constructor(
     private val _events = Channel<FavoritesEvent>()
     val events = _events.receiveAsFlow()
 
+    init {
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> FavoritesEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> FavoritesEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
+    }
+
     fun onAction(action: FavoritesAction) {
         when (action) {
             is FavoritesAction.OnSearchChange -> searchTextFlow.value = action.text
@@ -74,8 +91,7 @@ class FavoritesViewModel @Inject constructor(
             is FavoritesAction.OnCustomRecipeClick -> viewModelScope.launch {
                 _events.send(FavoritesEvent.NavigateToCustomRecipe(action.recipeId))
             }
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
-            is FavoritesAction.OnToggleFavorite -> Unit
+            is FavoritesAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
         }
     }
 
@@ -121,4 +137,6 @@ sealed interface FavoritesAction {
 sealed interface FavoritesEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : FavoritesEvent
     data class NavigateToCustomRecipe(val recipeId: String) : FavoritesEvent
+    data class ShowSnackbar(val message: String) : FavoritesEvent
+    data object NavigateToLogin : FavoritesEvent
 }

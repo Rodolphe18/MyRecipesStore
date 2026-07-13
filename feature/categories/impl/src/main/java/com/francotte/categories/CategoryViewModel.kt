@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.francotte.common.utils.onFailure
 import com.francotte.common.utils.onSuccess
 import com.francotte.common.utils.userMessage
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.data.interfaces.UserHomeRepository
 import com.francotte.model.LikeableRecipe
@@ -27,7 +29,8 @@ class CategoryViewModel @AssistedInject constructor(
     @Assisted val category: String,
     private val repository: UserHomeRepository,
     private val userDataRepository: UserDataRepository,
-) : ViewModel() {
+    private val favoriteDelegate: FavoriteDelegate,
+) : ViewModel(), FavoriteDelegate by favoriteDelegate {
 
     private val _state = MutableStateFlow(CategoryState(title = category))
     val state = _state.asStateFlow()
@@ -38,6 +41,17 @@ class CategoryViewModel @AssistedInject constructor(
     init {
         loadData()
         observeFavorites()
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> CategoryEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> CategoryEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
     }
 
     fun onAction(action: CategoryAction) {
@@ -58,9 +72,7 @@ class CategoryViewModel @AssistedInject constructor(
                     )
                 }
             }
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling);
-            // intercepted by CategoryRoute before reaching onAction.
-            is CategoryAction.OnToggleFavorite -> Unit
+            is CategoryAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
         }
     }
 
@@ -134,4 +146,5 @@ sealed interface CategoryEvent {
     data class NavigateToRecipe(val ids: List<String>, val index: Int, val title: String) : CategoryEvent
     data object NavigateBack : CategoryEvent
     data class ShowSnackbar(val message: String) : CategoryEvent
+    data object NavigateToLogin : CategoryEvent
 }

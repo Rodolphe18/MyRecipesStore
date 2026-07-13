@@ -11,6 +11,8 @@ import com.francotte.home.delegate.JapaneseRecipes
 import com.francotte.home.delegate.JapaneseRecipesDelegate
 import com.francotte.home.delegate.LatestRecipes
 import com.francotte.home.delegate.LatestRecipesDelegate
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.model.LikeableRecipe
 import com.francotte.model.Recipe
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,12 +44,14 @@ class HomeViewModel @Inject constructor(
     private val latestRecipesDelegate: LatestRecipesDelegate,
     private val japaneseRecipesDelegate: JapaneseRecipesDelegate,
     private val areasRecipesDelegate: AreasRecipesDelegate,
-    private val englishRecipesDelegate: EnglishRecipesDelegate
+    private val englishRecipesDelegate: EnglishRecipesDelegate,
+    private val favoriteDelegate: FavoriteDelegate,
 ) : ViewModel(),
     LatestRecipesDelegate by latestRecipesDelegate,
     JapaneseRecipesDelegate by japaneseRecipesDelegate,
     AreasRecipesDelegate by areasRecipesDelegate,
-    EnglishRecipesDelegate by englishRecipesDelegate {
+    EnglishRecipesDelegate by englishRecipesDelegate,
+    FavoriteDelegate by favoriteDelegate {
 
     val state: StateFlow<HomeState> = combine(
         latestRecipes,
@@ -79,6 +83,17 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             snackBarEvent.collect { _events.send(HomeEvent.ShowSnackbar(it)) }
         }
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> HomeEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> HomeEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
     }
 
     fun onAction(action: HomeAction) {
@@ -94,8 +109,7 @@ class HomeViewModel @Inject constructor(
             }
             is HomeAction.OnRecipeClick -> openRecipe(action.source, action.index)
             is HomeAction.OnVideoClick -> openVideo(action.index)
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
-            is HomeAction.OnToggleFavorite -> Unit
+            is HomeAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
         }
     }
 
@@ -181,4 +195,5 @@ sealed interface HomeEvent {
     data class NavigateToVideo(val youtubeUrl: String) : HomeEvent
     data class NavigateToSection(val sectionName: String) : HomeEvent
     data class ShowSnackbar(val message: String) : HomeEvent
+    data object NavigateToLogin : HomeEvent
 }

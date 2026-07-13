@@ -44,6 +44,7 @@ dependencies {
     api(project(":core:navigation"))
     api(project(":feature:favorites:api"))
     api(project(":feature:detail:api"))
+    api(project(":feature:login:api"))
 
     implementation(libs.androidx.hilt.lifecycle.viewModelCompose)
     implementation(libs.coil.compose)

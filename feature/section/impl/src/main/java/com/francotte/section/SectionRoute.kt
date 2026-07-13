@@ -9,15 +9,14 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.api.navigateToDetail
 import com.francotte.common.counters.ScreenCounter
+import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.feature.section.api.SectionNavKey
-import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.sectionEntry(
     navigator: Navigator,
-    onToggleFavorite: (LikeableRecipe) -> Unit
 ) {
     entry<SectionNavKey> { key ->
         SectionRoute(
@@ -26,9 +25,9 @@ fun EntryProviderScope<NavKey>.sectionEntry(
             ) { factory ->
                 factory.create(key.sectionName)
             },
-            onToggleFavorite = onToggleFavorite,
             onOpenRecipe = navigator::navigateToDetail,
             onBackClick = navigator::goBack,
+            onNavigateToLogin = navigator::navigateToLogin,
         )
     }
 }
@@ -37,9 +36,9 @@ fun EntryProviderScope<NavKey>.sectionEntry(
 @Composable
 fun SectionRoute(
     sectionViewModel: SectionViewModel = hiltViewModel(),
-    onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenRecipe: (List<String>, Int, String) -> Unit,
     onBackClick: () -> Unit,
+    onNavigateToLogin: () -> Unit,
 ) {
     val state by sectionViewModel.state.collectAsStateWithLifecycle()
     val snackBarHost = LocalSnackbarHostState.current
@@ -50,6 +49,7 @@ fun SectionRoute(
                 is SectionEvent.NavigateToRecipe -> onOpenRecipe(event.ids, event.index, event.title)
                 SectionEvent.NavigateBack -> onBackClick()
                 is SectionEvent.ShowSnackbar -> snackBarHost.showSnackbar(event.message)
+                SectionEvent.NavigateToLogin -> onNavigateToLogin()
             }
         }
     }
@@ -59,12 +59,6 @@ fun SectionRoute(
 
     VerticalSectionScreen(
         state = state,
-        onAction = { action ->
-            when (action) {
-                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
-                is SectionAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
-                else -> sectionViewModel.onAction(action)
-            }
-        },
+        onAction = sectionViewModel::onAction,
     )
 }

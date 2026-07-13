@@ -10,14 +10,13 @@ import androidx.navigation3.runtime.NavKey
 import com.francotte.api.CategoryNavKey
 import com.francotte.api.navigateToDetail
 import com.francotte.common.counters.ScreenCounter
-import com.francotte.model.LikeableRecipe
+import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.categoryEntry(
     navigator: Navigator,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     entry<CategoryNavKey> { key ->
         CategoryRoute(
@@ -25,8 +24,8 @@ fun EntryProviderScope<NavKey>.categoryEntry(
                 factory.create(key.category)
             },
             onOpenRecipe = navigator::navigateToDetail,
-            onToggleFavorite = onToggleFavorite,
             onBack = navigator::goBack,
+            onNavigateToLogin = navigator::navigateToLogin,
         )
     }
 }
@@ -36,8 +35,8 @@ fun EntryProviderScope<NavKey>.categoryEntry(
 fun CategoryRoute(
     viewModel: CategoryViewModel = hiltViewModel(),
     onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
+    onNavigateToLogin: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHost = LocalSnackbarHostState.current
@@ -48,6 +47,7 @@ fun CategoryRoute(
                 is CategoryEvent.NavigateToRecipe -> onOpenRecipe(event.ids, event.index, event.title)
                 CategoryEvent.NavigateBack -> onBack()
                 is CategoryEvent.ShowSnackbar -> snackBarHost.showSnackbar(event.message)
+                CategoryEvent.NavigateToLogin -> onNavigateToLogin()
             }
         }
     }
@@ -57,12 +57,6 @@ fun CategoryRoute(
 
     CategoryScreen(
         state = state,
-        onAction = { action ->
-            when (action) {
-                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
-                is CategoryAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
-                else -> viewModel.onAction(action)
-            }
-        },
+        onAction = viewModel::onAction,
     )
 }

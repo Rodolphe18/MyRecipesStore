@@ -8,14 +8,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.francotte.api.navigateToDetail
+import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.feature.search.api.SearchRecipesNavKey
-import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
+import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.searchRecipesEntry(
     navigator: Navigator,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     entry<SearchRecipesNavKey> { key ->
         SearchRecipesRoute(
@@ -25,8 +25,8 @@ fun EntryProviderScope<NavKey>.searchRecipesEntry(
                 factory.create(key.item, key.mode)
             },
             onOpenRecipe = navigator::navigateToDetail,
-            onToggleFavorite = onToggleFavorite,
             onBack = navigator::goBack,
+            onNavigateToLogin = navigator::navigateToLogin,
         )
     }
 }
@@ -36,28 +36,25 @@ fun EntryProviderScope<NavKey>.searchRecipesEntry(
 fun SearchRecipesRoute(
     viewModel: SearchRecipesViewModel = hiltViewModel(),
     onOpenRecipe: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
     onBack: () -> Unit,
+    onNavigateToLogin: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackBarHost = LocalSnackbarHostState.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 is SearchRecipesEvent.NavigateToRecipe -> onOpenRecipe(event.ids, event.index, event.title)
                 SearchRecipesEvent.NavigateBack -> onBack()
+                is SearchRecipesEvent.ShowSnackbar -> snackBarHost.showSnackbar(event.message)
+                SearchRecipesEvent.NavigateToLogin -> onNavigateToLogin()
             }
         }
     }
 
     SearchRecipesScreen(
         state = state,
-        onAction = { action ->
-            when (action) {
-                // Favorite toggling stays outside the VM (FavoriteManager decoupling).
-                is SearchRecipesAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
-                else -> viewModel.onAction(action)
-            }
-        },
+        onAction = viewModel::onAction,
     )
 }

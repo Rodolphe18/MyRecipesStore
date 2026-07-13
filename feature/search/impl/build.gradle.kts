@@ -45,6 +45,7 @@ dependencies {
     api(project(":feature:ads"))
     api(project(":feature:search:api"))
     api(project(":feature:detail:api"))
+    api(project(":feature:login:api"))
 
     implementation(libs.androidx.hilt.lifecycle.viewModelCompose)
     implementation("com.google.android.material:material:1.11.0")

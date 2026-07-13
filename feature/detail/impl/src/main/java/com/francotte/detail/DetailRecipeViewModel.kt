@@ -3,15 +3,19 @@ package com.francotte.detail
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.francotte.data.favorite.FavoriteDelegate
+import com.francotte.data.favorite.FavoriteEvent
 import com.francotte.data.interfaces.UserFullRecipeRepository
 import com.francotte.model.LikeableRecipe
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,7 +25,8 @@ class DetailRecipeViewModel @AssistedInject constructor(
     @Assisted val ids: List<String>?,
     @Assisted val index: Int?,
     @Assisted val recipeTitle: String?,
-) : ViewModel() {
+    private val favoriteDelegate: FavoriteDelegate,
+) : ViewModel(), FavoriteDelegate by favoriteDelegate {
 
     private val longIds = ids?.map { it.toLong() } ?: emptyList()
 
@@ -35,6 +40,9 @@ class DetailRecipeViewModel @AssistedInject constructor(
     )
     val state = _state.asStateFlow()
 
+    private val _events = Channel<DetailEvent>()
+    val events = _events.receiveAsFlow()
+
     private var currentPage = index ?: 0
 
     /** Pages with an active observer — avoids re-subscribing the same id twice. */
@@ -43,14 +51,26 @@ class DetailRecipeViewModel @AssistedInject constructor(
     init {
         // Eager-load : on souscrit à toutes les recettes du lot pour alimenter le volet liste.
         longIds.indices.forEach { loadPage(it) }
+        // Bridge favorite side effects (snackbar / login) into the unified event stream.
+        viewModelScope.launch {
+            favoriteEvents.collect { event ->
+                _events.send(
+                    when (event) {
+                        is FavoriteEvent.ShowMessage -> DetailEvent.ShowSnackbar(event.message)
+                        FavoriteEvent.NavigateToLogin -> DetailEvent.NavigateToLogin
+                    }
+                )
+            }
+        }
     }
 
     fun onAction(action: DetailAction) {
         when (action) {
             is DetailAction.OnPageChanged -> selectRecipe(action.page)
             is DetailAction.OnRecipeSelected -> selectRecipe(action.index)
-            // Favorite toggling is handled outside the VM (FavoriteManager decoupling).
-            else -> Unit
+            is DetailAction.OnToggleFavorite -> toggleFavorite(viewModelScope, action.recipe)
+            // Back is handled by the Route via onNavigationClick, not through the VM.
+            DetailAction.OnBackClick -> Unit
         }
     }
 
@@ -112,5 +132,11 @@ sealed interface DetailAction {
     data class OnRecipeSelected(val index: Int) : DetailAction
     data class OnToggleFavorite(val recipe: LikeableRecipe) : DetailAction
     data object OnBackClick : DetailAction
+}
+
+@Immutable
+sealed interface DetailEvent {
+    data class ShowSnackbar(val message: String) : DetailEvent
+    data object NavigateToLogin : DetailEvent
 }
 

@@ -5,13 +5,11 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,36 +22,30 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Diamond
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import com.francotte.designsystem.theme.LightOrange
+import com.francotte.designsystem.theme.Orange
+import com.francotte.designsystem.R as DesignR
 
 private fun shareApp(context: Context) {
     val sendIntent = Intent().apply {
@@ -112,60 +104,57 @@ fun SettingsBottomSheet(
 
             Spacer(Modifier.height(16.dp))
 
-            SettingsButton(
-                text = "Premium",
-                imageVector = Icons.Outlined.Diamond,
-                backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                contentColor = Color.White,
-                onClick = onPremiumClick,
-            )
+            PremiumItem(onClick = onPremiumClick)
 
             Spacer(Modifier.height(12.dp))
 
             SettingsActionItem(
-                icon = Icons.Default.Lock,
+                iconRes = DesignR.drawable.ic_privacy,
                 text = stringResource(R.string.feature_settings_privacy_policy),
                 onClick = { openPrivacyPolicy(context) },
             )
 
             SettingsActionItem(
-                icon = Icons.Default.Build,
+                iconRes = DesignR.drawable.ic_license,
                 text = stringResource(R.string.feature_settings_licenses),
                 onClick = { /* TODO */ },
             )
 
             SettingsActionItem(
-                icon = Icons.Default.Star,
+                iconRes = DesignR.drawable.ic_brand,
                 text = stringResource(R.string.feature_settings_brand_guidelines),
                 onClick = { /* TODO */ },
             )
 
             SettingsActionItem(
-                icon = Icons.Default.Warning,
+                iconRes = DesignR.drawable.ic_feedback,
                 text = stringResource(R.string.feature_settings_feedback),
                 onClick = { /* TODO */ },
             )
 
             SettingsActionItem(
-                icon = Icons.Default.Share,
+                iconRes = DesignR.drawable.ic_share,
                 text = stringResource(R.string.feature_settings_share),
                 onClick = { shareApp(context) },
             )
 
             SettingsActionItem(
-                icon = Icons.Default.Close,
+                iconRes = DesignR.drawable.ic_logout,
                 text = stringResource(R.string.feature_settings_logout),
                 onClick = onLogout,
             )
 
-            Spacer(Modifier.height(8.dp))
-            SettingsButton(
+            Spacer(Modifier.height(6.dp))
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+            )
+            Spacer(Modifier.height(6.dp))
+
+            SettingsActionItem(
+                iconRes = DesignR.drawable.ic_delete,
                 text = "Delete my account",
-                height = 52.dp,
-                imageVector = Icons.Default.Delete,
-                contentColor = Color.Red.copy(alpha = 0.7f),
-                borderColor = Color.Red.copy(alpha = 0.7f),
-                backgroundColor = MaterialTheme.colorScheme.background,
+                iconTint = MaterialTheme.colorScheme.error,
+                textColor = MaterialTheme.colorScheme.error,
                 onClick = onDeleteClick,
             )
 
@@ -175,78 +164,65 @@ fun SettingsBottomSheet(
 }
 
 @Composable
-private fun SettingsActionItem(
-    icon: ImageVector,
-    text: String,
-    onClick: () -> Unit,
-    fontWeight: FontWeight = FontWeight.Normal,
-) {
+private fun PremiumItem(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(16.dp)
+    val brush = Brush.horizontalGradient(listOf(Orange, LightOrange))
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
+                .clip(shape)
+                .background(brush)
                 .clickable(onClick = onClick)
-                .padding(vertical = 12.dp, horizontal = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(DesignR.drawable.ic_premium),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
+            tint = Color.White,
             modifier = Modifier.size(24.dp),
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(Modifier.width(14.dp))
         Text(
-            fontWeight = fontWeight,
+            text = "Premium",
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 18.sp,
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
 
 @Composable
-fun SettingsButton(
+private fun SettingsActionItem(
+    @DrawableRes iconRes: Int,
     text: String,
-    height: Dp = 56.dp,
-    imageVector: ImageVector,
-    borderColor: Color = Color.Transparent,
-    backgroundColor: Color,
-    contentColor: Color,
     onClick: () -> Unit,
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
-    val shape = RoundedCornerShape(16.dp)
-    Surface(
+    Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(height)
-                .clip(shape)
-                .border(BorderStroke(1.dp, borderColor), shape)
-                .clickable(onClick = onClick),
-        color = backgroundColor,
-        contentColor = contentColor,
-        shape = shape,
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onClick)
+                .padding(vertical = 8.dp, horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
-        ) {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = null,
-            )
-            Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = text,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp,
-            )
-        }
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(24.dp),
+        )
+        Spacer(Modifier.width(16.dp))
+        Text(
+            text = text,
+            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyLarge,
+            color = textColor,
+        )
     }
 }
 

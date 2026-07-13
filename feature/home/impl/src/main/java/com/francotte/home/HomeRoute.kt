@@ -14,23 +14,22 @@ import androidx.navigation3.runtime.NavKey
 import com.francotte.api.navigateToDetail
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.feature.home.api.HomeNavKey
+import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.feature.section.api.navigateToSection
 import com.francotte.feature.video.api.navigateToVideo
-import com.francotte.model.LikeableRecipe
 import com.francotte.navigation.Navigator
 import com.francotte.ui.LocalSnackbarHostState
 
 
 fun EntryProviderScope<NavKey>.homeEntry(
     navigator: Navigator,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
 ) {
     entry<HomeNavKey> {
         HomeRoute(
             onRecipeClick = navigator::navigateToDetail,
-            onToggleFavorite = onToggleFavorite,
             onOpenSection = navigator::navigateToSection,
             onVideoButtonClick = navigator::navigateToVideo,
+            onNavigateToLogin = navigator::navigateToLogin,
         )
     }
 }
@@ -40,9 +39,9 @@ fun EntryProviderScope<NavKey>.homeEntry(
 fun HomeRoute(
     homeViewModel: HomeViewModel = hiltViewModel(),
     onRecipeClick: (List<String>, Int, String) -> Unit,
-    onToggleFavorite: (LikeableRecipe) -> Unit,
     onOpenSection: (String) -> Unit,
     onVideoButtonClick: (String) -> Unit,
+    onNavigateToLogin: () -> Unit,
 ) {
     val state by homeViewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = LocalSnackbarHostState.current
@@ -57,6 +56,7 @@ fun HomeRoute(
                     message = event.message,
                     duration = SnackbarDuration.Short,
                 )
+                HomeEvent.NavigateToLogin -> onNavigateToLogin()
             }
         }
     }
@@ -64,13 +64,7 @@ fun HomeRoute(
     Box(Modifier.fillMaxSize()) {
         HomeScreen(
             state = state,
-            onAction = { action ->
-                when (action) {
-                    // Favorite toggling stays outside the VM (FavoriteManager decoupling).
-                    is HomeAction.OnToggleFavorite -> onToggleFavorite(action.recipe)
-                    else -> homeViewModel.onAction(action)
-                }
-            },
+            onAction = homeViewModel::onAction,
         )
     }
     LaunchedEffect(Unit) {

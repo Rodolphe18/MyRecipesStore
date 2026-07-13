@@ -68,7 +68,6 @@ import com.francotte.detail.detailRecipeEntry
 import com.francotte.favorites.customRecipeEntry
 import com.francotte.favorites.favoritesEntry
 import com.francotte.feature.home.api.HomeNavKey
-import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.feature.login.api.navigateToLoginOnLogout
 import com.francotte.feature.settings.api.navigateToPremium
 import com.francotte.feature.video.api.VideoNavKey
@@ -172,19 +171,19 @@ fun FoodApp(appState: AppState) {
         splashEntry(navigator) {
             pendingDeepLink.value?.also { pendingDeepLink.value = null } ?: HomeNavKey
         }
-        homeEntry(navigator, mainViewModel::toggleFavorite)
+        homeEntry(navigator)
         categoriesEntry(navigator)
-        categoryEntry(navigator, mainViewModel::toggleFavorite)
+        categoryEntry(navigator)
         addRecipeEntry(navigator)
         searchModeEntry(navigator)
-        sectionEntry(navigator, mainViewModel::toggleFavorite)
-        searchRecipesEntry(navigator, mainViewModel::toggleFavorite)
-        searchEntry(navigator, mainViewModel::toggleFavorite)
+        sectionEntry(navigator)
+        searchRecipesEntry(navigator)
+        searchEntry(navigator)
         loginEntry(navigator)
         registerEntry(navigator)
-        favoritesEntry(navigator, mainViewModel::toggleFavorite)
+        favoritesEntry(navigator)
         premiumEntry(navigator)
-        detailRecipeEntry(navigator, mainViewModel::toggleFavorite)
+        detailRecipeEntry(navigator)
         customRecipeEntry(navigator)
         videoEntry()
         profileEntry(navigator)
@@ -350,11 +349,9 @@ fun FoodApp(appState: AppState) {
                         mainViewModel.effects.collect { effect ->
                             when (effect) {
                                 is MainEffect.ShowSnackBar -> snackBarHostState.showSnackbar(effect.message)
-                                MainEffect.NavigateToLogin -> navigator.navigateToLogin()
                             }
                         }
                     }
-                    if (useNavigationRail) HideBottomSystemBar()
                 }
             }
         }
