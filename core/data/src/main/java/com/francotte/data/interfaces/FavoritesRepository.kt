@@ -20,7 +20,10 @@ interface FavoritesRepository {
         ingredients: List<CustomIngredient>,
         instructions: String,
         image: Uri?,
+        video: Uri?,
     ): Result<Unit>
+
+    suspend fun getCustomRecipe(id: String): Result<CustomRecipe>
 
     suspend fun updateCustomRecipe(
         recipeId: String,

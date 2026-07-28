@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import com.francotte.model.CustomIngredient
 import com.francotte.model.CustomRecipe
+import com.francotte.model.CustomVideo
+import com.francotte.model.VideoStatus
 import kotlinx.serialization.Serializable
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -19,12 +21,28 @@ data class NetworkCustomIngredient(
 )
 
 @Serializable
+data class NetworkVideo(
+    val id: String,
+    val status: String,
+    val manifestUrl: String?,
+    val durationSec: Double?,
+)
+
+fun NetworkVideo.asExternalModel(): CustomVideo =
+    CustomVideo(
+        status = runCatching { VideoStatus.valueOf(status) }.getOrDefault(VideoStatus.FAILED),
+        manifestUrl = manifestUrl,
+        durationSec = durationSec,
+    )
+
+@Serializable
 data class NetworkCustomRecipe(
     val id: String,
     val title: String,
     val ingredients: List<NetworkCustomIngredient>,
     val instructions: String,
     val imageUrl: String?,
+    val video: NetworkVideo? = null,
 )
 
 fun NetworkCustomRecipe.asExternalModel(): CustomRecipe =
@@ -34,6 +52,7 @@ fun NetworkCustomRecipe.asExternalModel(): CustomRecipe =
         ingredients = ingredients.map { it.asExternalModel() },
         instructions = instructions,
         imageUrl = imageUrl,
+        video = video?.asExternalModel(),
     )
 
 fun NetworkCustomIngredient.asExternalModel(): CustomIngredient = CustomIngredient(name, quantity, measureType)

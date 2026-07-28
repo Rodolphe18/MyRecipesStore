@@ -7,11 +7,14 @@ import androidx.lifecycle.viewModelScope
 import com.francotte.data.interfaces.FavoritesRepository
 import com.francotte.model.CustomIngredient
 import com.francotte.model.CustomRecipe
+import com.francotte.model.VideoStatus
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -37,6 +40,19 @@ class CustomRecipeDetailViewModel @AssistedInject constructor(
             favoritesRepository.observeUserCustomRecipe(id)
                 .onEach { result -> _state.update { it.copy(recipe = result.getOrNull()) } }
                 .launchIn(viewModelScope)
+        }
+        startVideoPollingIfNeeded()
+    }
+
+    private fun startVideoPollingIfNeeded() {
+        viewModelScope.launch {
+            while (isActive) {
+                val status = state.value.recipe?.video?.status
+                if (status == null || status == VideoStatus.READY || status == VideoStatus.FAILED) break
+                delay(4_000)
+                favoritesRepository.getCustomRecipe(recipeId.orEmpty())
+                    .getOrNull()?.let { refreshed -> _state.update { it.copy(recipe = refreshed) } }
+            }
         }
     }
 

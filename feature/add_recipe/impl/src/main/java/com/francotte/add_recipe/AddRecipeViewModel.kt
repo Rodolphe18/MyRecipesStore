@@ -43,6 +43,7 @@ class AddRecipeViewModel @Inject constructor(
             is AddRecipeAction.OnTitleChange -> _state.update { it.copy(title = action.title) }
             is AddRecipeAction.OnInstructionsChange -> _state.update { it.copy(instructions = action.instructions) }
             is AddRecipeAction.OnImageChange -> _state.update { it.copy(imageUri = action.uri) }
+            is AddRecipeAction.OnVideoChange -> _state.update { it.copy(videoUri = action.uri) }
             is AddRecipeAction.OnIngredientChange -> _state.update { it.copy(currentIngredient = action.ingredient) }
             is AddRecipeAction.OnQuantityChange -> _state.update { it.copy(currentQuantity = action.quantity) }
             is AddRecipeAction.OnQuantityTypeChange -> _state.update { it.copy(quantityType = action.quantityType) }
@@ -78,6 +79,7 @@ class AddRecipeViewModel @Inject constructor(
                 form.ingredients,
                 form.instructions,
                 form.imageUri,
+                form.videoUri,
             )
             if (result.isSuccess) {
                 _events.send(AddRecipeEvent.ShowSnackbar("Your recipe has been created successfully!"))
@@ -92,6 +94,7 @@ class AddRecipeViewModel @Inject constructor(
         _state.update {
             it.copy(
                 imageUri = null,
+                videoUri = null,
                 title = "",
                 instructions = "",
                 currentIngredient = "",
@@ -107,6 +110,7 @@ class AddRecipeViewModel @Inject constructor(
 data class AddRecipeState(
     val isAuthenticated: Boolean = false,
     val imageUri: Uri? = null,
+    val videoUri: Uri? = null,
     val title: String = "",
     val instructions: String = "",
     val currentIngredient: String = "",
@@ -122,6 +126,7 @@ sealed interface AddRecipeAction {
     data class OnTitleChange(val title: String) : AddRecipeAction
     data class OnInstructionsChange(val instructions: String) : AddRecipeAction
     data class OnImageChange(val uri: Uri?) : AddRecipeAction
+    data class OnVideoChange(val uri: Uri?) : AddRecipeAction
     data class OnIngredientChange(val ingredient: String) : AddRecipeAction
     data class OnQuantityChange(val quantity: String) : AddRecipeAction
     data class OnQuantityTypeChange(val quantityType: String) : AddRecipeAction

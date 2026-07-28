@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -180,6 +181,38 @@ fun AddRecipeScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
+                    // Video
+                    val launcherVideoGallery =
+                        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                            onAction(AddRecipeAction.OnVideoChange(uri))
+                        }
+                    Text(
+                        text = "Video",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        modifier = Modifier.height(40.dp),
+                        onClick = { launcherVideoGallery.launch("video/*") },
+                    ) {
+                        Icon(Icons.Default.Videocam, contentDescription = null)
+                        Spacer(Modifier.width(6.dp))
+                        Text("Gallery", fontSize = 12.sp)
+                    }
+                    state.videoUri?.let {
+                        Spacer(Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Vidéo sélectionnée ✓")
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "Retirer",
+                                color = Orange,
+                                modifier = Modifier.clickable { onAction(AddRecipeAction.OnVideoChange(null)) },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(24.dp))
                     // Ingrédients
                     Text(
                         text = "Ingredients",

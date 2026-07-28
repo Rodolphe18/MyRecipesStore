@@ -70,4 +70,8 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.play.services.ads)
+
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.hls)
+    implementation(libs.androidx.media3.ui)
 }

@@ -9,6 +9,7 @@ data class CustomRecipe(
     val ingredients: List<CustomIngredient>,
     val instructions: String,
     val imageUrl: String?,
+    val video: CustomVideo? = null,
 )
 
 @Immutable
@@ -17,3 +18,12 @@ data class CustomIngredient(
     val quantity: String,
     val measureType: String,
 )
+
+@Immutable
+data class CustomVideo(
+    val status: VideoStatus,
+    val manifestUrl: String?,
+    val durationSec: Double?,
+)
+
+enum class VideoStatus { PENDING, PROCESSING, READY, FAILED }

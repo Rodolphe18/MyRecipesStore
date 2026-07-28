@@ -70,9 +70,13 @@ class FavoritesRepositoryImpl @Inject constructor(
         ingredients: List<CustomIngredient>,
         instructions: String,
         image: Uri?,
+        video: Uri?,
     ): Result<Unit> =
-        favoriteManager.createRecipe(title, ingredients.map { it.asDto() }, instructions, image)
+        favoriteManager.createRecipe(title, ingredients.map { it.asDto() }, instructions, image, video)
             .also { if (it.isSuccess) customRecipesVersion.update { v -> v + 1 } }
+
+    override suspend fun getCustomRecipe(id: String): Result<CustomRecipe> =
+        runCatching { favoriteManager.getUserCustomRecipe(id).asExternalModel() }
 
     override suspend fun updateCustomRecipe(
         recipeId: String,

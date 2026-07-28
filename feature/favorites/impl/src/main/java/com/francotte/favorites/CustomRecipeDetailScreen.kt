@@ -32,6 +32,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -62,7 +63,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.francotte.common.extension.bitmapToUri
 import com.francotte.common.extension.imageRequestBuilder
 import com.francotte.designsystem.component.CustomButton
+import com.francotte.designsystem.component.HlsVideoPlayer
 import com.francotte.designsystem.component.TopAppBar
+import com.francotte.model.VideoStatus
 import com.francotte.designsystem.theme.Orange
 import com.francotte.ui.CustomTextField
 
@@ -124,24 +127,38 @@ fun CustomRecipeDetailScreen(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
-                val painter =
-                    if (state.isEditing && state.imageUri != null) {
-                        rememberAsyncImagePainter(state.imageUri)
-                    } else {
-                        rememberAsyncImagePainter(
-                            imageRequestBuilder(LocalContext.current, recipe?.imageUrl ?: ""),
+                val video = recipe?.video
+                val slotModifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                when {
+                    video?.status == VideoStatus.READY && video.manifestUrl != null ->
+                        HlsVideoPlayer(video.manifestUrl!!, slotModifier)
+
+                    video != null &&
+                        (video.status == VideoStatus.PENDING || video.status == VideoStatus.PROCESSING) &&
+                        recipe.imageUrl.isNullOrBlank() ->
+                        Box(slotModifier, contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+
+                    else -> {
+                        val painter =
+                            if (state.isEditing && state.imageUri != null) {
+                                rememberAsyncImagePainter(state.imageUri)
+                            } else {
+                                rememberAsyncImagePainter(
+                                    imageRequestBuilder(LocalContext.current, recipe?.imageUrl ?: ""),
+                                )
+                            }
+                        Image(
+                            modifier = slotModifier,
+                            painter = painter,
+                            contentScale = ContentScale.Crop,
+                            contentDescription = null,
                         )
                     }
-
-                Image(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f),
-                    painter = painter,
-                    contentScale = ContentScale.Crop,
-                    contentDescription = null,
-                )
+                }
             }
             SectionTitle("Title")
             if (state.isEditing) {

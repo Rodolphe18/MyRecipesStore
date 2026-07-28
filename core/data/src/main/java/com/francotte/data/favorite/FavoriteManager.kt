@@ -16,6 +16,7 @@ import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.LikeableRecipe
 import com.francotte.network.api.FavoriteApi
 import com.francotte.network.utils.toMultiPartBody
+import com.francotte.network.utils.toVideoMultiPartBody
 import com.francotte.network.model.NetworkCustomIngredient
 import com.francotte.network.model.NetworkCustomRecipe
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -100,6 +101,7 @@ class FavoriteManager @Inject constructor(
         ingredients: List<NetworkCustomIngredient>,
         instructions: String,
         image: Uri?,
+        video: Uri?,
     ): Result<Unit> {
         val token = foodPreferencesDataSource.userData.first().token
         val titlePart = title.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -107,9 +109,10 @@ class FavoriteManager @Inject constructor(
         val ingredientsJson = Json.encodeToString(ingredients)
         val ingredientsBody = ingredientsJson.toRequestBody("text/plain".toMediaType())
         val imagePart = image.toMultiPartBody(context)
+        val videoPart = video.toVideoMultiPartBody(context)
         return try {
             val response = withContext(Dispatchers.IO) {
-                api.addRecipe("Bearer $token", imagePart, titlePart, instructionsPart, ingredientsBody)
+                api.addRecipe("Bearer $token", imagePart, videoPart, titlePart, instructionsPart, ingredientsBody)
             }
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception("Server error ${response.code()}"))

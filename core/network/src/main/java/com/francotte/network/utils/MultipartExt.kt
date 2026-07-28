@@ -29,3 +29,14 @@ fun Uri?.toMultiPartBody(context: Context): MultipartBody.Part? =
         val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
         MultipartBody.Part.createFormData("image", file.name, requestFile)
     }
+
+fun Uri?.toVideoMultiPartBody(context: Context): MultipartBody.Part? =
+    this?.let { uri ->
+        val resolver = context.contentResolver
+        val file = File.createTempFile("upload_video", ".mp4", context.cacheDir)
+        resolver.openInputStream(uri)?.use { input ->
+            FileOutputStream(file).use { output -> input.copyTo(output) }
+        } ?: return null
+        val requestFile = file.asRequestBody("video/mp4".toMediaTypeOrNull())
+        MultipartBody.Part.createFormData("video", file.name, requestFile)
+    }
