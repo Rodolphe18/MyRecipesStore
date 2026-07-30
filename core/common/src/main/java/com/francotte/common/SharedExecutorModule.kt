@@ -1,7 +1,6 @@
 package com.francotte.common
 
 import android.content.Context
-import android.os.Build
 import androidx.tracing.trace
 import androidx.work.Configuration
 import coil.ImageLoader

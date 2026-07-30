@@ -11,17 +11,22 @@ import com.francotte.api.AddRecipeNavKey
 import com.francotte.common.counters.ScreenCounter
 import com.francotte.feature.login.api.navigateToLogin
 import com.francotte.navigation.Navigator
+import com.francotte.record_video.api.RecordVideoNavKey
 import com.francotte.ui.LocalSnackbarHostState
 
 fun EntryProviderScope<NavKey>.addRecipeEntry(navigator: Navigator) {
     entry<AddRecipeNavKey> {
-        AddRoute(navigator::navigateToLogin)
+        AddRoute(
+            goToLoginScreen = navigator::navigateToLogin,
+            goToRecordVideo = { navigator.navigate(RecordVideoNavKey) },
+        )
     }
 }
 
 @Composable
 fun AddRoute(
     goToLoginScreen: () -> Unit,
+    goToRecordVideo: () -> Unit,
     viewModel: AddRecipeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -40,6 +45,7 @@ fun AddRoute(
         onAction = { action ->
             when (action) {
                 AddRecipeAction.OnGoToLogin -> goToLoginScreen()
+                AddRecipeAction.OnRecordVideo -> goToRecordVideo()
                 else -> viewModel.onAction(action)
             }
         },

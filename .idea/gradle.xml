@@ -61,6 +61,9 @@
             <option value="$PROJECT_DIR$/feature/profile" />
             <option value="$PROJECT_DIR$/feature/profile/api" />
             <option value="$PROJECT_DIR$/feature/profile/impl" />
+            <option value="$PROJECT_DIR$/feature/record_video" />
+            <option value="$PROJECT_DIR$/feature/record_video/api" />
+            <option value="$PROJECT_DIR$/feature/record_video/impl" />
             <option value="$PROJECT_DIR$/feature/register" />
             <option value="$PROJECT_DIR$/feature/register/api" />
             <option value="$PROJECT_DIR$/feature/register/impl" />

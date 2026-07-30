@@ -192,13 +192,23 @@ fun AddRecipeScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Spacer(Modifier.height(8.dp))
-                    Button(
-                        modifier = Modifier.height(40.dp),
-                        onClick = { launcherVideoGallery.launch("video/*") },
-                    ) {
-                        Icon(Icons.Default.Videocam, contentDescription = null)
-                        Spacer(Modifier.width(6.dp))
-                        Text("Gallery", fontSize = 12.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            modifier = Modifier.height(40.dp),
+                            onClick = { launcherVideoGallery.launch("video/*") },
+                        ) {
+                            Icon(Icons.Default.Videocam, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Gallery", fontSize = 12.sp)
+                        }
+                        Button(
+                            modifier = Modifier.height(40.dp),
+                            onClick = { onAction(AddRecipeAction.OnRecordVideo) },
+                        ) {
+                            Icon(Icons.Default.Videocam, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Record", fontSize = 12.sp)
+                        }
                     }
                     state.videoUri?.let {
                         Spacer(Modifier.height(8.dp))

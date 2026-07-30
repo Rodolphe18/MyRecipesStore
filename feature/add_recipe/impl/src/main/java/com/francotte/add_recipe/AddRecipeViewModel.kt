@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.francotte.common.VideoRecorderResultBus
 import com.francotte.data.interfaces.FavoritesRepository
 import com.francotte.data.interfaces.UserDataRepository
 import com.francotte.model.CustomIngredient
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class AddRecipeViewModel @Inject constructor(
     private val favoritesRepository: FavoritesRepository,
     userDataRepository: UserDataRepository,
+    private val videoRecorderResultBus: VideoRecorderResultBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddRecipeState())
@@ -35,6 +37,10 @@ class AddRecipeViewModel @Inject constructor(
         userDataRepository.userData
             .map { it.isConnected && it.token?.isNotBlank() == true }
             .onEach { authenticated -> _state.update { it.copy(isAuthenticated = authenticated) } }
+            .launchIn(viewModelScope)
+
+        videoRecorderResultBus.results
+            .onEach { uri -> _state.update { it.copy(videoUri = uri) } }
             .launchIn(viewModelScope)
     }
 
@@ -51,6 +57,7 @@ class AddRecipeViewModel @Inject constructor(
             AddRecipeAction.OnSubmit -> submit()
             // Pure navigation, handled by AddRoute.
             AddRecipeAction.OnGoToLogin -> Unit
+            AddRecipeAction.OnRecordVideo -> Unit
         }
     }
 
@@ -133,6 +140,7 @@ sealed interface AddRecipeAction {
     data object OnAddIngredient : AddRecipeAction
     data object OnSubmit : AddRecipeAction
     data object OnGoToLogin : AddRecipeAction
+    data object OnRecordVideo : AddRecipeAction
 }
 
 sealed interface AddRecipeEvent {

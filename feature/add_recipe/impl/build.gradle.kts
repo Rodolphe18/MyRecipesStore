@@ -44,6 +44,7 @@ dependencies {
 
     api(project(":feature:add_recipe:api"))
     api(project(":feature:login:api"))
+    implementation(project(":feature:record_video:api"))
 
     implementation(libs.coil.compose)
     implementation(libs.androidx.compose.material.iconsExtended)
@@ -60,6 +61,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))

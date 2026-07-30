@@ -298,6 +298,11 @@ class HttpLoggingInterceptor
         }
 
         private fun RequestBody.defaultLog(method: String) {
+            val length = contentLength()
+            if (length == -1L || length > MAX_BODY_LOG_BYTES) {
+                logger.log("--> END $method (binary $length-byte body omitted)")
+                return
+            }
             val buffer = Buffer()
             writeTo(buffer)
 
@@ -339,13 +344,18 @@ class HttpLoggingInterceptor
 
                         append(CRLF)
 
-                        val buffer = Buffer()
-                        body.writeTo(buffer)
-                        val charset = contentType?.charset(UTF_8) ?: UTF_8
-                        if (buffer.isProbablyUtf8()) {
-                            append(buffer.readString(charset))
-                        } else {
+                        if (contentLength == -1L || contentLength > MAX_BODY_LOG_BYTES) {
+                            // Ne pas bufferiser les gros corps (ex: vidéo) en mémoire → risque d'OOM.
                             append("(binary $contentLength-byte body omitted)")
+                        } else {
+                            val buffer = Buffer()
+                            body.writeTo(buffer)
+                            val charset = contentType?.charset(UTF_8) ?: UTF_8
+                            if (buffer.isProbablyUtf8()) {
+                                append(buffer.readString(charset))
+                            } else {
+                                append("(binary $contentLength-byte body omitted)")
+                            }
                         }
                         append(CRLF)
                     }
@@ -373,6 +383,7 @@ class HttpLoggingInterceptor
             private const val COLONSPACE = ": "
             private const val DASHDASH = "--"
             private const val CRLF = "\r\n"
+            private const val MAX_BODY_LOG_BYTES = 1_000_000L
 
             private fun Buffer.isProbablyUtf8(): Boolean {
                 try {

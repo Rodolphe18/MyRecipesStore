@@ -151,6 +151,8 @@ dependencies {
     implementation(project(":feature:login:impl"))
     implementation(project(":feature:detail:impl"))
     implementation(project(":feature:add_recipe:impl"))
+    implementation(project(":feature:record_video:api"))
+    implementation(project(":feature:record_video:impl"))
     implementation(project(":feature:register:impl"))
     implementation(project(":feature:profile:impl"))
     implementation(project(":feature:section:impl"))

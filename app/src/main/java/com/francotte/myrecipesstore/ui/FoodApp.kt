@@ -55,6 +55,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
 import com.francotte.add_recipe.addRecipeEntry
+import com.francotte.record_video.recordVideoEntry
 import com.francotte.api.DetailRecipeNavKey
 import com.francotte.api.navigateToProfile
 import com.francotte.api.navigateToResetPassword
@@ -175,6 +176,7 @@ fun FoodApp(appState: AppState) {
         categoriesEntry(navigator)
         categoryEntry(navigator)
         addRecipeEntry(navigator)
+        recordVideoEntry(navigator)
         searchModeEntry(navigator)
         sectionEntry(navigator)
         searchRecipesEntry(navigator)
