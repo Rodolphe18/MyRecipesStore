@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- shortEdges : sur les écrans à encoche, l'annonce occupe aussi la zone de la découpe
+         au lieu d'être letterboxée par une bande noire. -->
+  <style name="Theme.MyRecipesStore.Ad" parent="@android:style/Theme.Translucent">
+    <item name="android:windowFullscreen">true</item>
+    <item name="android:windowTranslucentStatus">true</item>
+    <item name="android:windowTranslucentNavigation">true</item>
+    <item name="android:fitsSystemWindows">false</item>
+    <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+  </style>
+
+</resources>

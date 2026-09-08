@@ -14,4 +14,12 @@
         <item name="windowSplashScreenIconBackgroundColor">#FFF8541A</item>
         <item name="postSplashScreenTheme">@style/Theme.MyRecipesStore</item>
     </style>
+
+  <!-- AdActivity masque la barre de statut ; le SDK active le mode immersif. -->
+  <style name="Theme.MyRecipesStore.Ad" parent="@android:style/Theme.Translucent">
+    <item name="android:windowFullscreen">true</item>
+    <item name="android:windowTranslucentStatus">true</item>
+    <item name="android:windowTranslucentNavigation">true</item>
+    <item name="android:fitsSystemWindows">false</item>
+  </style>
 </resources>

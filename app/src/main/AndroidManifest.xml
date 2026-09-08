@@ -110,13 +110,12 @@
         android:name="android.app.shortcuts"
         android:resource="@xml/shortcuts" />
     </activity>
-    <service
-      android:name="com.francotte.notifications.MyFirebaseMessagingService"
-      android:exported="false">
-      <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-      </intent-filter>
-    </service>
+    <!-- Interstitiel plein ecran : le theme Theme.Translucent fourni par le SDK laisse
+             une bande vide en haut a la hauteur de la barre de statut. -->
+    <activity
+      android:name="com.google.android.gms.ads.AdActivity"
+      android:theme="@style/Theme.MyRecipesStore.Ad"
+      tools:replace="android:theme" />
 
     <!-- Divers -->
     <meta-data
