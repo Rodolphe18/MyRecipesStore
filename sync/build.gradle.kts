@@ -13,7 +13,6 @@ android {
         minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -34,22 +33,24 @@ android {
 
 dependencies {
 
+    implementation(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))
     implementation(project(":core:database"))
     implementation(project(":core:data"))
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
+
     ksp(libs.hilt.compiler)
+    // Generates the WorkerAssistedFactory for every @HiltWorker. Without it the annotation is
+    // silently ignored and DelegatingWorker finds nothing to delegate to.
+    ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.android)
     implementation(libs.hilt.core)
     implementation(libs.androidx.hilt.work)
+
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.retrofit.core)
-    implementation(libs.androidx.tracing.ktx)
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }

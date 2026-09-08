@@ -1,11 +1,10 @@
 package com.francotte.auth
 
-import android.content.Context
-import android.util.Log
 import com.francotte.data.interfaces.UserDataRepository
-import com.francotte.data.sync.SyncScheduler
+import com.francotte.data.sync.FavoritesSyncReason
+import com.francotte.data.sync.SyncKind
+import com.francotte.data.sync.SyncManager
 import com.francotte.network.model.AuthResponse
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -16,9 +15,8 @@ enum class AuthOperation { LOGIN, REGISTER, UPDATE }
 
 @Singleton
 class AuthSynchronizer @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val preferences: UserDataRepository,
-    private val syncScheduler: SyncScheduler,
+    private val syncManager: SyncManager,
     private val eventBus: AuthEventBus,
 ) {
     suspend fun handle(
@@ -44,8 +42,11 @@ class AuthSynchronizer @Inject constructor(
                     eventBus.emit(event)
                 }
                 if (operation != AuthOperation.UPDATE) {
-                    Log.d("debug_fav_enqueue_for_login", "")
-                    syncScheduler.enqueueForLogin(context)
+                    // Signing in: push whatever was favorited offline, then reconcile with the
+                    // server and prefetch the favorited recipes that are missing locally.
+                    syncManager.requestSync(
+                        SyncKind.Favorites(FavoritesSyncReason.Login),
+                    )
                 }
                 Result.success(Unit)
             }

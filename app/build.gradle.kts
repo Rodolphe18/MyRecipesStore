@@ -114,6 +114,7 @@ android {
 
 dependencies {
 
+    implementation(project(":sync"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
@@ -267,7 +268,6 @@ dependencies {
     implementation(libs.review.ktx)
     implementation(libs.play.services.ads.identifier)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
     implementation(libs.android.play.app.update)
     implementation(libs.android.play.app.update.ktx)

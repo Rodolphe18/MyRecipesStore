@@ -40,7 +40,6 @@ dependencies {
     api(project(":core:database"))
     api(project(":core:network"))
     api(project(":core:common"))
-    api(project(":sync"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

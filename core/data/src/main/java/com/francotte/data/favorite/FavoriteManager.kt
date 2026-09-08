@@ -9,7 +9,9 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import com.francotte.common.extension.ApplicationScope
 import com.francotte.data.R
-import com.francotte.data.sync.SyncScheduler
+import com.francotte.data.sync.FavoritesSyncReason
+import com.francotte.data.sync.SyncKind
+import com.francotte.data.sync.SyncManager
 import com.francotte.data.util.NetworkMonitor
 import com.francotte.data.interfaces.FavoriteHelper
 import com.francotte.data.interfaces.UserDataRepository
@@ -51,7 +53,7 @@ class FavoriteManager @Inject constructor(
     private val api: FavoriteApi,
     private val networkMonitor: NetworkMonitor,
     private val foodPreferencesDataSource: UserDataRepository,
-    private val syncScheduler: SyncScheduler,
+    private val syncManager: SyncManager,
 ) : FavoriteHelper {
     init {
         coroutineScope.launch {
@@ -89,7 +91,7 @@ class FavoriteManager @Inject constructor(
         val desiredFavorite = !currentlyFavorite
         foodPreferencesDataSource.setFavoriteId(recipeId, desiredFavorite)
         foodPreferencesDataSource.upsertPendingFavorite(recipeId, desiredFavorite)
-        syncScheduler.enqueueForToggle(context)
+        syncManager.requestSync(SyncKind.Favorites(FavoritesSyncReason.Toggle))
 
         val online = networkMonitor.isOnline.first()
         return if (online) ToggleFavoriteResult.Success(added = desiredFavorite)
