@@ -31,17 +31,18 @@ class AndroidNotifier @Inject constructor(@ApplicationContext private val contex
             ) == PackageManager.PERMISSION_GRANTED
             if (!granted) return
         }
-        val pendingIntent = idMeal?.let {
+        val pendingIntent = idMeal?.let { id ->
             PendingIntent.getActivity(
                 context,
                 0,
-                Intent(Intent.ACTION_VIEW, "myapp://recipe/$it".toUri()).apply {
+                Intent(Intent.ACTION_VIEW, "myapp://recipe/$id".toUri()).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 },
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
         }
-        val notification = NotificationCompat.Builder(context, NotificationChannels.DAILY_MEAL)
+        val notification = NotificationCompat
+            .Builder(context, NotificationChannels.DAILY_MEAL)
             .setSmallIcon(R.mipmap.ic_custom_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
@@ -49,7 +50,8 @@ class AndroidNotifier @Inject constructor(@ApplicationContext private val contex
             .setAutoCancel(true)
             .build()
         try {
-            NotificationManagerCompat.from(context)
+            NotificationManagerCompat
+                .from(context)
                 .notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
         } catch (_: SecurityException) {
         }

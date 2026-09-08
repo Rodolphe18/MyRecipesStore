@@ -14,9 +14,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var notifier: Notifier
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        val title = remoteMessage.notification?.title ?: "Recette du jour 🍽️"
-        val body = remoteMessage.notification?.body ?: (remoteMessage.data["strMeal"] ?: "Nouvelle recette disponible")
-        val idMeal = remoteMessage.data["idMeal"]
+        val data = remoteMessage.data
+
+        val title = data["title"] ?: "Recette du jour 🍽️"
+        val body = data["body"]
+            ?: data["strMeal"]
+            ?: "Nouvelle recette disponible"
+        val idMeal = data["idMeal"]
         notifier.postNotification(title, body, idMeal)
     }
 }
