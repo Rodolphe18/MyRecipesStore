@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.test)
     alias(libs.plugins.kotlin.android)
     id("androidx.baselineprofile")
+    alias(libs.plugins.myrecipesstore.quality)
 }
 
 android {

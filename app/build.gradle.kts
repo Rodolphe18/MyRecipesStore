@@ -1,8 +1,7 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.myrecipesstore.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ksp)
@@ -27,16 +26,11 @@ val keystoreProperties =
 
 android {
     namespace = "com.francotte.myrecipesstore"
-    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.francotte.myrecipesstore"
-        minSdk = 26
-        targetSdk = 36
         versionCode = 25
         versionName = "1.3.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -82,13 +76,6 @@ android {
     baselineProfile {
         automaticGenerationDuringBuild = false
         dexLayoutOptimization = true
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    buildFeatures {
-        compose = true
     }
     packaging {
         resources {

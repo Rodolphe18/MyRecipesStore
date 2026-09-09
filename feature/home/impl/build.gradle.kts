@@ -1,39 +1,12 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.myrecipesstore.android.feature.impl)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.hilt.plugin)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.roborazzi)
-    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.francotte.home"
     testOptions.unitTests.isIncludeAndroidResources = true
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 26
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
     packaging {
         resources {
             excludes.addAll(
@@ -60,7 +33,6 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:model"))
     api(project(":core:common"))
-    api(project(":core:designsystem"))
     api(project(":core:ui"))
     api(project(":core:testing"))
     api(project(":core:screenshot-testing"))
@@ -76,25 +48,15 @@ dependencies {
     implementation(libs.kotlinx.metadata.jvm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3.window.size)
-    implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.core)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.ui.test.junit4)
     //  implementation(libs.androidx.compose.runtime.tracing)
-    ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.hilt.android.testing)
@@ -104,9 +66,7 @@ dependencies {
     testImplementation(libs.roborazzi.compose)
 
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
 
-    debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

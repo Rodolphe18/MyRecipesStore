@@ -1,36 +1,14 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.myrecipesstore.android.library)
     alias(libs.plugins.protobuf)
-    alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.myrecipesstore.hilt)
 }
 
 android {
     namespace = "com.francotte.datastore"
-    compileSdk = 36
-
     defaultConfig {
-        minSdk = 26
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-proguard-rules.pro")
     }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
 }
 
 dependencies {
@@ -39,9 +17,6 @@ dependencies {
     api(project(":core:model"))
     api(project(":core:datastore-proto"))
 
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.core)
-    ksp(libs.hilt.compiler)
     implementation(libs.androidx.dataStore)
 
     testImplementation(libs.kotlinx.coroutines.test)
