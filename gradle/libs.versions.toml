@@ -84,6 +84,11 @@ navigation3Ui = "1.0.1"
 runtimeAnnotation = "1.11.3"
 
 [libraries]
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle-api", version.ref = "androidGradlePlugin" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+ktlint-gradlePlugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlintGradle" }
+detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlin-coroutines-okhttp = { module = "ru.gildor.coroutines:kotlin-coroutines-okhttp", version.ref = "kotlinCoroutinesOkhttp" }
 android-identity-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "android-googleid" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
@@ -201,6 +206,13 @@ navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", vers
 androidx-compose-runtime-annotation = { group = "androidx.compose.runtime", name = "runtime-annotation", version.ref = "runtimeAnnotation" }
 
 [plugins]
+myrecipesstore-android-application = { id = "myrecipesstore.android.application" }
+myrecipesstore-quality = { id = "myrecipesstore.quality" }
+myrecipesstore-android-library = { id = "myrecipesstore.android.library" }
+myrecipesstore-android-library-compose = { id = "myrecipesstore.android.library.compose" }
+myrecipesstore-hilt = { id = "myrecipesstore.hilt" }
+myrecipesstore-android-feature-api = { id = "myrecipesstore.android.feature.api" }
+myrecipesstore-android-feature-impl = { id = "myrecipesstore.android.feature.impl" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark"}
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
